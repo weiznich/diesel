@@ -86,19 +86,19 @@ table! {
     }
 }
 
-#[test]
-fn filter_on_column_equality() {
-    use self::points::dsl::*;
+// #[test]
+// fn filter_on_column_equality() {
+//     use self::points::dsl::*;
 
-    let connection = connection();
-    connection.execute("CREATE TABLE points (x INTEGER NOT NULL, y INTEGER NOT NULL)").unwrap();
-    connection.execute("INSERT INTO POINTS (x, y) VALUES (1, 1), (1, 2), (2, 2)").unwrap();
+//     let connection = connection();
+//     connection.execute("CREATE TABLE points (x INTEGER NOT NULL, y INTEGER NOT NULL)").unwrap();
+//     connection.execute("INSERT INTO POINTS (x, y) VALUES (1, 1), (1, 2), (2, 2)").unwrap();
 
-    let expected_data = vec![(1, 1), (2, 2)];
-    let query = points.filter(x.eq(y));
-    let data: Vec<_> = connection.query_all(query).unwrap().collect();
-    assert_eq!(expected_data, data);
-}
+//     let expected_data = vec![(1, 1), (2, 2)];
+//     let query = points.filter(x.eq(y));
+//     let data: Vec<_> = connection.query_all(query).unwrap().collect();
+//     assert_eq!(expected_data, data);
+// }
 
 fn connection_with_sean_and_tess_in_users_table() -> Connection {
     let connection = connection();

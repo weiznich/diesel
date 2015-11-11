@@ -1,4 +1,5 @@
 #![deny(warnings)]
+#![feature(on_unimplemented)]
 pub mod expression;
 pub mod persistable;
 pub mod types;

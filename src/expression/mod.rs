@@ -27,6 +27,7 @@ pub trait Expression: Sized {
     }
 }
 
+#[rustc_on_unimplemented = "{Self} cannot be used in an expression of type {T}"]
 pub trait AsExpression<T: NativeSqlType> {
     type Expression: Expression;
 
