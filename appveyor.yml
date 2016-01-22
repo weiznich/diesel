@@ -15,6 +15,7 @@ install:
   - cargo -V
   - where pg_config
   - pg_config --libdir
+  - createdb diesel_test
 
 build: false
 
@@ -32,3 +33,4 @@ environment:
   global:
     RUSTC_VERSION: 1.6.0
     TARGET: x86_64-pc-windows-gnu
+    DATABASE_URL: postgres://postgres:Password12!@localhost/diesel_test
