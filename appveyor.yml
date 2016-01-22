@@ -6,7 +6,7 @@ branches:
     - appveyor_nonsense
 
 install:
-  - ps: Start-FileDownload "https://static.rust-lang.org/dist/rust-1.6.0-x86_64-pc-windows-msvc.exe"
+  - ps: Start-FileDownload "https://static.rust-lang.org/dist/rust-${env:RUSTC_VERSION}-${env:TARGET}.exe"
   - rust-nightly-%TARGET%.exe /VERYSILENT /NORESTART /DIR="C:\Program Files (x86)\Rust"
   - SET PATH=%PATH%;C:\Program Files (x86)\Rust\bin
   - SET PATH=%PATH%;C:\MinGW\bin
@@ -22,3 +22,8 @@ test_script:
   - cargo test
   - cd ../diesel_tests
   - cargo test
+
+environment:
+  global:
+    RUSTC_VERSION: 1.6.0
+    TARGET: x86_64-pc-windows-msvc
