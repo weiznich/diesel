@@ -1,0 +1,23 @@
+version: 1.0.{build}
+
+branches:
+  only:
+    - master
+    - ಠ_ಠ
+install:
+  ps: Start-FileDownload "https://static.rust-lang.org/dist/rust-1.6.0-x86_64-pc-windows-msvc.exe"
+  - rust-nightly-%TARGET%.exe /VERYSILENT /NORESTART /DIR="C:\Program Files (x86)\Rust"
+  - SET PATH=%PATH%;C:\Program Files (x86)\Rust\bin
+  - SET PATH=%PATH%;C:\MinGW\bin
+  - rustc -V
+  - cargo -V
+
+test_script:
+  - cd diesel
+  - cargo test
+  - cd ../diesel_cli
+  - cargo test
+  - cd ../diesel_codegen
+  - cargo test
+  - cd ../diesel_tests
+  - cargo test
