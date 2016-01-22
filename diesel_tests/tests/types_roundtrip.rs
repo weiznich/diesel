@@ -100,7 +100,7 @@ fn mk_naive_date(days: u32) -> NaiveDate {
     earliest_pg_date + Duration::days(days as i64 % num_days_representable)
 }
 
-#[cfg(feature = "unstable")]
+#[cfg(not(feature = "syntex"))]
 mod unstable_types {
     use super::*;
     use std::time::*;

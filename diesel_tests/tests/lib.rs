@@ -1,13 +1,13 @@
-#![cfg_attr(feature = "unstable", feature(custom_derive, plugin, custom_attribute, time2))]
-#![cfg_attr(feature = "unstable", plugin(diesel_codegen, dotenv_macros))]
+#![cfg_attr(not(feature = "syntex"), feature(custom_derive, plugin, custom_attribute, time2))]
+#![cfg_attr(not(feature = "syntex"), plugin(diesel_codegen, dotenv_macros))]
 
 extern crate quickcheck;
 #[macro_use] extern crate diesel;
 
-#[cfg(feature = "unstable")]
+#[cfg(not(feature = "syntex"))]
 include!("lib.in.rs");
 
-#[cfg(not(feature = "unstable"))]
+#[cfg(feature = "syntex")]
 include!(concat!(env!("OUT_DIR"), "/lib.rs"));
 
 mod associations;

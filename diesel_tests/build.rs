@@ -1,4 +1,4 @@
-#[cfg(not(feature = "unstable"))]
+#[cfg(feature = "syntex")]
 mod inner {
     extern crate syntex;
     extern crate diesel_codegen;
@@ -20,7 +20,7 @@ mod inner {
     }
 }
 
-#[cfg(feature = "unstable")]
+#[cfg(not(feature = "syntex"))]
 mod inner {
     pub fn main() {}
 }

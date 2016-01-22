@@ -1,4 +1,4 @@
-#![cfg(all(feature = "unstable", not(windows)))]
+#![cfg(feature = "compiletest_rs")]
 extern crate compiletest_rs as compiletest;
 
 use std::path::PathBuf;
