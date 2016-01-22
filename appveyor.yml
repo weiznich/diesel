@@ -11,16 +11,14 @@ services:
 install:
   - ps: Start-FileDownload "https://static.rust-lang.org/dist/rust-${env:RUSTC_VERSION}-${env:TARGET}.exe"
   - rust-%RUSTC_VERSION%-%TARGET%.exe /VERYSILENT /NORESTART /DIR="C:\Program Files (x86)\Rust"
+
+build: false
+
+before_test:
   - SET PATH=%PATH%;C:\Program Files (x86)\Rust\bin
   - SET PATH=%PATH%;C:\MinGW\bin
   - SET PATH=%PATH%;C:\Program Files\PostgreSQL\9.4\bin
-  - rustc -V
-  - cargo -V
-  - where pg_config
-  - pg_config --libdir
   - createdb diesel_test
-
-build: false
 
 test_script:
   - cd diesel
