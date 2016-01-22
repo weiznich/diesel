@@ -9,7 +9,7 @@ services:
   - postgresql94
 
 install:
-  - ps: Start-FileDownload "https://static.rust-lang.org/dist/rust-${env:RUSTC_VERSION}-${env:TARGET}.exe"
+  - ps: Start-FileDownload "https://static.rust-lang.org/${env:RUST_DIST_DIR}/rust-${env:RUSTC_VERSION}-${env:TARGET}.exe"
   - rust-%RUSTC_VERSION%-%TARGET%.exe /VERYSILENT /NORESTART /DIR="C:\Program Files (x86)\Rust"
 
 build: false
@@ -22,17 +22,18 @@ before_test:
 
 test_script:
   - cd diesel
-  - cargo test
+  - cargo test --features "unstable chrono"
   - cd ../diesel_cli
   - cargo test
   - cd ../diesel_codegen
-  - cargo test
+  - cargo test --no-default-features --features nightly
   - cd ../diesel_tests
-  - cargo test
+  - cargo test --no-default-features --features unstable
 
 environment:
   global:
-    RUSTC_VERSION: 1.6.0
+    RUST_DIST_DIR: dist/2016-01-15
+    RUSTC_VERSION: nightly
     TARGET: x86_64-pc-windows-gnu
     DATABASE_URL: postgres://postgres:Password12!@localhost/diesel_test
     PGUSER: postgres
