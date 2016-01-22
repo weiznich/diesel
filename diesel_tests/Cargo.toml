@@ -24,7 +24,8 @@ quickcheck = { git = "https://github.com/BurntSushi/quickcheck.git" }
 
 [features]
 default = ["syntex", "diesel_codegen/with-syntex", "dotenv_codegen"]
-unstable = ["compiletest_rs", "diesel_codegen/nightly", "diesel/unstable",
+unstable = ["compiletest_rs", "unstable_windows"]
+unstable_windows = ["diesel_codegen/nightly", "diesel/unstable",
   "quickcheck/unstable", "dotenv_macros"]
 
 [[test]]

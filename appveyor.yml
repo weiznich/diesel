@@ -28,13 +28,16 @@ test_script:
   - cd ../diesel_codegen
   - cargo test --no-default-features --features nightly
   - cd ../diesel_tests
-  - cargo test --no-default-features --features unstable
+  - cargo test --no-default-features --features unstable_windows
 
 environment:
   global:
     RUST_DIST_DIR: dist/2016-01-15
     RUSTC_VERSION: nightly
-    TARGET: x86_64-pc-windows-gnu
     DATABASE_URL: postgres://postgres:Password12!@localhost/diesel_test
     PGUSER: postgres
     PGPASSWORD: Password12!
+
+  matrix:
+    - TARGET: x86_64-pc-windows-gnu
+    - TARGET: x86_64-pc-windows-msvc
