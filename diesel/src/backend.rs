@@ -51,3 +51,13 @@ impl Backend for Pg {
 impl TypeMetadata for Pg {
     type TypeMetadata = PgTypeMetadata;
 }
+
+pub struct Sqlite;
+
+impl Backend for Sqlite {
+    type QueryBuilder = DebugQueryBuilder;
+}
+
+impl TypeMetadata for Sqlite {
+    type TypeMetadata = ();
+}
