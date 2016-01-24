@@ -9,7 +9,7 @@ use result::Error::DatabaseError;
 use super::raw::RawConnection;
 
 pub struct Statement {
-    _inner_statement: *mut ffi::sqlite3_stmt,
+    inner_statement: *mut ffi::sqlite3_stmt,
 }
 
 impl Statement {
@@ -28,11 +28,18 @@ impl Statement {
         if prepare_result != ffi::SQLITE_OK {
             Err(DatabaseError(raw_connection.error_from_code(prepare_result)))
         } else {
-            Ok(Statement { _inner_statement: stmt })
+            Ok(Statement { inner_statement: stmt })
         }
     }
 
     pub fn run(&self) -> QueryResult<()> {
         Ok(())
+    }
+}
+
+impl Drop for Statement {
+    fn drop(&mut self) {
+        let finalize_result = unsafe { ffi::sqlite3_finalize(self.inner_statement) };
+        assert_eq!(ffi::SQLITE_OK, finalize_result);
     }
 }
