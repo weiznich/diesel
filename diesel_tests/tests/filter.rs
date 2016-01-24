@@ -43,10 +43,11 @@ fn zomg_sqlite() {
           name VARCHAR NOT NULL,
           hair_color VARCHAR
         )").unwrap();
-    let data = insert(&vec![NewUser::new("Sean", None), NewUser::new("Tess", None)])
+    insert(&vec![NewUser::new("Sean", None), NewUser::new("Tess", None)])
         .into(users)
-        .get_results(&connection)
-        .unwrap().collect::<Vec<User>>();
+        .execute(&connection)
+        .unwrap();
+    let data = users.load(&connection).unwrap().collect::<Vec<User>>();
     let sean = &data[0];
     let tess = &data[1];
 

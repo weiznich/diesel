@@ -40,22 +40,23 @@ impl Connection for SqliteConnection {
         Ok(self.raw_connection.rows_affected_by_last_query())
     }
 
-    fn query_all<'a, T, U: 'a>(&self, source: T) -> QueryResult<Box<Iterator<Item=U> + 'a>> where
+    fn query_all<'a, T, U: 'a>(&self, _source: T) -> QueryResult<Box<Iterator<Item=U> + 'a>> where
         T: AsQuery,
         T::Query: QueryFragment<Self::Backend>,
         Self::Backend: HasSqlType<T::SqlType>,
         U: Queryable<T::SqlType, Self::Backend>,
     {
-        let mut query_builder = SqliteQueryBuilder::new();
-        try!(source.as_query().to_sql(&mut query_builder).map_err(QueryBuilderError));
-        let _stmt = try!(Statement::prepare(&self.raw_connection, &query_builder.sql));
+        // let sql = try!(self.prepare_query(&source.as_query()));
+        // let _stmt = try!(Statement::prepare(&self.raw_connection, &sql));
         unimplemented!()
     }
 
-    fn execute_returning_count<T>(&self, _source: &T) -> QueryResult<usize> where
+    fn execute_returning_count<T>(&self, source: &T) -> QueryResult<usize> where
         T: QueryFragment<Self::Backend>,
     {
-        unimplemented!()
+        let stmt = try!(self.prepare_query(source));
+        try!(stmt.run());
+        Ok(self.raw_connection.rows_affected_by_last_query())
     }
 
     fn silence_notices<F: FnOnce() -> T, T>(&self, _f: F) -> T {
@@ -76,5 +77,26 @@ impl Connection for SqliteConnection {
 
     fn get_transaction_depth(&self) -> i32 {
         unimplemented!()
+    }
+}
+
+impl SqliteConnection {
+    fn prepare_query<T: QueryFragment<Sqlite>>(&self, source: &T) -> QueryResult<Statement> {
+        let mut query_builder = SqliteQueryBuilder::new();
+        try!(source.to_sql(&mut query_builder).map_err(QueryBuilderError));
+        let result = try!(Statement::prepare(&self.raw_connection, &query_builder.sql));
+
+        // for (tpe, value) in result.bind_params.into_iter() {
+        //     match tpe {
+        //         SqliteType::Null => {},
+        //         SqliteType::Binary => {},
+        //         SqliteType::Text => {},
+        //         SqliteType::Double => {},
+        //         SqliteType::Int => {},
+        //         SqliteType::Long => {},
+        //     }
+        // }
+
+        Ok(result)
     }
 }
