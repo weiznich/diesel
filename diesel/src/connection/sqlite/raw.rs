@@ -8,7 +8,7 @@ use result::*;
 use result::Error::DatabaseError;
 
 pub struct RawConnection {
-    internal_connection: *mut ffi::sqlite3,
+    pub internal_connection: *mut ffi::sqlite3,
 }
 
 impl RawConnection {
@@ -57,6 +57,10 @@ impl RawConnection {
 
     pub fn rows_affected_by_last_query(&self) -> usize {
         unsafe { ffi::sqlite3_changes(self.internal_connection) as usize }
+    }
+
+    pub fn error_from_code(&self, err_code: libc::c_int) -> String {
+        error_message(err_code).into()
     }
 }
 

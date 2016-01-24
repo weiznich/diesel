@@ -1,11 +1,16 @@
 #[doc(hidden)]
 pub mod raw;
+#[doc(hidden)]
+mod stmt;
 
 use backend::Sqlite;
 use query_builder::*;
+use query_builder::sqlite::SqliteQueryBuilder;
 use query_source::*;
 use result::*;
+use result::Error::QueryBuilderError;
 use self::raw::*;
+use self::stmt::*;
 use super::{SimpleConnection, Connection};
 use types::HasSqlType;
 
@@ -35,12 +40,15 @@ impl Connection for SqliteConnection {
         Ok(self.raw_connection.rows_affected_by_last_query())
     }
 
-    fn query_all<'a, T, U: 'a>(&self, _source: T) -> QueryResult<Box<Iterator<Item=U> + 'a>> where
+    fn query_all<'a, T, U: 'a>(&self, source: T) -> QueryResult<Box<Iterator<Item=U> + 'a>> where
         T: AsQuery,
         T::Query: QueryFragment<Self::Backend>,
         Self::Backend: HasSqlType<T::SqlType>,
         U: Queryable<T::SqlType, Self::Backend>,
     {
+        let mut query_builder = SqliteQueryBuilder::new();
+        try!(source.as_query().to_sql(&mut query_builder).map_err(QueryBuilderError));
+        let _stmt = try!(Statement::prepare(&self.raw_connection, &query_builder.sql));
         unimplemented!()
     }
 
