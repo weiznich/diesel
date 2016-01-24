@@ -24,7 +24,7 @@ impl RawConnection {
                 internal_connection: conn_pointer,
             }),
             err_code => {
-                let message = error_message(err_code);
+                let message = super::error_message(err_code);
                 Err(ConnectionError::BadConnection(message.into()))
             }
         }
@@ -58,23 +58,15 @@ impl RawConnection {
     pub fn rows_affected_by_last_query(&self) -> usize {
         unsafe { ffi::sqlite3_changes(self.internal_connection) as usize }
     }
-
-    pub fn error_from_code(&self, err_code: libc::c_int) -> String {
-        error_message(err_code).into()
-    }
 }
 
 impl Drop for RawConnection {
     fn drop(&mut self) {
         let close_result = unsafe { ffi::sqlite3_close(self.internal_connection) };
-        assert_eq!(ffi::SQLITE_OK, close_result);
+        if close_result != ffi::SQLITE_OK {
+            panic!("{}", super::error_message(close_result));
+        }
     }
-}
-
-fn error_message(err_code: libc::c_int) -> &'static str {
-    let message_ptr = unsafe { ffi::sqlite3_errstr(err_code) };
-    let result = unsafe { CStr::from_ptr(message_ptr) };
-    result.to_str().unwrap()
 }
 
 // fn last_error_message(conn: *mut ffi::sqlite3) -> &'static str {

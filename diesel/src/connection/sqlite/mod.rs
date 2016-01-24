@@ -1,7 +1,12 @@
+extern crate libsqlite3_sys as ffi;
+extern crate libc;
+
 #[doc(hidden)]
 pub mod raw;
 #[doc(hidden)]
 mod stmt;
+
+use std::ffi::CStr;
 
 use backend::Sqlite;
 use query_builder::*;
@@ -99,4 +104,10 @@ impl SqliteConnection {
 
         Ok(result)
     }
+}
+
+fn error_message(err_code: libc::c_int) -> &'static str {
+    let message_ptr = unsafe { ffi::sqlite3_errstr(err_code) };
+    let result = unsafe { CStr::from_ptr(message_ptr) };
+    result.to_str().unwrap()
 }

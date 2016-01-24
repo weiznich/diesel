@@ -26,7 +26,7 @@ impl Statement {
         };
 
         if prepare_result != ffi::SQLITE_OK {
-            Err(DatabaseError(raw_connection.error_from_code(prepare_result)))
+            Err(DatabaseError(super::error_message(prepare_result).into()))
         } else {
             Ok(Statement { inner_statement: stmt })
         }
@@ -40,6 +40,8 @@ impl Statement {
 impl Drop for Statement {
     fn drop(&mut self) {
         let finalize_result = unsafe { ffi::sqlite3_finalize(self.inner_statement) };
-        assert_eq!(ffi::SQLITE_OK, finalize_result);
+        if finalize_result != ffi::SQLITE_OK {
+            panic!("{}", super::error_message(finalize_result));
+        }
     }
 }
