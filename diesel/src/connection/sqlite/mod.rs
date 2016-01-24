@@ -7,6 +7,7 @@ use query_source::*;
 use result::*;
 use self::raw::*;
 use super::{SimpleConnection, Connection};
+use types::HasSqlType;
 
 pub struct SqliteConnection {
     raw_connection: RawConnection,
@@ -37,6 +38,7 @@ impl Connection for SqliteConnection {
     fn query_all<'a, T, U: 'a>(&self, _source: T) -> QueryResult<Box<Iterator<Item=U> + 'a>> where
         T: AsQuery,
         T::Query: QueryFragment<Self::Backend>,
+        Self::Backend: HasSqlType<T::SqlType>,
         U: Queryable<T::SqlType, Self::Backend>,
     {
         unimplemented!()

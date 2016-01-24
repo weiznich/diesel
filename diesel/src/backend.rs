@@ -1,6 +1,7 @@
 use query_builder::QueryBuilder;
-use query_builder::pg::PgQueryBuilder;
 use query_builder::debug::DebugQueryBuilder;
+use query_builder::pg::PgQueryBuilder;
+use query_builder::sqlite::SqliteQueryBuilder;
 use types::{self, HasSqlType};
 
 pub trait Backend where
@@ -55,7 +56,7 @@ impl TypeMetadata for Pg {
 pub struct Sqlite;
 
 impl Backend for Sqlite {
-    type QueryBuilder = DebugQueryBuilder;
+    type QueryBuilder = SqliteQueryBuilder;
 }
 
 impl TypeMetadata for Sqlite {

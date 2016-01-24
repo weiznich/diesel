@@ -104,9 +104,11 @@ macro_rules! primitive_impls {
             }
 
             impl types::HasSqlType<types::$Source> for $crate::backend::Debug {
-                fn metadata() {
-                    ()
-                }
+                fn metadata() {}
+            }
+
+            impl types::HasSqlType<types::$Source> for $crate::backend::Sqlite {
+                fn metadata() {}
             }
 
             impl types::NotNull for types::$Source {
