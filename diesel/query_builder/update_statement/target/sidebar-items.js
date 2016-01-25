@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["UpdateTarget","You should not need to implement this trait. `table!` will implement it for you."]]});
