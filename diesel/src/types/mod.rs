@@ -116,3 +116,73 @@ impl<'a, A, T, DB> ToSql<A, DB> for &'a T where
         (*self).to_sql(out)
     }
 }
+
+pub trait CustomSqlType: Sized
+    {
+    type DataBaseType;
+    type RawType;
+    
+    fn to_database_type(&self) -> Self::RawType;
+    fn from_database_type(&Self::RawType) -> Result<Self, Box<Error>>;
+}
+
+impl<T, DB> FromSql<<T as CustomSqlType>::DataBaseType, DB> for T
+where T: CustomSqlType,
+      DB: Backend+ HasSqlType<<T as CustomSqlType>::DataBaseType>,
+      <T as CustomSqlType>::RawType: FromSql<<T as CustomSqlType>::DataBaseType, DB>
+{
+    fn from_sql(bytes: Option<&DB::RawValue>) -> Result<Self, Box<Error>>{
+        match T::RawType::from_sql(bytes) {
+                  Ok(a) => Self::from_database_type(&a),
+                  Err(e) => Err(e),
+              }
+    }
+}
+
+impl<T, DB> FromSqlRow<<T as CustomSqlType>::DataBaseType, DB> for T
+where T: CustomSqlType,
+      DB: Backend+ HasSqlType<<T as CustomSqlType>::DataBaseType>,
+      T: FromSql<<T as CustomSqlType>::DataBaseType, DB>
+{
+          
+          fn build_from_row<R: Row<DB>>(row: &mut R) -> Result<Self, Box<Error>>{
+              T::from_sql(row.take())
+          }
+}
+
+#[macro_export]
+macro_rules! register_custom_type {
+    ( $Target:ty  ) => {
+    
+        use diesel::expression::bound::Bound;
+        use diesel::expression::AsExpression;
+        use diesel::types::{ToSql, IsNull, HasSqlType};
+        use diesel::backend::Backend;
+        
+        impl <DB> ToSql<<$Target as CustomSqlType>::DataBaseType, DB> for $Target
+        where DB: Backend+ HasSqlType<<$Target as CustomSqlType>::DataBaseType>,
+              <$Target as CustomSqlType>::RawType: ToSql<<$Target as CustomSqlType>::DataBaseType, DB>
+        {
+            fn to_sql<W: Write>(&self, out: &mut W) -> Result<IsNull, Box<Error>>{
+                <$Target as CustomSqlType>::RawType::to_sql(&Self::to_database_type(self),out)
+            }
+        }
+        
+        impl AsExpression<SmallInt> for $Target {
+            type Expression = Bound<SmallInt, Self>;
+
+            fn as_expression(self) -> Self::Expression {
+                Bound::new(self)
+            }
+        }
+        
+        impl<'a> AsExpression<SmallInt> for &'a $Target {
+            type Expression = Bound<SmallInt, Self>;
+
+            fn as_expression(self) -> Self::Expression {
+                Bound::new(self)
+            }
+        }
+
+    };
+}
