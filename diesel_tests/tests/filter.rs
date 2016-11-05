@@ -14,7 +14,8 @@ fn filter_by_int_equality() {
     let tess = User::new(tess_id, "Tess");
     assert_eq!(Ok(sean), users.filter(id.eq(sean_id)).first(&connection));
     assert_eq!(Ok(tess), users.filter(id.eq(tess_id)).first(&connection));
-    assert_eq!(Err(NotFound), users.filter(id.eq(unused_id)).first::<User>(&connection));
+    assert_eq!(&NotFound, users.filter(id.eq(unused_id))
+               .first::<User>(&connection).unwrap_err().kind());
 }
 
 #[test]
@@ -27,7 +28,8 @@ fn filter_by_string_equality() {
     let tess = User::new(2, "Tess");
     assert_eq!(Ok(sean), users.filter(name.eq("Sean")).first(&connection));
     assert_eq!(Ok(tess), users.filter(name.eq("Tess")).first(&connection));
-    assert_eq!(Err(NotFound), users.filter(name.eq("Jim")).first::<User>(&connection));
+    assert_eq!(&NotFound, users.filter(name.eq("Jim"))
+               .first::<User>(&connection).unwrap_err().kind());
 }
 
 #[test]
@@ -105,8 +107,8 @@ fn filter_after_joining() {
         source.filter(name.eq("Sean")).first(&connection));
     assert_eq!(Ok((tess, tess_post)),
         source.filter(name.eq("Tess")).first(&connection));
-    assert_eq!(Err(NotFound),
-        source.filter(name.eq("Jim")).first::<(User, Post)>(&connection));
+    assert_eq!(&NotFound, source.filter(name.eq("Jim"))
+               .first::<(User, Post)>(&connection).unwrap_err().kind());
 }
 
 #[test]
@@ -120,7 +122,8 @@ fn select_then_filter() {
         source.filter(name.eq("Sean")).first(&connection));
     assert_eq!(Ok("Tess".to_string()),
         source.filter(name.eq("Tess")).first(&connection));
-    assert_eq!(Err(NotFound), source.filter(name.eq("Jim")).first::<String>(&connection));
+    assert_eq!(&NotFound, source.filter(name.eq("Jim"))
+               .first::<String>(&connection).unwrap_err().kind());
 }
 
 #[test]
@@ -135,8 +138,8 @@ fn filter_then_select() {
         users.filter(name.eq("Sean")).select(name).first(&connection));
     assert_eq!(Ok("Tess".to_string()),
         users.filter(name.eq("Tess")).select(name).first(&connection));
-    assert_eq!(Err(NotFound), users.filter(name.eq("Jim")).select(name)
-                                   .first::<String>(&connection));
+    assert_eq!(&NotFound, users.filter(name.eq("Jim")).select(name)
+               .first::<String>(&connection).unwrap_err().kind());
 }
 
 #[test]

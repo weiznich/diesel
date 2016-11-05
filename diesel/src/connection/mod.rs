@@ -74,7 +74,7 @@ pub trait Connection: SimpleConnection + Sized {
         U: Queryable<T::SqlType, Self::Backend>,
     {
         self.query_all(source)
-            .and_then(|e: Vec<U>| e.into_iter().next().ok_or(Error::NotFound))
+            .and_then(|e: Vec<U>| e.into_iter().next().ok_or(ErrorKind::NotFound.into()))
     }
 
     #[doc(hidden)]

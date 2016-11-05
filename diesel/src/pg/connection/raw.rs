@@ -26,7 +26,7 @@ impl RawConnection {
             }
             _ => {
                 let message = last_error_message(connection_ptr);
-                Err(ConnectionError::BadConnection(message))
+                Err(ConnectionErrorKind::BadConnection(message).into())
             }
         }
     }
@@ -43,10 +43,10 @@ impl RawConnection {
         ) };
 
         if result_ptr.is_null() {
-            Err(Error::DatabaseError(
-                DatabaseErrorKind::__Unknown,
-                Box::new(last_error_message(self.internal_connection)),
-            ))
+            Err(ErrorKind::DatabaseError(
+                DatabaseErrorKind::__Unknown(
+                    Box::new(last_error_message(self.internal_connection)),
+                ).into()).into())
         } else {
             unsafe {
                 Ok(PgString::new(result_ptr))

@@ -4,7 +4,7 @@
 #![deny(warnings, missing_debug_implementations, missing_copy_implementations)]
 #![cfg_attr(feature = "unstable", feature(specialization))]
 
-#[macro_use] extern crate quick_error;
+#[macro_use] extern crate error_chain;
 
 #[macro_use]
 mod macros;
@@ -104,6 +104,6 @@ pub use prelude::*;
 pub use query_builder::functions::{insert, update, delete, select};
 #[cfg(feature = "sqlite")]
 pub use sqlite::query_builder::functions::*;
-pub use result::Error::NotFound;
+pub use result::ErrorKind::NotFound;
 #[doc(inline)]
 pub use types::structs::data_types;

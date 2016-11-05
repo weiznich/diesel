@@ -1,7 +1,7 @@
 use pg::Pg;
 use query_source::Queryable;
 use result::QueryResult;
-use result::Error::DeserializationError;
+use result::ErrorKind::DeserializationError;
 use super::result::PgResult;
 use types::{HasSqlType, FromSqlRow};
 
@@ -40,7 +40,8 @@ impl<ST, T> Iterator for Cursor<ST, T> where
             self.current_row += 1;
             let value = T::Row::build_from_row(&mut row)
                 .map(T::build)
-                .map_err(DeserializationError);
+                .map_err(DeserializationError)
+                .map_err(Into::into);
             Some(value)
         }
     }

@@ -6,7 +6,7 @@ use std::io::{stderr, Write};
 use std::{ptr, str};
 
 use result::*;
-use result::Error::DatabaseError;
+use result::ErrorKind::DatabaseError;
 
 #[allow(missing_debug_implementations, missing_copy_implementations)]
 pub struct RawConnection {
@@ -27,7 +27,7 @@ impl RawConnection {
             }),
             err_code => {
                 let message = super::error_message(err_code);
-                Err(ConnectionError::BadConnection(message.into()))
+                Err(ConnectionErrorKind::BadConnection(message.into()).into())
             }
         }
     }
@@ -49,8 +49,8 @@ impl RawConnection {
 
         if !err_msg.is_null() {
             let msg = convert_to_string_and_free(err_msg);
-            let error_kind = DatabaseErrorKind::__Unknown;
-            Err(DatabaseError(error_kind, Box::new(msg)))
+            let error_kind = DatabaseErrorKind::__Unknown(Box::new(msg));
+            Err(DatabaseError(error_kind).into())
         } else {
             Ok(())
         }

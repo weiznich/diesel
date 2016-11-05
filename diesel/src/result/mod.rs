@@ -2,7 +2,7 @@
 
 /// Generic errors
 mod error;
-pub use self::error::{Error, DatabaseErrorKind, ConnectionError};
+pub use self::error::{Error, ErrorKind, DatabaseErrorKind, ConnectionError, ConnectionErrorKind};
 
 /// Database error information
 mod database_error_information;
@@ -16,12 +16,10 @@ pub use self::transaction_error::TransactionError;
 mod optional;
 pub use self::optional::OptionalExtension;
 
-
-/// A result with a `diesel::result::Error`
-pub type QueryResult<T> = Result<T, Error>;
+pub use self::error::QueryResult;
 
 /// A result with a `diesel::result::ConnectionError`
-pub type ConnectionResult<T> = Result<T, ConnectionError>;
+pub use self::error::ConnectionResult;
 
 /// A result with a `diesel::result::TransactionErrorError`
 pub type TransactionResult<T, E> = Result<T, TransactionError<E>>;

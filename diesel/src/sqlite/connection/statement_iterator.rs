@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use query_source::Queryable;
-use result::Error::DeserializationError;
+use result::ErrorKind::DeserializationError;
 use result::QueryResult;
 use sqlite::Sqlite;
 use super::stmt::Statement;
@@ -32,6 +32,7 @@ impl<'a, ST, T> Iterator for StatementIterator<'a, ST, T> where
             T::Row::build_from_row(&mut row)
                 .map(T::build)
                 .map_err(DeserializationError)
+                .map_err(Into::into)
         })
     }
 }

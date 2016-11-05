@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use backend::Backend;
 use query_builder::*;
-use result::Error::SerializationError;
+use result::ErrorKind::SerializationError;
 use result::QueryResult;
 use super::{Expression, SelectableExpression, NonAggregate};
 use types::{HasSqlType, ToSql, IsNull};

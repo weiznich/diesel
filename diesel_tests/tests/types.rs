@@ -19,7 +19,7 @@ table! {
 fn errors_during_deserialization_do_not_panic() {
     use self::chrono::NaiveDateTime;
     use self::has_timestamps::dsl::*;
-    use diesel::result::Error::DeserializationError;
+    use diesel::result::ErrorKind::DeserializationError;
 
     let connection = connection();
     connection.execute("CREATE TABLE has_timestamps (
@@ -29,12 +29,8 @@ fn errors_during_deserialization_do_not_panic() {
     let valid_pg_date_too_large_for_chrono = "'294276/01/01'";
     connection.execute(&format!("INSERT INTO has_timestamps (ts) VALUES ({})",
         valid_pg_date_too_large_for_chrono)).unwrap();
-    let values = has_timestamps.select(ts).load::<NaiveDateTime>(&connection);
-
-    match values {
-        Err(DeserializationError(_)) => {}
-        v => panic!("Expected a deserialization error, got {:?}", v),
-    }
+    let values = has_timestamps.select(ts).load::<NaiveDateTime>(&connection).unwrap_err();
+    assert_matches!(values.kind(), &DeserializationError(_));
 }
 
 #[test]

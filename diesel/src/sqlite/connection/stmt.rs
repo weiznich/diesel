@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 use sqlite::SqliteType;
 use result::*;
-use result::Error::{DatabaseError, DeserializationError};
+use result::ErrorKind::{DatabaseError, DeserializationError};
 use super::raw::RawConnection;
 use super::sqlite_value::SqliteRow;
 
@@ -147,10 +147,10 @@ fn last_error(raw_connection: &RawConnection) -> Error {
     let error_information = Box::new(error_message);
     let error_kind = match raw_connection.last_error_code() {
         ffi::SQLITE_CONSTRAINT_UNIQUE | ffi::SQLITE_CONSTRAINT_PRIMARYKEY =>
-            DatabaseErrorKind::UniqueViolation,
-        _ => DatabaseErrorKind::__Unknown,
+            DatabaseErrorKind::UniqueViolation(error_information),
+        _ => DatabaseErrorKind::__Unknown(error_information),
     };
-    DatabaseError(error_kind, error_information)
+    DatabaseError(error_kind).into()
 }
 
 impl Drop for Statement {

@@ -6,7 +6,7 @@ use self::chrono::naive::date;
 
 pub use schema::{connection, TestConnection};
 pub use diesel::*;
-pub use diesel::result::Error;
+pub use diesel::result::{ErrorKind, DatabaseErrorInformation};
 pub use diesel::data_types::*;
 pub use diesel::types::{HasSqlType, ToSql, Nullable};
 
@@ -31,9 +31,13 @@ pub fn test_type_round_trips<ST, T>(value: T) -> bool where
                 true
             }
         }
-        Err(Error::DatabaseError(_, ref e))
-            if e.message() == "invalid byte sequence for encoding \"UTF8\": 0x00" => true,
-        Err(e) => panic!("Query failed: {:?}", e),
+        Err(e) => {
+            match e.kind(){
+                &ErrorKind::DatabaseError(ref e)
+                    if e.message() == "invalid byte sequence for encoding \"UTF8\": 0x00" => true,
+                e => panic!("Query failed: {:?}", e),
+            }
+        } 
     }
 }
 

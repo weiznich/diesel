@@ -1,5 +1,5 @@
 use connection::SimpleConnection;
-use super::{MigrationError, RunMigrationsError};
+use super::migration_error::{MigrationError, RunMigrationsError, MigrationErrorKind};
 
 use std::path::{Path, PathBuf};
 
@@ -14,7 +14,7 @@ pub fn migration_from(path: PathBuf) -> Result<Box<Migration>, MigrationError> {
         let version = try!(version_from_path(&path));
         Ok(Box::new(SqlFileMigration(path, version)))
     } else {
-        Err(MigrationError::UnknownMigrationFormat(path))
+        Err(MigrationErrorKind::UnknownMigrationFormat(path).into())
     }
 }
 
@@ -41,7 +41,7 @@ pub fn version_from_path(path: &Path) -> Result<String, MigrationError> {
         .nth(0)
         .map(|s| Ok(s.into()))
         .unwrap_or_else(|| {
-            Err(MigrationError::UnknownMigrationFormat(path.to_path_buf()))
+            Err(MigrationErrorKind::UnknownMigrationFormat(path.to_path_buf()).into())
         })
 }
 

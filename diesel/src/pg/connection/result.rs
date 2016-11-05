@@ -1,7 +1,7 @@
 extern crate pq_sys;
 extern crate libc;
 
-use result::{Error, QueryResult, DatabaseErrorInformation, DatabaseErrorKind};
+use result::{ErrorKind, QueryResult, DatabaseErrorInformation, DatabaseErrorKind};
 use super::row::PgRow;
 
 use self::pq_sys::*;
@@ -24,10 +24,10 @@ impl PgResult {
             _ => {
                 let error_information = Box::new(PgErrorInformation(internal_result));
                 let error_kind = match get_result_field(internal_result, ResultField::SqlState) {
-                    Some(error_codes::UNIQUE_VIOLATION) => DatabaseErrorKind::UniqueViolation,
-                    _ => DatabaseErrorKind::__Unknown,
+                    Some(error_codes::UNIQUE_VIOLATION) => DatabaseErrorKind::UniqueViolation(error_information),
+                    _ => DatabaseErrorKind::__Unknown(error_information),
                 };
-                Err(Error::DatabaseError(error_kind, error_information))
+                Err(ErrorKind::DatabaseError(error_kind.into()).into())
             }
         }
     }

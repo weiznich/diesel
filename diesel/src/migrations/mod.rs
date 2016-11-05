@@ -67,13 +67,13 @@ pub use self::connection::MigrationConnection;
 #[doc(inline)]
 pub use self::migration::*;
 pub use self::migration_error::*;
+use self::MigrationErrorKind::*;
 
 use std::fs::DirEntry;
 use std::io::{stdout, Write};
 
 use expression::expression_methods::*;
 use query_dsl::*;
-use self::migration_error::MigrationError::*;
 use self::schema::__diesel_schema_migrations::dsl::*;
 use {Connection, QueryResult};
 
@@ -150,7 +150,7 @@ fn migration_with_version(ver: &str) -> Result<Box<Migration>, MigrationError> {
     });
     match migration {
         Some(m) => Ok(m),
-        None => Err(UnknownMigrationVersion(ver.into())),
+        None => Err(UnknownMigrationVersion(ver.into()).into()),
     }
 }
 
@@ -259,7 +259,7 @@ pub fn search_for_migrations_directory(path: &Path) -> Result<PathBuf, Migration
         Ok(migration_path)
     } else {
         path.parent().map(search_for_migrations_directory)
-            .unwrap_or(Err(MigrationError::MigrationDirectoryNotFound))
+            .unwrap_or(Err(MigrationErrorKind::MigrationDirectoryNotFound.into()))
     }
 }
 
@@ -276,7 +276,7 @@ mod tests {
     fn migration_directory_not_found_if_no_migration_dir_exists() {
         let dir = TempDir::new("diesel").unwrap();
 
-        assert_eq!(Err(MigrationError::MigrationDirectoryNotFound),
+        assert_eq!(Err(MigrationErrorKind::MigrationDirectoryNotFound.into()),
             search_for_migrations_directory(dir.path()));
     }
 

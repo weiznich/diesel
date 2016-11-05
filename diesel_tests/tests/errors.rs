@@ -1,6 +1,7 @@
 use diesel;
 use diesel::prelude::*;
-use diesel::result::Error::DatabaseError;
+use diesel::result::ErrorKind::DatabaseError;
+use diesel::result::Error;
 use diesel::result::DatabaseErrorKind::UniqueViolation;
 use schema::*;
 
@@ -11,8 +12,8 @@ fn unique_constraints_are_detected() {
         .execute(&connection).unwrap();
 
     let failure = diesel::insert(&User::new(1, "Jim")).into(users::table)
-        .execute(&connection);
-    assert_matches!(failure, Err(DatabaseError(UniqueViolation, _)));
+        .execute(&connection).unwrap_err();
+    assert_matches!(failure.kind(), &DatabaseError(UniqueViolation(_)));
 }
 
 #[test]
@@ -26,12 +27,17 @@ fn unique_constraints_report_correct_constraint_name() {
     let failure = diesel::insert(&User::new(2, "Sean")).into(users::table)
         .execute(&connection);
     match failure {
-        Err(DatabaseError(UniqueViolation, e)) => {
-            assert_eq!(Some("users"), e.table_name());
-            assert_eq!(None, e.column_name());
-            assert_eq!(Some("users_name"), e.constraint_name());
+        Err(ref e) => {
+            match *e.kind(){
+                DatabaseError(UniqueViolation(ref e)) => {
+                    assert_eq!(Some("users"), e.table_name());
+                    assert_eq!(None, e.column_name());
+                    assert_eq!(Some("users_name"), e.constraint_name());       
+                }
+                _=> panic!("{:?} did not match Err(DatabaseError(UniqueViolation(e)))", failure),
+            }
         },
-        _ => panic!("{:?} did not match Err(DatabaseError(UniqueViolation, e))", failure),
+        _ => panic!("{:?} did not match Err(DatabaseError(UniqueViolation(e)))", failure),
     };
 }
 
@@ -53,8 +59,8 @@ fn cached_prepared_statements_can_be_reused_after_error() {
     connection.test_transaction(|| {
         try_no_coerce!(query.execute(&connection));
 
-        let failure = query.execute(&connection);
-        assert_matches!(failure, Err(DatabaseError(UniqueViolation, _)));
+        let failure = query.execute(&connection).unwrap_err();
+        assert_matches!(failure.kind(), &DatabaseError(UniqueViolation(_)));
         Ok(())
     });
 
