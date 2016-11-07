@@ -18,6 +18,7 @@ mod limit_clause;
 mod offset_clause;
 mod order_clause;
 mod select_statement;
+mod error;
 pub mod where_clause;
 pub mod insert_statement;
 pub mod update_statement;
@@ -38,12 +39,15 @@ pub use self::update_statement::{
 #[doc(inline)]
 pub use self::insert_statement::IncompleteInsertStatement;
 
+#[doc(hidden)]
+pub use self::error::{BuildQueryError, BuildQueryErrorKind};
+
 use backend::Backend;
 use result::QueryResult;
 
 #[doc(hidden)]
 pub type Binds = Vec<Option<Vec<u8>>>;
-pub type BuildQueryResult = QueryResult<()>;
+pub type BuildQueryResult = self::error::BuildQueryResult<()>;
 
 /// Apps should not need to concern themselves with this trait.
 ///

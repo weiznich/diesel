@@ -1,5 +1,6 @@
 use ::std::error::Error as StdError;
 use ::std::ffi::NulError;
+use query_builder::{BuildQueryError, BuildQueryErrorKind};
 
 error_chain!{
     types {
@@ -8,6 +9,7 @@ error_chain!{
 
     links {
         DatabaseError, DatabaseErrorKind, DatabaseError;
+        BuildQueryError, BuildQueryErrorKind, QueryBuildError;
     }
 
     foreign_links {
