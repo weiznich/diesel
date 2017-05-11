@@ -15,6 +15,7 @@ pub struct ColumnInformation {
     pub nullable: bool,
 }
 
+#[derive(Debug, Clone)]
 pub struct ColumnType {
     pub path: Vec<String>,
     pub is_array: bool,
