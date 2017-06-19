@@ -53,15 +53,23 @@ pub fn format_schema(schema: &str) -> Result<String, FmtError> {
         // At this point, there is an empty line before `}`. We need to remove
         // the already inserted indent, because the new indent is smaller than
         // the old one.
-        if c == '}' {
-            while let Some(c) = out.pop() {
-                if c == '\n' {
-                    break;
+        match c {
+            '}' => {
+                while let Some(c) = out.pop() {
+                    if c == '\n' {
+                        break;
+                    }
                 }
-            }
 
-            indent.pop();
-            write!(out, "\n{}", indent)?;
+                indent.pop();
+                write!(out, "\n{}", indent)?;
+            }
+            '\n' => {
+                write!(out, "\n{}", indent)?;
+                skip_space = true;
+                continue;
+            }
+            _ => {}
         }
 
         // Keep track of our parenthesis level
