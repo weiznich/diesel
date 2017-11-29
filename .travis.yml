@@ -15,12 +15,12 @@ before_script:
 script:
 - |
   if [[ "$TRAVIS_RUST_VERSION" == nightly* ]]; then
-    (cd diesel && travis-cargo test -- --no-default-features --features "unstable extras $BACKEND")
+    travis-cargo test -- --no-default-features --features "unstable extras $BACKEND" --manifest-path=diesel/Cargo.toml
   else
-    (cd diesel && travis-cargo test -- --no-default-features --features "extras $BACKEND")
+    travis-cargo test -- --no-default-features --features "extras $BACKEND" --manifest-path=diesel/Cargo.toml
   fi &&
-  (cd diesel && travis-cargo test -- --no-default-features --features "extras with-deprecated $BACKEND") &&
-  (cd diesel_derives && travis-cargo test -- --features "$BACKEND") &&
+  travis-cargo test -- --no-default-features --features "extras with-deprecated $BACKEND" --manifest-path=diesel/Cargo.toml &&
+  travis-cargo test -- --features "$BACKEND" --manifest-path=diesel_derives/Cargo.toml &&
   if [[ "$BACKEND" == postgres ]]; then
     (cd examples/postgres && ./test_all)
   fi &&
@@ -30,17 +30,17 @@ script:
   if [[ "$BACKEND" == sqlite ]]; then
     (cd examples/sqlite && ./test_all)
   fi &&
-  (cd diesel_cli && travis-cargo test -- --no-default-features --features "$BACKEND") &&
-  (cd diesel_infer_schema/infer_schema_internals && travis-cargo test -- --no-default-features --features "$BACKEND") &&
-  (cd diesel_infer_schema/infer_schema_macros && travis-cargo test -- --no-default-features --features "$BACKEND") &&
-  (cd diesel_infer_schema && travis-cargo test -- --no-default-features --features "dotenv_macro $BACKEND") &&
-  (cd diesel_migrations/migrations_internals && travis-cargo test ) &&
-  (cd diesel_migrations/migrations_macros && travis-cargo test ) &&
-  (cd diesel_migrations/ && travis-cargo test -- --features "$BACKEND" ) &&
+  travis-cargo test -- --no-default-features --features "$BACKEND" --manifest-path=diesel_cli/Cargo.toml &&
+  travis-cargo test -- --no-default-features --features "$BACKEND" --manifest-path=diesel_infer_schema/infer_schema_internals/Cargo.toml &&
+  travis-cargo test -- --no-default-features --features "$BACKEND" --manifest-path=diesel_infer_schema/infer_schema_macros/Cargo.toml &&
+  travis-cargo test -- --no-default-features --features "dotenv_macro $BACKEND" --manifest-path=diesel_infer_schema/Cargo.toml &&
+  travis-cargo test --manifest-path=diesel_migrations/migrations_internals/Cargo.toml &&
+  travis-cargo test --manifest-path=diesel_migrations/migrations_macros/Cargo.toml &&
+  travis-cargo test -- --features "$BACKEND" --manifest-path=diesel_migrations/Cargo.toml &&
   if [[ "$TRAVIS_RUST_VERSION" == nightly* ]]; then
-    (cd diesel_tests && travis-cargo test -- --no-default-features --features "unstable $BACKEND")
+    travis-cargo test -- --no-default-features --features "unstable $BACKEND" --manifest-path=diesel_tests/Cargo.toml
   else
-    (cd diesel_tests && travis-cargo test -- --no-default-features --features "$BACKEND")
+    travis-cargo test -- --no-default-features --features "$BACKEND" --manifest-path=diesel_tests/Cargo.toml
   fi
 matrix:
   allow_failures:
@@ -49,12 +49,11 @@ matrix:
   - rust: nightly-2017-09-20
     env: CLIPPY_AND_COMPILE_TESTS=YESPLEASE
     script:
-    - (cd diesel && cargo rustc --no-default-features --features "lint unstable sqlite postgres mysql extras" -- -Zno-trans)
-    - (cd diesel_cli && cargo rustc --no-default-features --features "lint sqlite postgres mysql" -- -Zno-trans)
-    - (cd diesel_codegen && cargo rustc --no-default-features --features "lint dotenv sqlite postgres mysql" -- -Zno-trans)
-    - (cd diesel_infer_schema && cargo rustc --no-default-features --features "lint dotenv sqlite postgres mysql" -- -Zno-trans)
-    - (cd diesel_compile_tests && travis-cargo test)
-  include:
+    - cargo rustc --no-default-features --features "lint unstable sqlite postgres mysql extras" --manifest-path=diesel/Cargo.toml -- -Zno-trans
+    - cargo rustc --no-default-features --features "lint sqlite postgres mysql" --manifest-path=diesel_cli/Cargo.toml -- -Zno-trans
+    - cargo rustc --no-default-features --features "lint dotenv sqlite postgres mysql" --manifest-path=diesel_derives/Cargo.toml -- -Zno-trans
+    - cargo rustc --no-default-features --features "lint dotenv sqlite postgres mysql" --manifest-path=diesel_infer_schema/Cargo.toml -- -Zno-trans
+    - travis-cargo test --manifest-path=diesel_compile_tests/Cargo.toml
   - rust: nightly-2017-09-20
     env: RUSTFMT=YESPLEASE
     script:
@@ -63,6 +62,11 @@ matrix:
         cargo install rustfmt-nightly --vers 0.2.7
       fi
     - cargo fmt --all -- --write-mode=diff
+  exclude:
+    - rust: nightly
+    if: type = pull_request
+    - rust: beta
+    if: type = pull_request
 env:
   # TODO: why is there no database specified for Postgres?
   matrix:
@@ -79,23 +83,25 @@ env:
   global:
     - TRAVIS_CARGO_NIGHTLY_FEATURE=""
     - secure: NmCM1VNEzid6bROA7tXV1R63n9S9KvY1etXsDzd1608cvjRnG3ZDAWXISbY1BxqrvleElreUJOvz/3TSQCHivpT2ezeyk2sntYtZpw0TWbz1SQMAPNWPTjP3bNQzpmNwfU4p6ui6qIOnQza4JxOu3SZSveNlehDBPkkS+52R7Zw/EPdwi9jTYJArV2+8pnEsQECAdRLttbtA2JBl3hZ4VHfGpHRZyeULn63UzyVbQVzQ3NVhqyQUKTPdpUciQTI3fZEkfaWuLV8QPPa5026/yJEEi2Fsl3r7fyY8ia67k4Zo9THlPVD0YOUlkWuZWwvkxNA8RQSVPv4FidEpwbxG8y6nAra4CjwiEChcpFhZJtrH7ZrXO/tJk7vtc5CFVWUsQtNX92QY1QFdPxwYNBSICLyUN+A+BQURwvQgxdcJsJyQmh5Ed7yuavcAinVq7fPeOyBWcPL5mt17no16aG1rzvXSUnD0aH7F3S3DHkoM9P9iHgJMLk+2YNmJtFescBxCeG8bA7t5bw0kQNH5KUWAD1uYpC9ikB3NVdlc+q17dKTAe4rcYA+sIO+UGudvpmLWT0lXtEMqDfxfCmyICDESs9bNfueCGJEAnfTBNunsJqR7rMUvjNndS2/Ssok6c/0Yfb9X8cM9nI4QLAj/+hClqdYphmpCjuC34bWxFSt/KJI=
-after_success:
-- |
-  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
-    (cd diesel && travis-cargo doc -- --features "postgres sqlite mysql extras")
-    mkdir diesel/target
-    mv target/doc diesel/target/doc
-    echo "docs.diesel.rs" > diesel/target/doc/CNAME
-    (cd diesel && travis-cargo doc-upload)
-  fi
+#after_success:
+#- |
+#  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+#    (cd diesel && travis-cargo doc -- --features "postgres sqlite mysql extras")
+#    mkdir diesel/target
+#    mv target/doc diesel/target/doc
+#    echo "docs.diesel.rs" > diesel/target/doc/CNAME
+#    (cd diesel && travis-cargo doc-upload)
+#  fi
 branches:
   only:
     - master
-    - ಠ_ಠ
-notifications:
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/1d32e0ad32841bd56b02
-    on_success: change
-    on_failure: always
-    on_start: never
+    - staging
+    - trying
+#    - ಠ_ಠ
+#notifications:
+#  webhooks:
+#    urls:
+#      - https://webhooks.gitter.im/e/1d32e0ad32841bd56b02
+#    on_success: change
+#    on_failure: always
+#    on_start: never
