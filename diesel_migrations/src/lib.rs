@@ -3,14 +3,14 @@
 // Clippy lints
 #![cfg_attr(feature = "clippy", allow(needless_pass_by_value))]
 #![cfg_attr(feature = "clippy", feature(plugin))]
-#![cfg_attr(feature = "clippy", plugin(clippy(conf_file = "../clippy.toml")))]
+#![cfg_attr(feature = "clippy", plugin(clippy(conf_file = "../../clippy.toml")))]
 #![cfg_attr(feature = "clippy", allow(option_map_unwrap_or_else, option_map_unwrap_or))]
 #![cfg_attr(feature = "clippy",
            warn(wrong_pub_self_convention, mut_mut, non_ascii_literal, similar_names,
                   unicode_not_nfc, if_not_else, items_after_statements, used_underscore_binding))]
 
 extern crate migrations_internals;
-#[allow(unused_imports)]
+#[allow(warnings)]
 #[macro_use]
 extern crate migrations_macros;
 #[doc(hidden)]

@@ -17,7 +17,7 @@
 // Clippy lints
 #![cfg_attr(feature = "clippy", allow(unstable_features))]
 #![cfg_attr(feature = "clippy", feature(plugin))]
-#![cfg_attr(feature = "clippy", plugin(clippy(conf_file = "../clippy.toml")))]
+#![cfg_attr(feature = "clippy", plugin(clippy(conf_file = "../../clippy.toml")))]
 #![cfg_attr(feature = "clippy",
            allow(option_map_unwrap_or_else, option_map_unwrap_or, match_same_arms,
                    type_complexity))]
@@ -32,9 +32,11 @@
 #[macro_use]
 extern crate bitflags;
 extern crate byteorder;
-#[allow(unused_imports)]
+
+#[allow(warnings)]
 #[macro_use]
 extern crate diesel_derives;
+
 #[doc(hidden)]
 pub use diesel_derives::*;
 
