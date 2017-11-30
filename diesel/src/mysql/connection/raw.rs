@@ -196,8 +196,9 @@ impl Drop for RawConnection {
 /// > call `mysql_library_init()` prior to spawning any threads, or use a mutex
 /// > ot protect the `mysql_library_init()` call. This should be done prior to
 /// > any other client library call.
+/// [Mysql docs][docs]
 ///
-/// https://dev.mysql.com/doc/refman/5.7/en/mysql-init.html
+/// [docs]: https://dev.mysql.com/doc/refman/5.7/en/mysql-init.html
 static MYSQL_THREAD_UNSAFE_INIT: Once = ONCE_INIT;
 
 fn perform_thread_unsafe_library_initialization() {
