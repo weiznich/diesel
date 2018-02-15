@@ -26,10 +26,26 @@ pub fn derive(item: syn::DeriveInput) -> Result<quote::Tokens, Diagnostic> {
     ref_generics.params.push(parse_quote!('insert));
     let (ref_generics, ..) = ref_generics.split_for_impl();
 
-    let (field_ty, field_assign): (Vec<_>, Vec<_>) = model
+    let (direct_field_ty, direct_field_assign): (Vec<_>, Vec<_>) = model
         .fields()
         .iter()
-        .map(|f| (field_ty(f, table_name), field_expr(f, table_name)))
+        .map(|f| {
+            (
+                (direct_field_ty(f, table_name)),
+                (direct_field_expr(f, table_name)),
+            )
+        })
+        .unzip();
+
+    let (ref_field_ty, ref_field_assign): (Vec<_>, Vec<_>) = model
+        .fields()
+        .iter()
+        .map(|f| {
+            (
+                (ref_field_ty(f, table_name)),
+                (ref_field_expr(f, table_name)),
+            )
+        })
         .unzip();
 
     Ok(wrap_in_dummy_mod(
@@ -39,14 +55,24 @@ pub fn derive(item: syn::DeriveInput) -> Result<quote::Tokens, Diagnostic> {
             use self::diesel::query_builder::UndecoratedInsertRecord;
             use self::diesel::prelude::*;
 
+            impl #impl_generics Insertable<#table_name::table> for #struct_name #ty_generics
+                #where_clause
+            {
+                type Values = <(#(#direct_field_ty,)*) as Insertable<#table_name::table>>::Values;
+
+                fn values(self) -> Self::Values {
+                    (#(#direct_field_assign,)*).values()
+                }
+            }
+
             impl #ref_generics Insertable<#table_name::table>
                 for &'insert #struct_name #ty_generics
             #where_clause
             {
-                type Values = <(#(#field_ty,)*) as Insertable<#table_name::table>>::Values;
+                type Values = <(#(#ref_field_ty,)*) as Insertable<#table_name::table>>::Values;
 
                 fn values(self) -> Self::Values {
-                    (#(#field_assign,)*).values()
+                    (#(#ref_field_assign,)*).values()
                 }
             }
 
@@ -59,7 +85,23 @@ pub fn derive(item: syn::DeriveInput) -> Result<quote::Tokens, Diagnostic> {
     ))
 }
 
-fn field_ty(field: &Field, table_name: syn::Ident) -> syn::Type {
+fn direct_field_ty(field: &Field, table_name: syn::Ident) -> syn::Type {
+    if field.has_flag("embed") {
+        let field_ty = &field.ty;
+        parse_quote!(#field_ty)
+    } else {
+        let inner_ty = inner_of_option_ty(&field.ty);
+        let column_name = field.column_name();
+        parse_quote!(
+            std::option::Option<diesel::dsl::Eq<
+                #table_name::#column_name,
+                #inner_ty,
+            >>
+        )
+    }
+}
+
+fn ref_field_ty(field: &Field, table_name: syn::Ident) -> syn::Type {
     if field.has_flag("embed") {
         let field_ty = &field.ty;
         parse_quote!(&'insert #field_ty)
@@ -75,7 +117,7 @@ fn field_ty(field: &Field, table_name: syn::Ident) -> syn::Type {
     }
 }
 
-fn field_expr(field: &Field, table_name: syn::Ident) -> syn::Expr {
+fn ref_field_expr(field: &Field, table_name: syn::Ident) -> syn::Expr {
     let field_access = field.name.access();
     if field.has_flag("embed") {
         parse_quote!(&self#field_access)
@@ -86,6 +128,21 @@ fn field_expr(field: &Field, table_name: syn::Ident) -> syn::Expr {
             parse_quote!(self#field_access.as_ref().map(|x| #column.eq(x)))
         } else {
             parse_quote!(std::option::Option::Some(#column.eq(&self#field_access)))
+        }
+    }
+}
+
+fn direct_field_expr(field: &Field, table_name: syn::Ident) -> syn::Expr {
+    let field_access = field.name.access();
+    if field.has_flag("embed") {
+        parse_quote!(self#field_access)
+    } else {
+        let column_name = field.column_name();
+        let column: syn::Expr = parse_quote!(#table_name::#column_name);
+        if is_option_ty(&field.ty) {
+            parse_quote!(self#field_access.map(|x| #column.eq(x)))
+        } else {
+            parse_quote!(std::option::Option::Some(#column.eq(self#field_access)))
         }
     }
 }
