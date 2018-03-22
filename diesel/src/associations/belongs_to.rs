@@ -35,7 +35,7 @@ where
 /// This trait is not capable of supporting composite foreign keys
 pub trait BelongsTo<Parent> {
     /// The foreign key of this struct
-    type ForeignKey: Hash + ::std::cmp::Eq;
+    type ForeignKey;
     /// The database column representing the foreign key
     /// of the table this struct represents
     type ForeignKeyColumn: Column;
