@@ -101,6 +101,25 @@ impl<F> SelectStatement<F> {
     }
 }
 
+impl<F, S, D, W, O, L, Of, G, LC> SelectStatement<F, S, D, W, O, L, Of, G, LC>
+where
+    S: SelectClauseExpression<F> + NotNullableSelectClause,
+{
+    pub fn nullable(self) -> SelectStatement<F, NullableSelectClause<S>, D, W, O, L, Of, G, LC> {
+        SelectStatement {
+            select: NullableSelectClause(self.select),
+            from: self.from,
+            distinct: self.distinct,
+            where_clause: self.where_clause,
+            order: self.order,
+            limit: self.limit,
+            offset: self.offset,
+            group_by: self.group_by,
+            locking: self.locking,
+        }
+    }
+}
+
 impl<F, S, D, W, O, L, Of, G, LC> Query for SelectStatement<F, S, D, W, O, L, Of, G, LC>
 where
     S: SelectClauseExpression<F>,
