@@ -5,6 +5,7 @@ mod url;
 
 use connection::*;
 use deserialize::{Queryable, QueryableByName};
+use migration::MigrationConnection;
 use query_builder::*;
 use query_builder::bind_collector::RawBytesBindCollector;
 use result::*;
@@ -110,6 +111,8 @@ impl Connection for MysqlConnection {
         &self.transaction_manager
     }
 }
+
+impl MigrationConnection for MysqlConnection {}
 
 impl MysqlConnection {
     fn prepare_query<T>(&self, source: &T) -> QueryResult<MaybeCached<Statement>>

@@ -13,6 +13,7 @@ use std::rc::Rc;
 
 use connection::*;
 use deserialize::{Queryable, QueryableByName};
+use migration::MigrationConnection;
 use query_builder::*;
 use query_builder::bind_collector::RawBytesBindCollector;
 use result::*;
@@ -102,6 +103,8 @@ impl Connection for SqliteConnection {
         &self.transaction_manager
     }
 }
+
+impl MigrationConnection for SqliteConnection {}
 
 impl SqliteConnection {
     /// Run a transaction with `BEGIN IMMEDIATE`

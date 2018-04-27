@@ -10,6 +10,7 @@ use std::os::raw as libc;
 
 use connection::*;
 use deserialize::{Queryable, QueryableByName};
+use migration::MigrationConnection;
 use pg::{Pg, PgMetadataLookup, TransactionBuilder};
 use query_builder::*;
 use query_builder::bind_collector::RawBytesBindCollector;
@@ -106,6 +107,10 @@ impl Connection for PgConnection {
         &self.transaction_manager
     }
 }
+
+
+impl MigrationConnection for PgConnection {}
+
 
 impl PgConnection {
     /// Build a transaction, specifying additional details such as isolation level

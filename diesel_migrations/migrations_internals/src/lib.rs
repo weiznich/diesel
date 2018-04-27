@@ -74,7 +74,7 @@
 //! -- 20160107082941_create_posts/down.sql
 //! DROP TABLE posts;
 //! ```
-#[macro_use]
+//#[macro_use]
 extern crate diesel;
 
 #[cfg(feature = "barrel")]
@@ -97,6 +97,13 @@ use std::io::{stdout, Write};
 
 use diesel::expression_methods::*;
 use diesel::{Connection, QueryDsl, QueryResult, RunQueryDsl};
+use diesel::deserialize::FromSql;
+use diesel::sql_types::Text;
+use diesel::query_builder::InsertStatement;
+use diesel::query_builder::ValuesClause;
+use diesel::insertable::ColumnInsertValue;
+use diesel::expression::bound::Bound;
+use diesel::query_dsl::methods::ExecuteDsl;
 use self::schema::__diesel_schema_migrations::dsl::*;
 
 use std::env;
@@ -120,6 +127,8 @@ pub static TIMESTAMP_FORMAT: &str = "%Y-%m-%d-%H%M%S";
 pub fn run_pending_migrations<Conn>(conn: &Conn) -> Result<(), RunMigrationsError>
 where
     Conn: MigrationConnection,
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,
 {
     let migrations_dir = try!(find_migrations_directory());
     run_pending_migrations_in_directory(conn, &migrations_dir, &mut stdout())
@@ -133,6 +142,8 @@ pub fn run_pending_migrations_in_directory<Conn>(
 ) -> Result<(), RunMigrationsError>
 where
     Conn: MigrationConnection,
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,
 {
     let all_migrations = try!(migrations_in_directory(migrations_dir));
     run_migrations(conn, all_migrations, output)
@@ -146,6 +157,8 @@ pub fn mark_migrations_in_directory<Conn>(
 ) -> Result<Vec<(Box<Migration>, bool)>, RunMigrationsError>
 where
     Conn: MigrationConnection,
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,
 {
     let migrations = migrations_in_directory(migrations_dir)?;
     setup_database(conn)?;
@@ -168,6 +181,8 @@ where
 pub fn any_pending_migrations<Conn>(conn: &Conn) -> Result<bool, RunMigrationsError>
 where
     Conn: MigrationConnection,
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,
 {
     let migrations_dir = find_migrations_directory()?;
     let all_migrations = migrations_in_directory(&migrations_dir)?;
@@ -188,6 +203,8 @@ where
 pub fn revert_latest_migration<Conn>(conn: &Conn) -> Result<String, RunMigrationsError>
 where
     Conn: MigrationConnection,
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,
 {
     let migrations_dir = try!(find_migrations_directory());
     revert_latest_migration_in_directory(conn, &migrations_dir)
@@ -199,6 +216,8 @@ pub fn revert_latest_migration_in_directory<Conn>(
 ) -> Result<String, RunMigrationsError>
 where
     Conn: MigrationConnection,
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,
 {
     try!(setup_database(conn));
     let latest_migration_version = conn.latest_run_migration_version()?
@@ -228,6 +247,8 @@ pub fn run_migration_with_version<Conn>(
 ) -> Result<(), RunMigrationsError>
 where
     Conn: MigrationConnection,
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,
 {
     migration_with_version(migrations_dir, ver)
         .map_err(|e| e.into())
@@ -247,17 +268,15 @@ fn migration_with_version(
 }
 
 #[doc(hidden)]
-pub fn setup_database<Conn: Connection>(conn: &Conn) -> QueryResult<usize> {
+pub fn setup_database<Conn: MigrationConnection>(conn: &Conn) -> QueryResult<usize> where
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,{
     create_schema_migrations_table_if_needed(conn)
 }
 
-fn create_schema_migrations_table_if_needed<Conn: Connection>(conn: &Conn) -> QueryResult<usize> {
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS __diesel_schema_migrations (\
-         version VARCHAR(50) PRIMARY KEY NOT NULL,\
-         run_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP\
-         )",
-    )
+fn create_schema_migrations_table_if_needed<Conn: MigrationConnection>(conn: &Conn) -> QueryResult<usize> where     String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,{
+    conn.execute(Conn::CREATE_MIGRATIONS_TABLE)
 }
 
 #[doc(hidden)]
@@ -297,6 +316,8 @@ where
     Conn: MigrationConnection,
     List: IntoIterator,
     List::Item: Migration,
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,
 {
     try!(setup_database(conn));
     let already_run = try!(conn.previously_run_migration_versions());
@@ -319,6 +340,8 @@ fn run_migration<Conn>(
 ) -> Result<(), RunMigrationsError>
 where
     Conn: MigrationConnection,
+    String: FromSql<Text, Conn::Backend>,
+for<'a> InsertStatement<__diesel_schema_migrations, ValuesClause<ColumnInsertValue<version, &'a Bound<Text, &'a str>>, __diesel_schema_migrations>>: ExecuteDsl<Conn>,
 {
     conn.transaction(|| {
         if migration.version() != "00000000000000" {
