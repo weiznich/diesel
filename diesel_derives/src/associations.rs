@@ -45,8 +45,11 @@ fn derive_belongs_to(
 
     let mut generics = generics.clone();
 
+    // TODO: Remove this special casing as soon as we bump our minimal supported
+    // rust version to >= 1.30.0 because this version will add
+    // `impl<'a, T> From<&'a Option<T>> for Option<&'a T>` to the std-lib
     let foreign_key_expr = if is_option_ty(&foreign_key_field.ty) {
-        quote!(self#foreign_key_access.as_ref().and_then(std::convert::Into::into))
+        quote!(self#foreign_key_access.as_ref())
     } else {
         quote!(std::convert::Into::into(&self#foreign_key_access))
     };
@@ -70,7 +73,7 @@ fn derive_belongs_to(
     Ok(quote! {
         impl #impl_generics diesel::associations::BelongsTo<#parent_struct>
             for #struct_name #ty_generics
-            #where_clause
+        #where_clause
         {
             type ForeignKey = __FK;
             type ForeignKeyColumn = #table_name::#foreign_key;
