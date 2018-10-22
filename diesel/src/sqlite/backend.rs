@@ -41,7 +41,7 @@ pub enum SqliteType {
 impl Backend for Sqlite {
     type QueryBuilder = SqliteQueryBuilder;
     type BindCollector = RawBytesBindCollector<Sqlite>;
-    type RawValue = SqliteValue;
+    type RawValue = Ref<SqliteValue>;
     type ByteOrder = NativeEndian;
 }
 

@@ -6,6 +6,25 @@ use query_builder::bind_collector::BindCollector;
 use query_builder::QueryBuilder;
 use sql_types::{self, HasSqlType};
 
+#[doc(hidden)]
+pub trait RefHelper<'a> {
+    type Out;
+}
+
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct Ref<T: ?Sized>(::std::marker::PhantomData<T>);
+
+impl<'a, T> RefHelper<'a> for Ref<T>
+where
+    T: 'a + ?Sized,
+{
+    type Out = &'a T;
+}
+
+/// A helper type to get get the RawValue for a backend
+pub type RawValue<'a, DB> = <<DB as Backend>::RawValue as RefHelper<'a>>::Out;
+
 /// A database backend
 ///
 /// This trait represents the concept of a backend (e.g. "MySQL" vs "SQLite").
@@ -45,7 +64,7 @@ where
     ///
     /// Since most backends transmit data as opaque blobs of bytes, this type
     /// is usually `[u8]`.
-    type RawValue: ?Sized;
+    type RawValue: for<'a> RefHelper<'a>;
     /// What byte order is used to transmit integers?
     ///
     /// This type is only used if `RawValue` is `[u8]`.

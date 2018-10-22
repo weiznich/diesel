@@ -13,27 +13,35 @@ use sql_types::{Oid, TypeMetadata};
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Pg;
 
+/// The raw value representation of the postgres backend
 #[derive(Debug, Clone)]
-pub struct PgValue {
-    data: Vec<u8>,
+pub struct PgValue<'a> {
+    data: &'a [u8],
     oid: u32,
 }
 
-impl PgValue {
-    pub fn new(bytes: &[u8], oid: u32) -> PgValue {
-        PgValue {
-            data: bytes.to_vec(),
-            oid,
-        }
+impl<'a> PgValue<'a> {
+    pub(crate) fn new(bytes: &'a [u8], oid: u32) -> PgValue<'a> {
+        PgValue { data: bytes, oid }
     }
 
+    /// Get the bytes associated with this raw value
     pub fn bytes(&self) -> &[u8] {
         &self.data
     }
 
+    /// Get the type oid of the value represented by this raw value
     pub fn oid(&self) -> u32 {
         self.oid
     }
+}
+
+#[doc(hidden)]
+#[derive(Debug, Clone, Copy)]
+pub struct PgValueHelper;
+
+impl<'a> RefHelper<'a> for PgValueHelper {
+    type Out = PgValue<'a>;
 }
 
 /// The [OIDs] for a SQL type
@@ -62,7 +70,7 @@ impl Queryable<(Oid, Oid), Pg> for PgTypeMetadata {
 impl Backend for Pg {
     type QueryBuilder = PgQueryBuilder;
     type BindCollector = RawBytesBindCollector<Pg>;
-    type RawValue = PgValue;
+    type RawValue = PgValueHelper;
     type ByteOrder = NetworkEndian;
 }
 
