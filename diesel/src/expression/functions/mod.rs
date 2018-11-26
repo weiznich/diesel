@@ -50,7 +50,7 @@ macro_rules! sql_function_body {
             for <'a> ($(&'a $arg_name),*): $crate::query_builder::QueryFragment<DB>,
         {
             fn walk_ast(&self, mut out: $crate::query_builder::AstPass<DB>) -> $crate::result::QueryResult<()> {
-                out.push_sql(concat!(stringify!($fn_name), "("));
+                out.push_sql(__diesel_concat!(__diesel_stringify!($fn_name), "("));
                 $crate::query_builder::QueryFragment::walk_ast(
                     &($(&self.$arg_name),*), out.reborrow())?;
                 out.push_sql(")");
@@ -93,7 +93,7 @@ macro_rules! sql_function_body {
     };
 }
 
-#[macro_export]
+#[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! __diesel_sql_function_body {
     // Entry point with type arguments. Pull out the rest of the body.
@@ -126,7 +126,7 @@ macro_rules! __diesel_sql_function_body {
     ) => {
         __diesel_sql_function_body! {
             aggregate = no,
-            sql_name = stringify!($fn_name),
+            sql_name = __diesel_stringify!($fn_name),
             unchecked_meta = $meta,
             meta = (),
             fn_name = $fn_name,
@@ -214,6 +214,7 @@ macro_rules! __diesel_sql_function_body {
         #[allow(non_camel_case_types, non_snake_case, unused_imports)]
         pub(crate) mod $fn_name {
             use super::*;
+            use $crate::derives::{QueryId, DieselNumericOps};
             use $crate::sql_types::*;
 
             #[derive(Debug, Clone, Copy, QueryId, DieselNumericOps)]
@@ -246,7 +247,7 @@ macro_rules! __diesel_sql_function_body {
                 for<'a> ($(&'a $arg_name),*): $crate::query_builder::QueryFragment<DB>,
             {
                 fn walk_ast(&self, mut out: $crate::query_builder::AstPass<DB>) -> $crate::result::QueryResult<()> {
-                    out.push_sql(concat!($sql_name, "("));
+                    out.push_sql(__diesel_concat!($sql_name, "("));
                     $crate::query_builder::QueryFragment::walk_ast(
                         &($(&self.$arg_name),*), out.reborrow())?;
                     out.push_sql(")");
@@ -342,7 +343,7 @@ macro_rules! __diesel_sqlite_register_fn {
             Ret: $crate::serialize::ToSql<$ret, $crate::sqlite::Sqlite>,
         {
             conn.register_sql_function::<$sql_args, $ret, _, _, _>(
-                stringify!($fn_name),
+                __diesel_stringify!($fn_name),
                 true,
                 move |($($args,)+)| f($($args),+),
             )
@@ -367,7 +368,7 @@ macro_rules! __diesel_sqlite_register_fn {
             Ret: $crate::serialize::ToSql<$ret, $crate::sqlite::Sqlite>,
         {
             conn.register_sql_function::<$sql_args, $ret, _, _, _>(
-                stringify!($fn_name),
+                __diesel_stringify!($fn_name),
                 false,
                 move |($($args,)+)| f($($args),+),
             )
@@ -382,7 +383,7 @@ macro_rules! __diesel_sqlite_register_fn {
     ($($token:tt)*) => {};
 }
 
-#[macro_export]
+#[macro_export(local_inner_macros)]
 /// Declare a sql function for use in your code.
 ///
 /// Diesel only provides support for a very small number of SQL functions.
@@ -625,7 +626,7 @@ macro_rules! no_arg_sql_function_body {
             DB: $crate::backend::Backend + $($constraint)::+,
         {
             fn walk_ast(&self, mut out: $crate::query_builder::AstPass<DB>) -> $crate::result::QueryResult<()> {
-                out.push_sql(concat!(stringify!($type_name), "()"));
+                out.push_sql(__diesel_concat!(__diesel__stringify!($type_name), "()"));
                 Ok(())
             }
         }
@@ -638,7 +639,7 @@ macro_rules! no_arg_sql_function_body {
             DB: $crate::backend::Backend,
         {
             fn walk_ast(&self, mut out: $crate::query_builder::AstPass<DB>) -> $crate::result::QueryResult<()> {
-                out.push_sql(concat!(stringify!($type_name), "()"));
+                out.push_sql(__diesel_concat!(diesel__stringify!($type_name), "()"));
                 Ok(())
             }
         }

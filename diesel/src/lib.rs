@@ -156,11 +156,11 @@ extern crate byteorder;
 #[allow(unused_imports)]
 #[macro_use]
 extern crate diesel_derives;
-#[doc(hidden)]
-pub use diesel_derives::*;
+//#[doc(hidden)]
+//pub use diesel_derives::*;
 
 #[macro_use]
-mod macros;
+mod macros_internal;
 
 #[cfg(test)]
 #[macro_use]
@@ -357,4 +357,44 @@ pub use result::Error::NotFound;
 
 pub(crate) mod diesel {
     pub use super::*;
+}
+
+
+/// All derives provided by diesel
+pub mod derives {
+    pub use diesel_derives::*;
+
+    #[doc(inline)]
+    pub use diesel_derives::Queryable;
+
+    #[doc(inline)]
+    pub use super::RunQueryDsl;
+}
+
+/// All macros provided by diesel;
+pub mod macros {
+    #[doc(inline)]
+    pub use diesel::table;
+}
+
+
+//#[doc(hidden)]
+/// item
+pub struct SomeItem {
+    i: i32
+}
+
+/// some macro
+#[macro_export]
+macro_rules! foo {
+    ($i: ident) => {}
+}
+
+/// foo
+pub mod bar {
+    #[doc(inline)]
+    pub use super::SomeItem;
+
+    #[doc(inline)]
+    pub use foo;
 }

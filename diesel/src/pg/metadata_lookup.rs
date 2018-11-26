@@ -1,6 +1,9 @@
 use super::{PgConnection, PgTypeMetadata};
 use prelude::*;
 
+//#[macro_use]
+use table;
+
 /// Determines the OID of types at runtime
 #[allow(missing_debug_implementations)]
 pub struct PgMetadataLookup {

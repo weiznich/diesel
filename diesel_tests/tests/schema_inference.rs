@@ -193,6 +193,7 @@ mod sqlite {
 mod postgres {
     use super::chrono::*;
     use diesel::data_types::PgNumeric;
+    use diesel::derives::{Queryable, Insertable};
     use diesel::*;
     use schema::*;
     use std::collections::Bound;
@@ -294,6 +295,7 @@ mod mysql {
 fn columns_named_as_reserved_keywords_are_renamed() {
     use diesel::*;
     use schema::*;
+    use diesel::derives::{Insertable, Queryable};
 
     #[derive(Queryable, Insertable, Debug, PartialEq)]
     #[table_name = "with_keywords"]

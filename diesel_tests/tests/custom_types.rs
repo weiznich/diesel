@@ -1,5 +1,6 @@
 use diesel::connection::SimpleConnection;
 use diesel::deserialize::{self, FromSql};
+use diesel::derives::{Insertable, Queryable, Identifiable, FromSqlRow, AsExpression, SqlType};
 use diesel::pg::Pg;
 use diesel::serialize::{self, IsNull, Output, ToSql};
 use diesel::*;

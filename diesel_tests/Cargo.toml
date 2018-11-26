@@ -25,7 +25,7 @@ ipnetwork = ">=0.12.2, <0.14.0"
 bigdecimal = ">= 0.0.10, < 0.0.15"
 
 [features]
-default = []
+default = ["postgres"]
 unstable = ["diesel/unstable"]
 postgres = ["diesel/postgres", "diesel_infer_schema/postgres"]
 sqlite = ["diesel/sqlite", "diesel_infer_schema/sqlite"]

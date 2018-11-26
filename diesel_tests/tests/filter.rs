@@ -1,4 +1,5 @@
 use diesel::*;
+use diesel::derives::Queryable;
 use schema::*;
 
 macro_rules! assert_sets_eq {

@@ -8,6 +8,7 @@ use diesel::deserialize::FromSql;
 #[cfg(feature = "postgres")]
 use diesel::pg::Pg;
 use diesel::sql_types::*;
+use diesel::derives::{QueryId, SqlType};
 use diesel::*;
 use schema::*;
 

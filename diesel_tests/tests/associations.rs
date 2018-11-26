@@ -1,4 +1,5 @@
 use diesel::*;
+use diesel::derives::{Associations, Identifiable, Queryable, Insertable};
 use schema::*;
 
 #[test]
@@ -41,6 +42,7 @@ fn eager_loading_associations_for_multiple_records() {
 mod eager_loading_with_string_keys {
     use diesel::connection::SimpleConnection;
     use diesel::*;
+    use diesel::derives::{Queryable, Identifiable, Associations};
     use schema::{connection, drop_table_cascade};
 
     table! { users { id -> Text, } }

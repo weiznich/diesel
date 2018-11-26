@@ -1,5 +1,6 @@
 use super::schema::*;
 use diesel::*;
+use diesel::derives::Insertable;
 
 #[test]
 fn insert_records() {

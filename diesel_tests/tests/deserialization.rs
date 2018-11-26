@@ -1,4 +1,5 @@
 use diesel::*;
+use diesel::derives::Queryable;
 use schema::*;
 use std::borrow::Cow;
 

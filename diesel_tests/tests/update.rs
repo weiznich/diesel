@@ -1,5 +1,6 @@
 use diesel::*;
 use schema::*;
+use diesel::derives::AsChangeset;
 
 #[test]
 fn test_updating_single_column() {

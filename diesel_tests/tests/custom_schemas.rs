@@ -3,6 +3,8 @@ use schema::connection;
 
 mod using_infer_schema {
     use super::*;
+    use diesel::allow_tables_to_appear_in_same_query;
+
     #[cfg(feature = "backend_specific_database_url")]
     infer_schema!("dotenv:PG_DATABASE_URL", "custom_schema");
     #[cfg(not(feature = "backend_specific_database_url"))]
@@ -30,6 +32,8 @@ mod using_infer_schema {
 
 mod using_infer_table_from_schema {
     use super::*;
+    use diesel::macros::*;
+
     mod infer_users {
         #[cfg(feature = "backend_specific_database_url")]
         infer_table_from_schema!("dotenv:PG_DATABASE_URL", "custom_schema.users");

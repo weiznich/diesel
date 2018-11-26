@@ -4,8 +4,9 @@
 // different enough in SQLite to avoid.
 #![cfg(feature = "postgres")]
 use diesel::sql_types::{BigInt, VarChar};
-use diesel::*;
+use diesel::{sql_function, select, Connection, RunQueryDsl, QueryDsl, ExpressionMethods};
 use schema::*;
+
 
 sql_function!(fn my_lower(x: VarChar) -> VarChar);
 

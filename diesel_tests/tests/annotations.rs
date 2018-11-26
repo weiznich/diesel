@@ -1,4 +1,5 @@
 use diesel::sql_types::{Integer, Text};
+use diesel::derives::{Insertable, Identifiable, Queryable, Associations};
 use diesel::*;
 use schema::*;
 
@@ -104,6 +105,9 @@ fn association_where_parent_and_child_have_underscores() {
 mod associations_can_have_nullable_foreign_keys {
     #![allow(dead_code)]
 
+    use diesel::derives::{Identifiable, Associations};
+    use diesel::table;
+
     table! {
         foos{
             id -> Integer,
@@ -134,6 +138,7 @@ mod associations_can_have_nullable_foreign_keys {
 mod multiple_lifetimes_in_insertable_struct_definition {
     #![allow(dead_code)]
     use schema::posts;
+    use diesel::derives::Insertable;
 
     #[derive(Insertable)]
     #[table_name = "posts"]
@@ -146,6 +151,7 @@ mod multiple_lifetimes_in_insertable_struct_definition {
 mod lifetimes_with_names_other_than_a {
     #![allow(dead_code)]
     use schema::posts;
+    use diesel::derives::Insertable;
 
     #[derive(Insertable)]
     #[table_name = "posts"]
@@ -160,6 +166,7 @@ mod insertable_with_cow {
     #![allow(dead_code)]
     use schema::posts;
     use std::borrow::Cow;
+    use diesel::derives::Insertable;
 
     #[derive(Insertable)]
     #[table_name = "posts"]
@@ -174,6 +181,8 @@ mod custom_foreign_keys_are_respected_on_belongs_to {
     #![allow(dead_code)]
 
     use schema::User;
+    use diesel::{table};
+    use diesel::derives::{Identifiable, Associations};
 
     table! { special_posts { id -> Integer, author_id -> Integer, } }
 
@@ -188,6 +197,7 @@ mod custom_foreign_keys_are_respected_on_belongs_to {
 mod derive_identifiable_with_lifetime {
     #![allow(dead_code)]
     use schema::posts;
+    use diesel::derives::Identifiable;
 
     #[derive(Identifiable)]
     pub struct Post<'a> {
