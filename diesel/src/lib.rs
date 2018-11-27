@@ -156,8 +156,6 @@ extern crate byteorder;
 #[allow(unused_imports)]
 #[macro_use]
 extern crate diesel_derives;
-//#[doc(hidden)]
-//pub use diesel_derives::*;
 
 #[macro_use]
 mod macros_internal;
@@ -362,39 +360,43 @@ pub(crate) mod diesel {
 
 /// All derives provided by diesel
 pub mod derives {
-    pub use diesel_derives::*;
 
     #[doc(inline)]
     pub use diesel_derives::Queryable;
 
     #[doc(inline)]
-    pub use super::RunQueryDsl;
+    pub use diesel_derives::AsChangeset;
+
+    #[doc(inline)]
+    pub use diesel_derives::Associations;
+
+    #[doc(inline)]
+    pub use diesel_derives::Identifiable;
+
+    #[doc(inline)]
+    pub use diesel_derives::Insertable;
+
+    #[doc(inline)]
+    pub use diesel_derives::QueryId;
+
+    #[doc(inline)]
+    pub use diesel_derives::QueryableByName;
+
+    #[doc(inline)]
+    pub use diesel_derives::SqlType;
+
+    #[doc(inline)]
+    pub use diesel_derives::FromSqlRow;
+
+    #[doc(inline)]
+    pub use diesel_derives::DieselNumericOps;
+
+    #[doc(inline)]
+    pub use diesel_derives::AsExpression;
 }
 
 /// All macros provided by diesel;
 pub mod macros {
     #[doc(inline)]
     pub use diesel::table;
-}
-
-
-//#[doc(hidden)]
-/// item
-pub struct SomeItem {
-    i: i32
-}
-
-/// some macro
-#[macro_export]
-macro_rules! foo {
-    ($i: ident) => {}
-}
-
-/// foo
-pub mod bar {
-    #[doc(inline)]
-    pub use super::SomeItem;
-
-    #[doc(inline)]
-    pub use foo;
 }
