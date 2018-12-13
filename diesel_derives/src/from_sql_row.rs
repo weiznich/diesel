@@ -29,7 +29,7 @@ pub fn derive(mut item: syn::DeriveInput) -> Result<TokenStream, Diagnostic> {
     Ok(wrap_in_dummy_mod(
         Ident::new(&dummy_mod, Span::call_site()),
         quote! {
-            use diesel::deserialize::{self, FromSql, FromSqlRow, Queryable};
+            use crate::diesel::deserialize::{self, FromSql, FromSqlRow, Queryable};
 
             impl #impl_generics FromSqlRow<__ST, __DB> for #struct_ty
             #where_clause

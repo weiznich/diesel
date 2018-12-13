@@ -105,10 +105,10 @@ pub fn derive(item: syn::DeriveInput) -> Result<proc_macro2::TokenStream, Diagno
         Ok(wrap_in_dummy_mod(
             Ident::new(&dummy_mod, Span::call_site()),
             quote! {
-                use diesel::expression::AsExpression;
-                use diesel::expression::bound::Bound;
-                use diesel::sql_types::Nullable;
-                use diesel::serialize::{self, ToSql, Output};
+                use crate::diesel::expression::AsExpression;
+                use crate::diesel::expression::bound::Bound;
+                use crate::diesel::sql_types::Nullable;
+                use crate::diesel::serialize::{self, ToSql, Output};
 
                 #(#tokens)*
             },

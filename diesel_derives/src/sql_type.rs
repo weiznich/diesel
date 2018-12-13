@@ -17,13 +17,13 @@ pub fn derive(item: syn::DeriveInput) -> Result<proc_macro2::TokenStream, Diagno
     Ok(wrap_in_dummy_mod(
         Ident::new(&dummy_name.to_lowercase(), Span::call_site()),
         quote! {
-            impl #impl_generics diesel::sql_types::NotNull
+            impl #impl_generics crate::diesel::sql_types::NotNull
                 for #struct_name #ty_generics
             #where_clause
             {
             }
 
-            impl #impl_generics diesel::sql_types::SingleValue
+            impl #impl_generics crate::diesel::sql_types::SingleValue
                 for #struct_name #ty_generics
             #where_clause
             {
@@ -48,12 +48,12 @@ fn sqlite_tokens(item: &syn::DeriveInput) -> Option<proc_macro2::TokenStream> {
             let (impl_generics, ty_generics, where_clause) = item.generics.split_for_impl();
 
             Some(quote! {
-                impl #impl_generics diesel::sql_types::HasSqlType<#struct_name #ty_generics>
-                    for diesel::sqlite::Sqlite
+                impl #impl_generics crate::diesel::sql_types::HasSqlType<#struct_name #ty_generics>
+                    for crate::diesel::sqlite::Sqlite
                 #where_clause
                 {
-                    fn metadata(_: &()) -> diesel::sqlite::SqliteType {
-                        diesel::sqlite::SqliteType::#ty
+                    fn metadata(_: &()) -> crate::diesel::sqlite::SqliteType {
+                        crate::diesel::sqlite::SqliteType::#ty
                     }
                 }
             })
@@ -72,12 +72,12 @@ fn mysql_tokens(item: &syn::DeriveInput) -> Option<proc_macro2::TokenStream> {
             let (impl_generics, ty_generics, where_clause) = item.generics.split_for_impl();
 
             Some(quote! {
-                impl #impl_generics diesel::sql_types::HasSqlType<#struct_name #ty_generics>
-                    for diesel::mysql::Mysql
+                impl #impl_generics crate::diesel::sql_types::HasSqlType<#struct_name #ty_generics>
+                    for crate::diesel::mysql::Mysql
                 #where_clause
                 {
-                    fn metadata(_: &()) -> diesel::mysql::MysqlType {
-                        diesel::mysql::MysqlType::#ty
+                    fn metadata(_: &()) -> crate::diesel::mysql::MysqlType {
+                        crate::diesel::mysql::MysqlType::#ty
                     }
                 }
             })
@@ -124,10 +124,10 @@ fn pg_tokens(item: &syn::DeriveInput) -> Option<proc_macro2::TokenStream> {
             };
 
             Some(quote! {
-                use diesel::pg::{PgMetadataLookup, PgTypeMetadata};
+                use crate::diesel::pg::{PgMetadataLookup, PgTypeMetadata};
 
-                impl #impl_generics diesel::sql_types::HasSqlType<#struct_name #ty_generics>
-                    for diesel::pg::Pg
+                impl #impl_generics crate::diesel::sql_types::HasSqlType<#struct_name #ty_generics>
+                    for crate::diesel::pg::Pg
                 #where_clause
                 {
                     #metadata_fn

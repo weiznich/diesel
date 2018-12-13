@@ -10,7 +10,7 @@ pub fn wrap_in_dummy_mod(const_name: Ident, item: TokenStream) -> TokenStream {
         fn #const_name() {
             // https://github.com/rust-lang/rust/issues/47314
             extern crate std;
-            use diesel;
+            use crate::diesel;
 
             #item
         }

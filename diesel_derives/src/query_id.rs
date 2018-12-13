@@ -27,7 +27,7 @@ pub fn derive(mut item: syn::DeriveInput) -> Result<proc_macro2::TokenStream, Di
     Ok(wrap_in_dummy_mod(
         Ident::new(&dummy_mod, Span::call_site()),
         quote! {
-            use diesel::query_builder::QueryId;
+            use crate::diesel::query_builder::QueryId;
 
             #[allow(non_camel_case_types)]
             impl #impl_generics QueryId for #struct_name #ty_generics
