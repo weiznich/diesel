@@ -138,14 +138,13 @@
 )]
 // Clippy lints
 #![allow(
-    clippy::option_map_unwrap_or_else,
-    clippy::option_map_unwrap_or,
-    clippy::match_same_arms,
     clippy::type_complexity,
     clippy::redundant_field_names
 )]
 #![cfg_attr(test, allow(clippy::option_map_unwrap_or, clippy::result_unwrap_used))]
 #![warn(
+    clippy::doc_markdown,
+    clippy::unimplemented,
     clippy::option_unwrap_used,
     clippy::result_unwrap_used,
     clippy::print_stdout,
@@ -157,7 +156,8 @@
     clippy::enum_glob_use,
     clippy::if_not_else,
     clippy::items_after_statements,
-    clippy::used_underscore_binding
+    clippy::used_underscore_binding,
+    clippy::needless_borrow,
 )]
 
 #[cfg(feature = "postgres")]
