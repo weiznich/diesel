@@ -64,7 +64,8 @@ pub trait GetPgMetadataCache {
 fn lookup_type<T: Connection<Backend = Pg>>(
     cache_key: &PgMetadataCacheKey<'_>,
     conn: &mut T,
-) -> QueryResult<InnerPgTypeMetadata> {
+) -> QueryResult<InnerPgTypeMetadata>
+{
     let search_path: String;
     let mut search_path_has_temp_schema = false;
 

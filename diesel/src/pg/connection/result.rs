@@ -2,21 +2,24 @@ extern crate pq_sys;
 
 use self::pq_sys::*;
 use std::ffi::CStr;
+use std::marker::PhantomData;
 use std::num::NonZeroU32;
 use std::os::raw as libc;
+use std::rc::Rc;
 use std::{slice, str};
 
 use super::raw::RawResult;
 use super::row::PgRow;
 use crate::result::{DatabaseErrorInformation, DatabaseErrorKind, Error, QueryResult};
 
-pub struct PgResult {
+pub struct PgResult<'a> {
     internal_result: RawResult,
     column_count: usize,
     row_count: usize,
+    _marker: PhantomData<&'a super::PgConnection>
 }
 
-impl PgResult {
+impl<'a> PgResult<'a> {
     #[allow(clippy::new_ret_no_self)]
     pub fn new(internal_result: RawResult) -> QueryResult<Self> {
         let result_status = unsafe { PQresultStatus(internal_result.as_ptr()) };
@@ -28,6 +31,7 @@ impl PgResult {
                     internal_result,
                     column_count,
                     row_count,
+                    _marker: PhantomData,
                 })
             }
             ExecStatusType::PGRES_EMPTY_QUERY => {
@@ -82,11 +86,11 @@ impl PgResult {
         self.row_count
     }
 
-    pub fn get_row(&self, idx: usize) -> PgRow {
+    pub fn get_row(self: Rc<Self>, idx: usize) -> PgRow<'a> {
         PgRow::new(self, idx)
     }
 
-    pub fn get(&self, row_idx: usize, col_idx: usize) -> Option<&[u8]> {
+    pub fn get(&self, row_idx: usize, col_idx: usize) -> Option<&'a [u8]> {
         if self.is_null(row_idx, col_idx) {
             None
         } else {
@@ -119,7 +123,7 @@ impl PgResult {
         )
     }
 
-    pub fn column_name(&self, col_idx: usize) -> Option<&str> {
+    pub fn column_name(&self, col_idx: usize) -> Option<&'a str> {
         unsafe {
             let ptr = PQfname(self.internal_result.as_ptr(), col_idx as libc::c_int);
             if ptr.is_null() {

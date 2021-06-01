@@ -8,7 +8,7 @@ pub mod expression;
 pub mod types;
 
 mod backend;
-mod connection;
+pub(crate) mod connection;
 mod metadata_lookup;
 pub(crate) mod query_builder;
 pub(crate) mod serialize;

@@ -1,15 +1,16 @@
+use std::rc::Rc;
 use super::result::PgResult;
 use crate::pg::{Pg, PgValue};
 use crate::row::*;
 
 #[derive(Clone)]
 pub struct PgRow<'a> {
-    db_result: &'a PgResult,
+    db_result: Rc<PgResult<'a>>,
     row_idx: usize,
 }
 
 impl<'a> PgRow<'a> {
-    pub fn new(db_result: &'a PgResult, row_idx: usize) -> Self {
+    pub fn new(db_result: Rc<PgResult<'a>>, row_idx: usize) -> Self {
         PgRow { db_result, row_idx }
     }
 }
@@ -28,7 +29,7 @@ impl<'a> Row<'a, Pg> for PgRow<'a> {
     {
         let idx = self.idx(idx)?;
         Some(PgField {
-            db_result: self.db_result,
+            db_result: self.db_result.clone(),
             row_idx: self.row_idx,
             col_idx: idx,
         })
@@ -56,7 +57,7 @@ impl<'a, 'b> RowIndex<&'a str> for PgRow<'b> {
 }
 
 pub struct PgField<'a> {
-    db_result: &'a PgResult,
+    db_result: Rc<PgResult<'a>>,
     row_idx: usize,
     col_idx: usize,
 }

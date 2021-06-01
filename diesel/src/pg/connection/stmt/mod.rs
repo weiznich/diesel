@@ -17,11 +17,11 @@ pub struct Statement {
 
 impl Statement {
     #[allow(clippy::ptr_arg)]
-    pub fn execute(
-        &self,
-        raw_connection: &mut RawConnection,
-        param_data: &Vec<Option<Vec<u8>>>,
-    ) -> QueryResult<PgResult> {
+    pub fn execute<'a>(
+        &'_ self,
+        raw_connection: &'a mut RawConnection,
+        param_data: &'_ Vec<Option<Vec<u8>>>,
+    ) -> QueryResult<PgResult<'a>> {
         let params_pointer = param_data
             .iter()
             .map(|data| {
