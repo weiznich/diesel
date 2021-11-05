@@ -1400,9 +1400,9 @@ pub trait RunQueryDsl<Conn>: Sized {
     /// #     Ok(())
     /// # }
     /// ```
-    fn load<'b, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
+    fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
     where
-        Self: LoadQuery<'b, Conn, U>,
+        Self: LoadQuery<'query, Conn, U>,
     {
         self.internal_load(conn)?.collect()
     }
@@ -1505,15 +1505,15 @@ pub trait RunQueryDsl<Conn>: Sized {
     /// #     Ok(())
     /// # }
     /// ```
-    fn load_iter<'a, 'b, 'c, U>(
+    fn load_iter<'conn, 'query, 'iter, U>(
         self,
-        conn: &'a mut Conn,
-    ) -> QueryResult<Box<dyn Iterator<Item = QueryResult<U>> + 'c>>
+        conn: &'conn mut Conn,
+    ) -> QueryResult<Box<dyn Iterator<Item = QueryResult<U>> + 'iter>>
     where
-        'a: 'c,
-        'b: 'c,
-        U: 'a,
-        Self: LoadQuery<'b, Conn, U> + 'a,
+        'conn: 'iter,
+        'query: 'iter,
+        U: 'conn,
+        Self: LoadQuery<'query, Conn, U> + 'conn,
     {
         self.internal_load(conn).map(|i| Box::new(i) as Box<_>)
     }
@@ -1563,9 +1563,9 @@ pub trait RunQueryDsl<Conn>: Sized {
     /// #     Ok(())
     /// # }
     /// ```
-    fn get_result<'b, U>(self, conn: &mut Conn) -> QueryResult<U>
+    fn get_result<'query, U>(self, conn: &mut Conn) -> QueryResult<U>
     where
-        Self: LoadQuery<'b, Conn, U>,
+        Self: LoadQuery<'query, Conn, U>,
     {
         match self.internal_load(conn)?.next() {
             Some(v) => v,
@@ -1579,9 +1579,9 @@ pub trait RunQueryDsl<Conn>: Sized {
     /// sense for insert, update, and delete statements.
     ///
     /// [`load`]: crate::query_dsl::RunQueryDsl::load()
-    fn get_results<'b, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
+    fn get_results<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
     where
-        Self: LoadQuery<'b, Conn, U>,
+        Self: LoadQuery<'query, Conn, U>,
     {
         self.load(conn)
     }
@@ -1619,10 +1619,10 @@ pub trait RunQueryDsl<Conn>: Sized {
     /// #     Ok(())
     /// # }
     /// ```
-    fn first<'b, U>(self, conn: &mut Conn) -> QueryResult<U>
+    fn first<'query, U>(self, conn: &mut Conn) -> QueryResult<U>
     where
         Self: methods::LimitDsl,
-        Limit<Self>: LoadQuery<'b, Conn, U>,
+        Limit<Self>: LoadQuery<'query, Conn, U>,
     {
         methods::LimitDsl::limit(self, 1).get_result(conn)
     }
