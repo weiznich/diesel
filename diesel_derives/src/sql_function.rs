@@ -132,7 +132,6 @@ pub(crate) fn expand(input: SqlFunctionDecl) -> Result<TokenStream, Diagnostic> 
         where
             __DieselInternal: diesel::backend::Backend,
             #(#arg_name: QueryFragment<__DieselInternal>,)*
-        //    for<'a> (#(&'a #arg_name),*): QueryFragment<__DieselInternal>,
         {
             #[allow(unused_assignments)]
             fn walk_ast<'__a, '__b>(&'__a self, mut out: AstPass<'_, '__b, __DieselInternal>) -> QueryResult<()>
