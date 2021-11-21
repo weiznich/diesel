@@ -134,8 +134,7 @@ pub(crate) fn expand(input: SqlFunctionDecl) -> Result<TokenStream, Diagnostic> 
             #(#arg_name: QueryFragment<__DieselInternal>,)*
         {
             #[allow(unused_assignments)]
-            fn walk_ast<'__a, '__b>(&'__a self, mut out: AstPass<'_, '__b, __DieselInternal>) -> QueryResult<()>
-            where '__a: '__b{
+            fn walk_ast<'__b>(&'__b self, mut out: AstPass<'_, '__b, __DieselInternal>) -> QueryResult<()>{
                 out.push_sql(concat!(#sql_name, "("));
                 // we unroll the arguments manually here, to prevent borrow check issues
                 let mut needs_comma = false;
