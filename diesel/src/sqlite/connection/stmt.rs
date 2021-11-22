@@ -10,7 +10,6 @@ use crate::result::*;
 use crate::sqlite::{Sqlite, SqliteType};
 use std::ffi::{CStr, CString};
 use std::io::{stderr, Write};
-use std::mem::ManuallyDrop;
 use std::os::raw as libc;
 use std::ptr::{self, NonNull};
 
@@ -189,97 +188,98 @@ impl Drop for Statement {
 
 struct BoundStatement<'stmt, 'query> {
     statement: MaybeCached<'stmt, Statement>,
-    // we need to store the query here to ensure noone does
-    // drop it till the end ot the statement
-    // We use a boxed queryfragment here just to erase the
-    // generic type, we use ManuallyDrop to communicate
-    // that this is a shared buffer
-    query: ManuallyDrop<Box<dyn QueryFragment<Sqlite> + 'query>>,
     // we need to store any owned bind values speratly, as they are not
-    // contained in the query itself. We use ManuallyDrop to
-    // communicate that this is a shared buffer
-    binds_to_free: ManuallyDrop<Vec<(i32, Option<SqliteBindValue<'static>>)>>,
+    // contained in the query itself
+    binds_to_free: Vec<(i32, Option<SqliteBindValue<'static>>)>,
+    // we need to store the query here to ensure it's not dropped until the end ot the statement
+    // We use a dyn here just to erase the generic type
+    _query: Box<dyn QueryFragment<Sqlite> + 'query>,
 }
 
 impl<'stmt, 'query> BoundStatement<'stmt, 'query> {
-    fn bind<T>(
-        mut statement: MaybeCached<'stmt, Statement>,
-        query: T,
-    ) -> QueryResult<BoundStatement<'stmt, 'query>>
+    fn bind<T>(statement: MaybeCached<'stmt, Statement>, query: T) -> QueryResult<Self>
     where
         T: QueryFragment<Sqlite> + QueryId + 'query,
     {
-        // Don't use a trait object here to prevent using a virtual function call
-        // For sqlite this can introduce a measurable overhead
-        let mut query = ManuallyDrop::new(query);
+        // Query is boxed here to make sure it won't move in memory anymore, so any bind
+        // it could output would stay valid.
+        let query: Box<T> = Box::new(query);
 
-        let mut bind_collector = SqliteBindCollector::new();
-        query.collect_binds(&mut bind_collector, &mut ())?;
+        let mut bind_collector = SqliteBindCollector::<'query>::new();
+        (*query).collect_binds(&mut bind_collector, &mut ())?;
 
-        let SqliteBindCollector { metadata, binds } = bind_collector;
-        let mut binds_to_free = ManuallyDrop::new(Vec::new());
-
-        for (bind_idx, (bind, tpe)) in (1..).zip(binds.into_iter().zip(metadata)) {
-            // It's safe to call bind here as:
-            // * The type and value matches
-            // * We ensure that corresponding buffers lives long enough below
-            // * The statement is not used yet by `step` or anything else
-            let res = unsafe { statement.bind(tpe, &bind, bind_idx) };
-
-            if let Err(e) = res {
-                Self::unbind_buffers(&mut statement, &binds_to_free);
-
-                unsafe {
-                    // This is safe as we return early from this function, we
-                    // unbound the binds above, so it's fine now to drop
-                    // the owned binds
-                    ManuallyDrop::drop(&mut binds_to_free);
-                    // At last we can also drop query
-                    ManuallyDrop::drop(&mut query);
-                }
-                return Err(e);
-            }
-
-            // We want to unbind the buffers later to ensure
-            // that sqlite does not access uninitilized memory
-            match bind {
-                SqliteBindValue::BorrowedString(_) | SqliteBindValue::BorrowedBinary(_) => {
-                    binds_to_free.push((bind_idx, None));
-                }
-                SqliteBindValue::Binary(b) => {
-                    binds_to_free.push((bind_idx, Some(SqliteBindValue::Binary(b))));
-                }
-                SqliteBindValue::String(b) => {
-                    binds_to_free.push((bind_idx, Some(SqliteBindValue::String(b))));
-                }
-                _ => (),
-            }
-        }
-
-        Ok(Self {
+        // We create Self as early as possible to make sure Drop impl is called however
+        // we exit from this function (error or panic)
+        //
+        // After this point we will be moving the boxed query around, but that won't change the
+        // validity of the collected binds because they were built from the query stored on the
+        // heap, which will not be deallocated or moved without the Self we're building being
+        // `Drop`ped, erasing any corresponding reference
+        let bind_collector = unsafe {
+            std::mem::transmute::<SqliteBindCollector<'_>, SqliteBindCollector<'static>>(
+                bind_collector,
+            )
+        };
+        let mut bound_statement = Self {
             statement,
-            binds_to_free,
-            query: ManuallyDrop::new(Box::new(ManuallyDrop::into_inner(query))
-                as Box<dyn QueryFragment<Sqlite> + 'query>),
-        })
-    }
+            binds_to_free: Vec::new(),
+            _query: query as Box<dyn QueryFragment<Sqlite> + 'query>,
+        };
 
-    fn unbind_buffers(
-        stmt: &mut MaybeCached<'stmt, Statement>,
-        binds_to_free: &[(i32, Option<SqliteBindValue<'static>>)],
-    ) {
-        for (idx, _buffer) in binds_to_free {
-            unsafe {
-                // It's always safe to bind null values, as there is no buffer that needs to outlife something
-                stmt.bind(SqliteType::Text, &SqliteBindValue::Null, *idx)
-                    .expect(
-                        "Binding a null value should never fail. \
-                             If you ever see this error message please open \
-                             an issue at diesels issue tracker containing \
-                             code how to trigger this message.",
-                    );
+        // This does not need to change based on the query. For compilation performance and binary
+        // size, this will be a non-generic function within Diesel.
+        non_generic_inner(&mut bound_statement, bind_collector)?;
+        fn non_generic_inner(
+            bound_statement: &mut BoundStatement<'_, '_>,
+            bind_collector: SqliteBindCollector<'_>,
+        ) -> QueryResult<()> {
+            let SqliteBindCollector { binds } = bind_collector;
+            // It is useful to preallocate `binds_to_free` because it
+            // - Guarantees that pushing inside it cannot panic, which guarantees the `Drop`
+            //   impl of `BoundStatement` will always re-`bind` as needed
+            // - Avoids reallocations
+            let mut binds_to_free = Vec::with_capacity(
+                binds
+                    .iter()
+                    .filter(|&(b, _)| {
+                        matches!(
+                            b,
+                            SqliteBindValue::BorrowedString(_)
+                                | SqliteBindValue::BorrowedBinary(_)
+                                | SqliteBindValue::Binary(_)
+                                | SqliteBindValue::String(_)
+                        )
+                    })
+                    .count(),
+            );
+
+            for (bind_idx, (bind, tpe)) in (1..).zip(binds) {
+                // It's safe to call bind here as:
+                // * The type and value matches
+                // * We ensure that corresponding buffers lives long enough below
+                // * The statement is not used yet by `step` or anything else
+                unsafe { bound_statement.statement.bind(tpe, &bind, bind_idx) }?;
+
+                // The bind statement having succeeded, we should make sure to always unbind
+                match bind {
+                    SqliteBindValue::BorrowedString(_) | SqliteBindValue::BorrowedBinary(_) => {
+                        binds_to_free.push((bind_idx, None));
+                    }
+                    b @ SqliteBindValue::Binary(_) | b @ SqliteBindValue::String(_) => {
+                        binds_to_free.push((bind_idx, Some(b)));
+                    }
+                    SqliteBindValue::SmallInt(_)
+                    | SqliteBindValue::Integer(_)
+                    | SqliteBindValue::BigInt(_)
+                    | SqliteBindValue::Float(_)
+                    | SqliteBindValue::Double(_)
+                    | SqliteBindValue::Null => {}
+                };
             }
+            Ok(())
         }
+
+        Ok(bound_statement)
     }
 }
 
@@ -290,15 +290,20 @@ impl<'stmt, 'query> Drop for BoundStatement<'stmt, 'query> {
         self.statement.reset();
 
         // Reset the binds that may point to memory that will be/needs to be freed
-        Self::unbind_buffers(&mut self.statement, &self.binds_to_free);
-        unsafe {
-            // We unbound the corresponding buffers above, so it's fine to drop the
-            // owned binds now
-            ManuallyDrop::drop(&mut self.binds_to_free);
-            // We've dropped everything that could reference the query
-            // so it's safe to drop the query here
-            ManuallyDrop::drop(&mut self.query);
-        }
+        let stmt = &mut self.statement;
+        self.binds_to_free.iter().for_each(move |(idx, _buffer)| {
+            unsafe {
+                // It's always safe to bind null values, as there is no buffer that needs to
+                // outlive something
+                stmt.bind(SqliteType::Text, &SqliteBindValue::Null, *idx)
+                    .expect(
+                        "Binding a null value should never fail. \
+                             If you ever see this error message please open \
+                             an issue at diesels issue tracker containing \
+                             code how to trigger this message.",
+                    );
+            }
+        })
     }
 }
 
