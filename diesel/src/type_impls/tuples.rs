@@ -9,6 +9,8 @@ use crate::expression::{
     ValidGrouping,
 };
 use crate::insertable::{CanInsertInSingleQuery, InsertValues, Insertable, InsertableOptionHelper};
+use crate::query_builder::update_statement::changeset::{AsChangesetImpl, SingleUpdate};
+use crate::query_builder::update_statement::BatchUpdateQueryFragmentHelper;
 use crate::query_builder::*;
 use crate::query_dsl::load_dsl::CompatibleType;
 use crate::query_source::*;
@@ -216,6 +218,59 @@ macro_rules! tuple_impls {
 
                 fn as_changeset(self) -> Self::Changeset {
                     ($(self.$idx.as_changeset(),)+)
+                }
+            }
+
+            impl<$($T,)+> AsChangesetImpl for ($($T,)+) where
+                $($T: AsChangesetImpl<Impl = SingleUpdate>,)+
+            {
+                type Impl = SingleUpdate;
+            }
+
+            impl<DB, $($T,)+> BatchUpdateQueryFragmentHelper<DB> for ($($T,)+) where
+                DB: Backend,
+                $($T: BatchUpdateQueryFragmentHelper<DB>,)+
+            {
+                #[allow(unused_assignments)]
+                fn walk_values(&self, mut out: AstPass<DB>) -> QueryResult<()> {
+                    let mut first = true;
+                    $(
+                        if first {
+                            first = false;
+                        } else {
+                            out.push_sql(", ");
+                        }
+                        self.$idx.walk_values(out.reborrow())?;
+                    )+
+                    Ok(())
+                }
+
+                #[allow(unused_assignments)]
+                fn walk_column_list(&self, mut out: AstPass<DB>) -> QueryResult<()> {
+                    let mut first = true;
+                    $(
+                        if first {
+                            first = false;
+                        } else {
+                            out.push_sql(", ");
+                        }
+                        self.$idx.walk_column_list(out.reborrow())?;
+                    )+
+                    Ok(())
+                }
+
+                #[allow(unused_assignments)]
+                fn walk_assign_list(&self, mut out: AstPass<DB>) -> QueryResult<()> {
+                    let mut first = true;
+                    $(
+                        if first {
+                            first = false;
+                        } else {
+                            out.push_sql(", ");
+                        }
+                        self.$idx.walk_assign_list(out.reborrow())?;
+                    )+
+                    Ok(())
                 }
             }
 

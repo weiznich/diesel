@@ -2,6 +2,7 @@ pub mod changeset;
 pub mod target;
 
 pub use self::changeset::AsChangeset;
+use self::changeset::{AsChangesetImpl, BatchUpdate, SingleUpdate};
 pub use self::target::{IntoUpdateTarget, UpdateTarget};
 
 use crate::backend::Backend;
@@ -190,6 +191,17 @@ where
 impl<T, U, V, Ret, DB> QueryFragment<DB> for UpdateStatement<T, U, V, Ret>
 where
     DB: Backend,
+    V: AsChangesetImpl,
+    Self: QueryFragment<DB, V::Impl>,
+{
+    fn walk_ast(&self, pass: AstPass<DB>) -> QueryResult<()> {
+        <Self as QueryFragment<DB, V::Impl>>::walk_ast(self, pass)
+    }
+}
+
+impl<T, U, V, Ret, DB> QueryFragment<DB, SingleUpdate> for UpdateStatement<T, U, V, Ret>
+where
+    DB: Backend,
     T: Table,
     T::FromClause: QueryFragment<DB>,
     U: QueryFragment<DB>,
@@ -286,3 +298,68 @@ impl<T, U, V> UpdateStatement<T, U, V, NoReturningClause> {
 /// Indicates that you have not yet called `.set` on an update statement
 #[derive(Debug, Clone, Copy)]
 pub struct SetNotCalled;
+
+mod private {
+    #[derive(Debug, Clone)]
+    #[doc(hidden)]
+    pub struct BatchChangeset<T>(pub(super) T);
+
+    impl<T> BatchChangeset<T> {
+        pub fn new(t: T) -> Self {
+            Self(t)
+        }
+    }
+}
+
+pub(crate) use self::private::BatchChangeset;
+
+pub trait BatchUpdateQueryFragmentHelper<DB: Backend> {
+    fn walk_values(&self, out: AstPass<DB>) -> QueryResult<()>;
+    fn walk_column_list(&self, out: AstPass<DB>) -> QueryResult<()>;
+    fn walk_assign_list(&self, out: AstPass<DB>) -> QueryResult<()>;
+}
+
+impl<'a, DB, T, U, V, R> QueryFragment<DB, BatchUpdate>
+    for UpdateStatement<T, U, BatchChangeset<Vec<V>>, R>
+where
+    DB: Backend,
+    V: BatchUpdateQueryFragmentHelper<DB>,
+    T: Table,
+    T::FromClause: QueryFragment<DB>,
+    U: QueryFragment<DB>,
+{
+    fn walk_ast(&self, mut out: AstPass<DB>) -> QueryResult<()> {
+        if self.values.0.is_empty() {
+            todo!()
+        } else {
+            out.push_sql("WITH ");
+            out.push_identifier("raw")?;
+            out.push_sql(" AS ( SELECT * FROM ( VALUES ");
+            let mut first = true;
+            for values in &self.values.0 {
+                if first {
+                    first = false;
+                } else {
+                    out.push_sql(", ");
+                }
+                out.push_sql("(");
+                values.walk_values(out.reborrow())?;
+                out.push_sql(")");
+            }
+            out.push_sql(") AS ");
+            out.push_identifier("raw")?;
+            out.push_sql("(");
+            self.values.0[0].walk_column_list(out.reborrow())?;
+            out.push_sql(")) UPDATE ");
+            self.table.from_clause().walk_ast(out.reborrow())?;
+            out.push_sql(" SET ");
+            self.values.0[0].walk_assign_list(out.reborrow())?;
+            out.push_sql(" FROM ");
+            out.push_identifier("raw")?;
+            out.push_sql(" AS ");
+            out.push_identifier("r")?;
+            self.where_clause.walk_ast(out.reborrow())?;
+            Ok(())
+        }
+    }
+}
