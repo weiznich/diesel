@@ -75,18 +75,28 @@ macro_rules! alias {
         $crate::alias!(NoConst $($($table)::+ as $alias_name: $alias_ty,)*);
         $(
             #[allow(non_upper_case_globals)]
-            const $alias_name: $crate::query_source::Alias::<$alias_ty> = $crate::query_source::Alias::new($alias_ty);
+            const $alias_name: $crate::query_source::Alias::<$alias_ty> =
+                $crate::query_source::Alias::new($alias_ty { table: $($table)::+::table });
         )*
     };
     (NoConst $($($table: ident)::+ as $alias_name: ident: $alias_ty: ident),* $(,)?) => {
         $(
             #[allow(non_camel_case_types)]
-            #[derive(Debug, Clone, Copy, Default)]
-            struct $alias_ty;
+            #[derive(Debug, Clone, Copy)]
+            struct $alias_ty {
+                table: $($table)::+::table,
+            };
 
             impl $crate::query_source::aliasing::AliasSource for $alias_ty {
                 const NAME: &'static str = stringify!($alias_name);
-                type Table = $($table)::+::table;
+                type Target = $($table)::+::table;
+                fn target(&self) -> &Self::Target { &self.table }
+            }
+
+            impl ::std::default::Default for $alias_ty {
+                fn default() -> Self {
+                    Self { table: $($table)::+::table }
+                }
             }
 
             // impl AppearsInFromClause<Alias<$alias>> for Alias<$alias>

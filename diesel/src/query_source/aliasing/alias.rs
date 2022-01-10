@@ -1,6 +1,5 @@
 use super::{AliasSource, AliasedField, FieldAliasMapper};
 
-use crate::associations::HasTable;
 use crate::backend::Backend;
 use crate::expression::{Expression, SelectableExpression, ValidGrouping};
 use crate::query_builder::nodes::StaticQueryFragment;
@@ -8,23 +7,24 @@ use crate::query_builder::{AsQuery, AstPass, FromClause, QueryFragment, QueryId,
 use crate::query_source::{AppearsInFromClause, Column, Never, QuerySource, Table, TableNotEqual};
 use crate::result::QueryResult;
 
+use std::marker::PhantomData;
+
 #[derive(Debug, Clone, Copy, Default)]
 /// Represents an alias within diesel's query builder
 ///
 /// See [alias!] for more details.
 pub struct Alias<S> {
-    source: S,
+    pub(crate) source: S,
 }
 
 impl<S: AliasSource> Alias<S> {
     /// Maps a single field of the source table in this alias
     pub fn field<F>(&self, field: F) -> AliasedField<S, F>
     where
-        S: Clone,
-        F: Column<Table = S::Table>,
+        F: Column<Table = S::Target>,
     {
         AliasedField {
-            _alias_source: self.source.clone(),
+            _alias_source: PhantomData,
             _field: field,
         }
     }
@@ -50,7 +50,7 @@ impl<S> QueryId for Alias<S>
 where
     Self: 'static,
     S: AliasSource,
-    S::Table: Table,
+    S::Target: Table,
 {
     type QueryId = Self;
     const HAS_STATIC_QUERY_ID: bool = true;
@@ -58,22 +58,23 @@ where
 
 impl<S> QuerySource for Alias<S>
 where
-    S: AliasSource + Clone,
-    S::Table: QuerySource + HasTable<Table = S::Table>,
-    <S::Table as QuerySource>::DefaultSelection: FieldAliasMapper<S>,
-    <<S::Table as QuerySource>::DefaultSelection as FieldAliasMapper<S>>::Out:
+    Self: Clone,
+    S: AliasSource,
+    S::Target: QuerySource,
+    <S::Target as QuerySource>::DefaultSelection: FieldAliasMapper<S>,
+    <<S::Target as QuerySource>::DefaultSelection as FieldAliasMapper<S>>::Out:
         SelectableExpression<Self>,
 {
     type FromClause = Self;
     type DefaultSelection =
-        <<S::Table as QuerySource>::DefaultSelection as FieldAliasMapper<S>>::Out;
+        <<S::Target as QuerySource>::DefaultSelection as FieldAliasMapper<S>>::Out;
 
     fn from_clause(&self) -> Self::FromClause {
         self.clone()
     }
 
     fn default_selection(&self) -> Self::DefaultSelection {
-        self.fields(S::Table::table().default_selection())
+        self.fields(self.source.target().default_selection())
     }
 }
 
@@ -81,11 +82,11 @@ impl<S, DB> QueryFragment<DB> for Alias<S>
 where
     S: AliasSource,
     DB: Backend,
-    S::Table: StaticQueryFragment,
-    <S::Table as StaticQueryFragment>::Component: QueryFragment<DB>,
+    S::Target: StaticQueryFragment,
+    <S::Target as StaticQueryFragment>::Component: QueryFragment<DB>,
 {
     fn walk_ast<'b>(&'b self, mut pass: AstPass<'_, 'b, DB>) -> QueryResult<()> {
-        <S::Table as StaticQueryFragment>::STATIC_COMPONENT.walk_ast(pass.reborrow())?;
+        <S::Target as StaticQueryFragment>::STATIC_COMPONENT.walk_ast(pass.reborrow())?;
         pass.push_sql(" AS ");
         pass.push_identifier(S::NAME)?;
         Ok(())
@@ -95,7 +96,7 @@ where
 impl<S> AsQuery for Alias<S>
 where
     S: AliasSource,
-    S::Table: AsQuery,
+    S::Target: AsQuery,
     Self: QuerySource,
     <Self as QuerySource>::DefaultSelection: ValidGrouping<()>,
 {
@@ -110,9 +111,9 @@ where
 impl<S, QS> AppearsInFromClause<QS> for Alias<S>
 where
     S: AliasSource,
-    S::Table: AliasAppearsInFromClause<S, QS>,
+    S::Target: AliasAppearsInFromClause<S, QS>,
 {
-    type Count = <S::Table as AliasAppearsInFromClause<S, QS>>::Count;
+    type Count = <S::Target as AliasAppearsInFromClause<S, QS>>::Count;
 }
 #[doc(hidden)]
 /// This trait is used to allow external crates to implement
@@ -135,9 +136,9 @@ pub trait AliasAliasAppearsInFromClause<T2, S1, S2> {
 impl<T1, S1, S2> AliasAppearsInFromClause<S1, Alias<S2>> for T1
 where
     S2: AliasSource,
-    T1: AliasAliasAppearsInFromClause<S2::Table, S1, S2>,
+    T1: AliasAliasAppearsInFromClause<S2::Target, S1, S2>,
 {
-    type Count = <T1 as AliasAliasAppearsInFromClause<S2::Table, S1, S2>>::Count;
+    type Count = <T1 as AliasAliasAppearsInFromClause<S2::Target, S1, S2>>::Count;
 }
 
 // impl<S: AliasSource<Table=T1>> AppearsInFromClause<T2> for Alias<S>
@@ -146,7 +147,7 @@ impl<T1, T2, S> AliasAppearsInFromClause<S, T2> for T1
 where
     T1: TableNotEqual<T2> + Table,
     T2: Table,
-    S: AliasSource<Table = T1>,
+    S: AliasSource<Target = T1>,
 {
     type Count = Never;
 }
@@ -157,8 +158,8 @@ impl<T1, T2, S1, S2> AliasAliasAppearsInFromClause<T1, S2, S1> for T2
 where
     T1: TableNotEqual<T2> + Table,
     T2: Table,
-    S1: AliasSource<Table = T1>,
-    S2: AliasSource<Table = T2>,
+    S1: AliasSource<Target = T1>,
+    S2: AliasSource<Target = T2>,
 {
     type Count = Never;
 }
