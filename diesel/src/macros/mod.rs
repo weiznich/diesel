@@ -765,6 +765,12 @@ macro_rules! __diesel_table_impl {
                 }
             }
 
+            impl<DB> $crate::query_builder::QueryFragment<DB> for table where DB: $crate::backend::Backend {
+                fn walk_ast<'b>(&'b self, pass: $crate::query_builder::AstPass<'_, 'b, DB>) -> $crate::result::QueryResult<()> {
+                    <table as $crate::query_builder::nodes::StaticQueryFragment>::STATIC_COMPONENT.walk_ast(pass)
+                }
+            }
+
             $crate::__diesel_table_generate_static_query_fragment_for_table!($schema, table, $sql_name);
 
             impl $crate::query_builder::AsQuery for table {

@@ -3,9 +3,10 @@ use super::{AliasSource, AliasedField, FieldAliasMapper};
 use crate::backend::Backend;
 use crate::expression::{Expression, SelectableExpression, ValidGrouping};
 use crate::query_builder::nodes::StaticQueryFragment;
-use crate::query_builder::{AsQuery, AstPass, FromClause, QueryFragment, QueryId, SelectStatement};
+use crate::query_builder::{AsQuery, AstPass, FromClause, QueryFragment, QueryId, SelectStatement, Query};
 use crate::query_source::{AppearsInFromClause, Column, Never, QuerySource, Table, TableNotEqual};
 use crate::result::QueryResult;
+use crate::AppearsOnTable;
 
 use std::marker::PhantomData;
 
@@ -50,7 +51,7 @@ impl<S> QueryId for Alias<S>
 where
     Self: 'static,
     S: AliasSource,
-    S::Target: Table,
+    S::Target: QueryId,
 {
     type QueryId = Self;
     const HAS_STATIC_QUERY_ID: bool = true;
@@ -82,11 +83,12 @@ impl<S, DB> QueryFragment<DB> for Alias<S>
 where
     S: AliasSource,
     DB: Backend,
-    S::Target: StaticQueryFragment,
-    <S::Target as StaticQueryFragment>::Component: QueryFragment<DB>,
+    S::Target: QueryFragment<DB>,
+    //<S::Target as StaticQueryFragment>::Component: QueryFragment<DB>,
 {
     fn walk_ast<'b>(&'b self, mut pass: AstPass<'_, 'b, DB>) -> QueryResult<()> {
-        <S::Target as StaticQueryFragment>::STATIC_COMPONENT.walk_ast(pass.reborrow())?;
+        self.source.target().walk_ast(pass.reborrow())?;
+        //<S::Target as StaticQueryFragment>::STATIC_COMPONENT.walk_ast(pass.reborrow())?;
         pass.push_sql(" AS ");
         pass.push_identifier(S::NAME)?;
         Ok(())
@@ -106,6 +108,36 @@ where
     fn as_query(self) -> Self::Query {
         SelectStatement::simple(self)
     }
+}
+
+impl<S> Expression for Alias<S>
+where
+    S: AliasSource,
+    S::Target: Expression,
+{
+    type SqlType = <S::Target as Expression>::SqlType;
+}
+
+impl<S, QS> AppearsOnTable<QS> for Alias<S>
+where
+    S: AliasSource,
+    S::Target: AppearsOnTable<QS>,
+{
+}
+
+impl<QS, S> SelectableExpression<QS> for Alias<S>
+where
+    S: AliasSource,
+    S::Target: SelectableExpression<QS>,
+{
+}
+
+impl<S, GB> ValidGrouping<GB> for Alias<S>
+where
+    S: AliasSource,
+    S::Target: ValidGrouping<GB>,
+{
+    type IsAggregate = <S::Target as ValidGrouping<GB>>::IsAggregate;
 }
 
 impl<S, QS> AppearsInFromClause<QS> for Alias<S>

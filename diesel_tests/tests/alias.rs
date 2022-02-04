@@ -148,3 +148,42 @@ fn find_and_first() {
         Ok("Sean".into()),
     )
 }
+
+#[test]
+fn column_alias() {
+    use diesel::query_source::aliasing::*;
+
+    let connection = &mut connection_with_sean_and_tess_in_users_table();
+
+    table! {
+        users {
+            id -> Integer,
+            name -> Text,
+        }
+    }
+
+    struct NameAlias {
+        expression: diesel::dsl::Concat<users::name, String>,
+    }
+
+    impl AliasSource for NameAlias {
+        const NAME: &'static str = "name_alias";
+
+        type Target = diesel::dsl::Concat<users::name, String>;
+
+        fn target(&self) -> &Self::Target {
+            &self.expression
+        }
+    }
+
+    let name_alias = Alias::new(NameAlias {
+        expression: users::name.concat(String::from("!")),
+    });
+    let query = users::table.select(name_alias);
+    println!("{}", diesel::debug_query(&query));
+
+    let names = query.load::<String>(connection).unwrap();
+
+    assert_eq!(names, vec![String::from("Sean!"), String::from("Tess!")]);
+    panic!("That's here to inspect the sql");
+}
