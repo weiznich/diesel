@@ -482,45 +482,14 @@ macro_rules! impl_valid_grouping_for_tuple_of_columns {
 }
 
 macro_rules! impl_sql_type {
-    (
-        @build
-        start_ts = [$($ST: ident,)*],
-        ts = [$T1: ident,],
-        bounds = [$($bounds: tt)*],
-        is_null = [$($is_null: tt)*],
-    )=> {
-        impl<$($ST,)*> SqlType for ($($ST,)*)
-        where
-            $($ST: SqlType,)*
-            $($bounds)*
-            $T1::IsNull: OneIsNullable<$($is_null)*>,
-        {
-            type IsNull = <$T1::IsNull as OneIsNullable<$($is_null)*>>::Out;
-        }
-
-    };
-    (
-        @build
-        start_ts = [$($ST: ident,)*],
-        ts = [$T1: ident, $($T: ident,)+],
-        bounds = [$($bounds: tt)*],
-        is_null = [$($is_null: tt)*],
-    )=> {
-        impl_sql_type!{
-            @build
-            start_ts = [$($ST,)*],
-            ts = [$($T,)*],
-            bounds = [$($bounds)* $T1::IsNull: OneIsNullable<$($is_null)*>,],
-            is_null = [<$T1::IsNull as OneIsNullable<$($is_null)*>>::Out],
-        }
-    };
     ($T1: ident, $($T: ident,)+) => {
-        impl_sql_type!{
-            @build
-            start_ts = [$T1, $($T,)*],
-            ts = [$($T,)*],
-            bounds = [],
-            is_null = [$T1::IsNull],
+        impl<$T1, $($T,)*> SqlType for ($T1, $($T,)*)
+        where
+            $T1: SqlType,
+            ($($T,)*): SqlType,
+            $T1::IsNull: OneIsNullable<<($($T,)*) as SqlType>::IsNull>,
+        {
+            type IsNull = <$T1::IsNull as OneIsNullable<<($($T,)*) as SqlType>::IsNull>>::Out;
         }
     };
     ($T1: ident,) => {
