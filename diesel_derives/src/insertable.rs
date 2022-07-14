@@ -87,7 +87,7 @@ pub fn derive(item: DeriveInput) -> TokenStream {
         {
             type Values = <(#(#direct_field_ty,)*) as Insertable<#table_name::table>>::Values;
 
-            fn values(self) -> Self::Values {
+            fn values(self) -> <(#(#direct_field_ty,)*) as Insertable<#table_name::table>>::Values {
                 (#(#direct_field_assign,)*).values()
             }
         }
@@ -105,8 +105,8 @@ pub fn derive(item: DeriveInput) -> TokenStream {
             {
                 type Values = <(#(#ref_field_ty,)*) as Insertable<#table_name::table>>::Values;
 
-                fn values(self) -> Self::Values {
-                    (#(#ref_field_assign,)*).values()
+                fn values(self) -> <(#(#ref_field_ty,)*) as Insertable<#table_name::table>>::Values {
+                   (#(#ref_field_assign,)*).values()
                 }
             }
         }
@@ -228,8 +228,9 @@ fn field_expr(
 ) -> TokenStream {
     let field_name = &field.name;
     let column_name = field.column_name();
-    let column: Expr = parse_quote!(#table_name::#column_name);
     let span = field.span;
+
+    let column: Expr = parse_quote!(#table_name::#column_name);
     if treat_none_as_default_value {
         if is_option_ty(&field.ty) {
             if lifetime.is_some() {
