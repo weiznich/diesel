@@ -1,9 +1,9 @@
-use proc_macro2::TokenStream;
-use syn::{DeriveInput, Expr, Path, Type};
-
 use attrs::AttributeSpanWrapper;
 use field::Field;
 use model::Model;
+use proc_macro2::TokenStream;
+use quote::quote_spanned;
+use syn::{DeriveInput, Expr, Path, Type};
 use util::{inner_of_option_ty, is_option_ty, wrap_in_dummy_mod};
 
 pub fn derive(item: DeriveInput) -> TokenStream {
@@ -133,14 +133,14 @@ pub fn derive(item: DeriveInput) -> TokenStream {
 
 fn field_ty_embed(field: &Field, lifetime: Option<TokenStream>) -> TokenStream {
     let field_ty = &field.ty;
-
-    quote!(#lifetime #field_ty)
+    let span = field.span;
+    quote_spanned!(span=> #lifetime #field_ty)
 }
 
 fn field_expr_embed(field: &Field, lifetime: Option<TokenStream>) -> TokenStream {
     let field_name = &field.name;
-
-    quote!(#lifetime self.#field_name)
+    let span = field.span;
+    quote_spanned!(span=> #lifetime self.#field_name)
 }
 
 fn field_ty_serialize_as(
@@ -150,23 +150,23 @@ fn field_ty_serialize_as(
     treat_none_as_default_value: bool,
 ) -> TokenStream {
     let column_name = field.column_name();
-
+    let span = field.span;
     if treat_none_as_default_value {
         let inner_ty = inner_of_option_ty(ty);
 
-        quote!(
+        quote_spanned! {span=>
             std::option::Option<diesel::dsl::Eq<
                 #table_name::#column_name,
                 #inner_ty,
             >>
-        )
+        }
     } else {
-        quote!(
+        quote_spanned! {span=>
             diesel::dsl::Eq<
                 #table_name::#column_name,
                 #ty,
             >
-        )
+        }
     }
 }
 
@@ -179,15 +179,15 @@ fn field_expr_serialize_as(
     let field_name = &field.name;
     let column_name = field.column_name();
     let column = quote!(#table_name::#column_name);
-
+    let span = field.span;
     if treat_none_as_default_value {
         if is_option_ty(ty) {
-            quote!(self.#field_name.map(|x| #column.eq(::std::convert::Into::<#ty>::into(x))))
+            quote_spanned!(span=> self.#field_name.map(|x| #column.eq(::std::convert::Into::<#ty>::into(x))))
         } else {
-            quote!(std::option::Option::Some(#column.eq(::std::convert::Into::<#ty>::into(self.#field_name))))
+            quote_spanned!(span=> std::option::Option::Some(#column.eq(::std::convert::Into::<#ty>::into(self.#field_name))))
         }
     } else {
-        quote!(#column.eq(::std::convert::Into::<#ty>::into(self.#field_name)))
+        quote_spanned!(span=> #column.eq(::std::convert::Into::<#ty>::into(self.#field_name)))
     }
 }
 
@@ -198,25 +198,25 @@ fn field_ty(
     treat_none_as_default_value: bool,
 ) -> TokenStream {
     let column_name = field.column_name();
-
+    let span = field.span;
     if treat_none_as_default_value {
         let inner_ty = inner_of_option_ty(&field.ty);
 
-        quote!(
+        quote_spanned! {span=>
             std::option::Option<diesel::dsl::Eq<
                 #table_name::#column_name,
                 #lifetime #inner_ty,
             >>
-        )
+        }
     } else {
         let inner_ty = &field.ty;
 
-        quote!(
+        quote_spanned! {span=>
             diesel::dsl::Eq<
                 #table_name::#column_name,
                 #lifetime #inner_ty,
             >
-        )
+        }
     }
 }
 
@@ -229,18 +229,18 @@ fn field_expr(
     let field_name = &field.name;
     let column_name = field.column_name();
     let column: Expr = parse_quote!(#table_name::#column_name);
-
+    let span = field.span;
     if treat_none_as_default_value {
         if is_option_ty(&field.ty) {
             if lifetime.is_some() {
-                quote!(self.#field_name.as_ref().map(|x| #column.eq(x)))
+                quote_spanned!(span=> self.#field_name.as_ref().map(|x| #column.eq(x)))
             } else {
-                quote!(self.#field_name.map(|x| #column.eq(x)))
+                quote_spanned!(span=> self.#field_name.map(|x| #column.eq(x)))
             }
         } else {
-            quote!(std::option::Option::Some(#column.eq(#lifetime self.#field_name)))
+            quote_spanned!(span=> std::option::Option::Some(#column.eq(#lifetime self.#field_name)))
         }
     } else {
-        quote!(#column.eq(#lifetime self.#field_name))
+        quote_spanned!(span=> #column.eq(#lifetime self.#field_name))
     }
 }
