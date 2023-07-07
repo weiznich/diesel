@@ -17,7 +17,7 @@ use std::fmt::Debug;
 
 pub use self::transaction_manager::{
     AnsiTransactionManager, TransactionDepthChange, TransactionManager, TransactionManagerStatus,
-    ValidTransactionManagerStatus,
+    ValidTransactionManagerStatus, InTransactionStatus
 };
 
 #[diesel_derives::__diesel_public_if(

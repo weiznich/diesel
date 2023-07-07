@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use crate::connection::Connection;
 use crate::result::{Error, QueryResult};
 use std::borrow::Cow;
@@ -170,13 +171,19 @@ impl TransactionManagerStatus {
         *self = TransactionManagerStatus::InError
     }
 
-    fn transaction_state(&mut self) -> QueryResult<&mut ValidTransactionManagerStatus> {
+    #[diesel_derives::__diesel_public_if(
+        feature = "i-implement-a-third-party-backend-and-opt-into-breaking-changes"
+    )]
+    pub(self) fn transaction_state(&mut self) -> QueryResult<&mut ValidTransactionManagerStatus> {
         match self {
             TransactionManagerStatus::Valid(valid_status) => Ok(valid_status),
             TransactionManagerStatus::InError => Err(Error::BrokenTransactionManager),
         }
     }
 
+    #[diesel_derives::__diesel_public_if(
+        feature = "i-implement-a-third-party-backend-and-opt-into-breaking-changes"
+    )]
     pub(crate) fn set_test_transaction_flag(&mut self) {
         if let TransactionManagerStatus::Valid(ValidTransactionManagerStatus {
             in_transaction: Some(s),
@@ -190,13 +197,25 @@ impl TransactionManagerStatus {
 /// Valid transaction status for the manager. Can return the current transaction depth
 #[allow(missing_copy_implementations)]
 #[derive(Debug, Default)]
+#[diesel_derives::__diesel_public_if(
+    feature = "i-implement-a-third-party-backend-and-opt-into-breaking-changes",
+    public_fields(in_transaction)
+)]
 pub struct ValidTransactionManagerStatus {
     in_transaction: Option<InTransactionStatus>,
 }
 
 #[allow(missing_copy_implementations)]
 #[derive(Debug)]
-struct InTransactionStatus {
+#[diesel_derives::__diesel_public_if(
+    feature = "i-implement-a-third-party-backend-and-opt-into-breaking-changes",
+    public_fields(
+        test_transaction,
+        transaction_depth,
+        requires_rollback_maybe_up_to_top_level
+    )
+)]
+pub struct InTransactionStatus {
     transaction_depth: NonZeroU32,
     /// If that is registered, savepoints rollbacks will still be attempted, but failure to do so
     /// will not result in an error. (Some may succeed, some may not.)

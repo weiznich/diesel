@@ -110,6 +110,11 @@ impl PgTypeMetadata {
     pub fn array_oid(&self) -> Result<u32, impl std::error::Error + Send + Sync> {
         self.0.as_ref().map(|i| i.array_oid).map_err(Clone::clone)
     }
+
+    /// todo
+    pub fn inner_mut(&mut self) -> &mut Result<InnerPgTypeMetadata, FailedToLookupTypeError> {
+        &mut self.0
+    }
 }
 
 impl Backend for Pg {
