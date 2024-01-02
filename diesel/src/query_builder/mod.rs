@@ -37,7 +37,7 @@ pub(crate) mod where_clause;
 #[doc(inline)]
 pub use self::ast_pass::AstPass;
 #[doc(inline)]
-pub use self::bind_collector::BindCollector;
+pub use self::bind_collector::{BindCollector, IntoBinds};
 #[doc(inline)]
 pub use self::debug_query::DebugQuery;
 #[doc(inline)]

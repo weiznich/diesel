@@ -34,6 +34,21 @@ pub trait BindCollector<'a, DB: TypeMetadata>: Sized {
         U: ToSql<T, DB> + ?Sized + 'a;
 }
 
+/// A type which manages serializing bind parameters during query construction.
+///
+/// The only reason you would ever need to interact with this trait is if you
+/// are adding support for a new backend to Diesel. Plugins which are extending
+/// the query builder will use [`AstPass::push_bind_param`] instead.
+///
+/// [`AstPass::push_bind_param`]: crate::query_builder::AstPass::push_bind_param()
+pub trait IntoBinds<'a, DB: TypeMetadata>: BindCollector<'a, DB> {
+    /// The internal buffer type used by this bind collector
+    type OwnedBuffer;
+
+    /// Serializes the given bind value, and collects the result.
+    fn take_binds(self) -> Vec<Self::OwnedBuffer>;
+}
+
 #[derive(Debug)]
 /// A bind collector used by backends which transmit bind parameters as an
 /// opaque blob of bytes.
@@ -104,6 +119,17 @@ where
         }
         self.metadata.push(metadata);
         Ok(())
+    }
+}
+
+impl<'a, DB> IntoBinds<'a, DB> for RawBytesBindCollector<DB>
+where
+    for<'bind> DB: Backend<BindCollector<'bind> = Self> + TypeMetadata,
+{
+    type OwnedBuffer = Option<Vec<u8>>;
+
+    fn take_binds(self) -> Vec<Self::OwnedBuffer> {
+        self.binds
     }
 }
 
