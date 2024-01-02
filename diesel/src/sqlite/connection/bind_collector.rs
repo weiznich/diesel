@@ -196,10 +196,42 @@ impl<'a> BindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
     }
 }
 
+#[derive(Debug)]
+pub enum OwnedSqliteBindValue {
+    String(Box<str>),
+    Binary(Box<[u8]>),
+    I32(i32),
+    I64(i64),
+    F64(f64),
+    Null,
+}
+
+impl<'a> std::convert::From<InternalSqliteBindValue<'a>> for OwnedSqliteBindValue {
+    fn from(value: InternalSqliteBindValue<'a>) -> Self {
+        match value {
+            InternalSqliteBindValue::String(s) => Self::String(s),
+            InternalSqliteBindValue::Binary(b) => Self::Binary(b),
+            InternalSqliteBindValue::I32(val) => Self::I32(val),
+            InternalSqliteBindValue::I64(val) => Self::I64(val),
+            InternalSqliteBindValue::F64(val) => Self::F64(val),
+            InternalSqliteBindValue::Null => Self::Null,
+            _ => Self::Null,
+        }
+    }
+}
+
 impl<'a> IntoBinds<'a, Sqlite> for SqliteBindCollector<'a> {
-    type OwnedBuffer = ();
+    type OwnedBuffer = (OwnedSqliteBindValue, SqliteType);
 
     fn take_binds(self) -> Vec<Self::OwnedBuffer> {
-        Vec::new()
+        let mut out = Vec::with_capacity(self.binds.len());
+        let mut binds = self.binds;
+        for b in binds
+            .drain(..)
+            .map(|internal| (OwnedSqliteBindValue::from(internal.0), internal.1))
+        {
+            out.push(b);
+        }
+        out
     }
 }
