@@ -1,4 +1,4 @@
-use crate::query_builder::BindCollector;
+use crate::query_builder::{BindCollector, IntoBinds};
 use crate::serialize::{IsNull, Output};
 use crate::sql_types::HasSqlType;
 use crate::sqlite::{Sqlite, SqliteType};
@@ -193,5 +193,13 @@ impl<'a> BindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
             metadata,
         ));
         Ok(())
+    }
+}
+
+impl<'a> IntoBinds<'a, Sqlite> for SqliteBindCollector<'a> {
+    type OwnedBuffer = ();
+
+    fn take_binds(self) -> Vec<Self::OwnedBuffer> {
+        Vec::new()
     }
 }
