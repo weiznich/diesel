@@ -251,6 +251,24 @@ where
         }
         Ok(())
     }
+    // pass.push_bind_collector_data(self);
+    // #[diesel_derives::__diesel_public_if(
+    //     feature = "i-implement-a-third-party-backend-and-opt-into-breaking-changes"
+    // )]
+    // pub(crate) fn push_bind_collector_data<T, U>(&mut self, bind_data: IntoBinds) -> QueryResult<()>
+    // where
+    //     DB: Backend,
+    //     {
+    //         match self.internals {
+    //         AstPassInternals::ToSql(ref mut out, _) => out.push_bind_param(),
+    //         AstPassInternals::CollectBinds {
+    //             ref mut collector,
+    //             ref mut metadata_lookup,
+    //         } => collector.push_bound_value(bind, metadata_lookup)?,
+    //         _ => {}
+    //         }
+
+    //     }
 
     /// Get information about the backend that will consume this query
     #[cfg_attr(

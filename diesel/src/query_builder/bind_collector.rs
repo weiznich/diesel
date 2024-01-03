@@ -43,10 +43,12 @@ pub trait BindCollector<'a, DB: TypeMetadata>: Sized {
 /// [`AstPass::push_bind_param`]: crate::query_builder::AstPass::push_bind_param()
 pub trait IntoBinds<'a, DB: TypeMetadata>: BindCollector<'a, DB> {
     /// The internal buffer type used by this bind collector
-    type OwnedBuffer;
+    type MovableBindCollector;
 
     /// Serializes the given bind value, and collects the result.
-    fn take_binds(self) -> Vec<Self::OwnedBuffer>;
+    fn take_binds(self) -> Self::MovableBindCollector;
+
+    fn refill(&self, original: &mut Self);
 }
 
 #[derive(Debug)]
@@ -125,11 +127,17 @@ where
 impl<'a, DB> IntoBinds<'a, DB> for RawBytesBindCollector<DB>
 where
     for<'bind> DB: Backend<BindCollector<'bind> = Self> + TypeMetadata,
+    <DB as TypeMetadata>::TypeMetadata: Clone,
 {
-    type OwnedBuffer = Option<Vec<u8>>;
+    type MovableBindCollector = Self;
 
-    fn take_binds(self) -> Vec<Self::OwnedBuffer> {
-        self.binds
+    fn take_binds(self) -> Self {
+        self
+    }
+
+    fn refill(&self, original: &mut Self) {
+        original.binds = self.binds.clone();
+        original.metadata = self.metadata.clone();
     }
 }
 
