@@ -1,4 +1,4 @@
-use crate::query_builder::{BindCollector, IntoBinds};
+use crate::query_builder::{BindCollector, MovableBindCollector};
 use crate::serialize::{IsNull, Output};
 use crate::sql_types::HasSqlType;
 use crate::sqlite::{Sqlite, SqliteType};
@@ -225,7 +225,7 @@ impl<'a> std::convert::From<InternalSqliteBindValue<'a>> for OwnedSqliteBindValu
     }
 }
 
-// impl<'a> IntoBinds<'a, Sqlite> for SqliteBindCollector<'a> {
+// impl<'a> MovableBindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
 //     type OwnedBuffer = OwnedSqliteBindValue;
 
 //     fn take_binds(self) -> Vec<Self::OwnedBuffer> {

@@ -34,21 +34,16 @@ pub trait BindCollector<'a, DB: TypeMetadata>: Sized {
         U: ToSql<T, DB> + ?Sized + 'a;
 }
 
-/// A type which manages serializing bind parameters during query construction.
-///
-/// The only reason you would ever need to interact with this trait is if you
-/// are adding support for a new backend to Diesel. Plugins which are extending
-/// the query builder will use [`AstPass::push_bind_param`] instead.
-///
-/// [`AstPass::push_bind_param`]: crate::query_builder::AstPass::push_bind_param()
-pub trait IntoBinds<'a, DB: TypeMetadata>: BindCollector<'a, DB> {
-    /// The internal buffer type used by this bind collector
-    type MovableBindCollector;
+/// A movable version of the bind collector which allows it to be deconstructed, moved and reconstructucted
+pub trait MovableBindCollector<'a, DB: TypeMetadata>: BindCollector<'a, DB> {
+    /// The movable version of this bind collector
+    type MovableData;
 
-    /// Serializes the given bind value, and collects the result.
-    fn take_binds(self) -> Self::MovableBindCollector;
+    /// Builds a movable version of the bind collector
+    fn movable(self) -> Self::MovableData;
 
-    fn refill(&self, original: &mut Self);
+    /// Rebuilds the bind collector from its movable version
+    fn rebuild(&mut self, from: &Self::MovableData);
 }
 
 #[derive(Debug)]
@@ -124,20 +119,20 @@ where
     }
 }
 
-impl<'a, DB> IntoBinds<'a, DB> for RawBytesBindCollector<DB>
+impl<'a, DB> MovableBindCollector<'a, DB> for RawBytesBindCollector<DB>
 where
     for<'bind> DB: Backend<BindCollector<'bind> = Self> + TypeMetadata,
     <DB as TypeMetadata>::TypeMetadata: Clone,
 {
-    type MovableBindCollector = Self;
+    type MovableData = Self;
 
-    fn take_binds(self) -> Self {
+    fn movable(self) -> Self {
         self
     }
 
-    fn refill(&self, original: &mut Self) {
-        original.binds = self.binds.clone();
-        original.metadata = self.metadata.clone();
+    fn rebuild(&mut self, from: &Self) {
+        self.binds = from.binds.clone();
+        self.metadata = from.metadata.clone();
     }
 }
 

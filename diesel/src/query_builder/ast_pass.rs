@@ -6,6 +6,8 @@ use crate::result::QueryResult;
 use crate::serialize::ToSql;
 use crate::sql_types::HasSqlType;
 
+use super::MovableBindCollector;
+
 #[allow(missing_debug_implementations)]
 /// The primary type used when walking a Diesel AST during query execution.
 ///
@@ -252,23 +254,29 @@ where
         Ok(())
     }
     // pass.push_bind_collector_data(self);
-    // #[diesel_derives::__diesel_public_if(
-    //     feature = "i-implement-a-third-party-backend-and-opt-into-breaking-changes"
-    // )]
-    // pub(crate) fn push_bind_collector_data<T, U>(&mut self, bind_data: IntoBinds) -> QueryResult<()>
-    // where
-    //     DB: Backend,
-    //     {
-    //         match self.internals {
-    //         AstPassInternals::ToSql(ref mut out, _) => out.push_bind_param(),
-    //         AstPassInternals::CollectBinds {
-    //             ref mut collector,
-    //             ref mut metadata_lookup,
-    //         } => collector.push_bound_value(bind, metadata_lookup)?,
-    //         _ => {}
-    //         }
-
-    //     }
+    #[diesel_derives::__diesel_public_if(
+        feature = "i-implement-a-third-party-backend-and-opt-into-breaking-changes"
+    )]
+    pub(crate) fn push_bind_collector_data<MD>(
+        &mut self,
+        bind_collector_data: &MD,
+    ) -> QueryResult<()>
+    where
+        DB: Backend,
+        for<'bc> DB::BindCollector<'bc>: MovableBindCollector<'bc, DB, MovableData = MD>,
+        // binds: Vec<<<DB as Backend>::BindCollector<'param> as IntoBinds<'param, DB>>::OwnedBuffer>,
+        // for<'mbc> MD: MovableBindCollector<'mbc, DB>::MovableData,
+    {
+        match self.internals {
+            // AstPassInternals::ToSql(ref mut out, _) => out.push_bind_param(),
+            AstPassInternals::CollectBinds {
+                ref mut collector,
+                metadata_lookup: _,
+            } => collector.rebuild(bind_collector_data),
+            _ => {}
+        }
+        Ok(())
+    }
 
     /// Get information about the backend that will consume this query
     #[cfg_attr(
