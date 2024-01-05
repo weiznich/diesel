@@ -35,12 +35,12 @@ pub trait BindCollector<'a, DB: TypeMetadata>: Sized {
 }
 
 /// A movable version of the bind collector which allows it to be deconstructed, moved and reconstructucted
-pub trait MovableBindCollector<'a, DB: TypeMetadata>: BindCollector<'a, DB> {
+pub trait MovableBindCollector<DB: TypeMetadata>: for<'a> BindCollector<'a, DB> {
     /// The movable version of this bind collector
-    type MovableData;
+    type MovableData: Send;
 
     /// Builds a movable version of the bind collector
-    fn movable(self) -> Self::MovableData;
+    fn movable(&self) -> Self::MovableData;
 
     /// Rebuilds the bind collector from its movable version
     fn rebuild(&mut self, from: &Self::MovableData);
@@ -119,15 +119,18 @@ where
     }
 }
 
-impl<'a, DB> MovableBindCollector<'a, DB> for RawBytesBindCollector<DB>
+impl<DB> MovableBindCollector<DB> for RawBytesBindCollector<DB>
 where
-    for<'bind> DB: Backend<BindCollector<'bind> = Self> + TypeMetadata,
-    <DB as TypeMetadata>::TypeMetadata: Clone,
+    for<'a> DB: Backend<BindCollector<'a> = Self> + TypeMetadata,
+    <DB as TypeMetadata>::TypeMetadata: Clone + Send,
 {
     type MovableData = Self;
 
-    fn movable(self) -> Self {
-        self
+    fn movable(&self) -> Self {
+        RawBytesBindCollector {
+            binds: self.binds.clone(),
+            metadata: self.metadata.clone(),
+        }
     }
 
     fn rebuild(&mut self, from: &Self) {

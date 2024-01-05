@@ -239,6 +239,11 @@ pub trait QueryFragment<DB: Backend, SP = self::private::NotSpecialized> {
         out: &mut DB::BindCollector<'b>,
         metadata_lookup: &mut DB::MetadataLookup,
         backend: &'b DB,
+        // fn collect_binds<'bind, 'slf: 'bind, 'back: 'bind>(
+        //     &'slf self,
+        //     out: &mut DB::BindCollector<'bind>,
+        //     metadata_lookup: &mut DB::MetadataLookup,
+        // backend: &'back DB,
     ) -> QueryResult<()> {
         self.walk_ast(AstPass::collect_binds(out, metadata_lookup, backend))
     }

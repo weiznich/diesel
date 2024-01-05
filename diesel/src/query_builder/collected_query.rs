@@ -1,5 +1,5 @@
-use super::{AstPass, MovableBindCollector, QueryFragment, QueryId};
-use crate::backend::Backend;
+use super::{AstPass, BindCollector, MovableBindCollector, QueryFragment, QueryId};
+use crate::backend::{Backend, DieselReserveSpecialization};
 use crate::result::QueryResult;
 
 pub struct CollectedQuery<T>
@@ -25,8 +25,8 @@ impl<T> CollectedQuery<T> {
 
 impl<DB, T> QueryFragment<DB> for CollectedQuery<T>
 where
-    DB: Backend,
-    for<'a> <DB as Backend>::BindCollector<'a>: MovableBindCollector<'a, DB, MovableData = T>,
+    DB: Backend + DieselReserveSpecialization,
+    for<'a> <DB as Backend>::BindCollector<'a>: MovableBindCollector<DB, MovableData = T>,
     // for<'a> T: MovableBindCollector<'a, DB>,
     // for<'a> DB: Backend<BindCollector<'a> as IntoBinds<'a, DB>::OwnedBuffer = T>,
     // binds: Vec<<<DB as Backend>::BindCollector<'param> as IntoBinds<'param, DB>>::OwnedBuffer>,

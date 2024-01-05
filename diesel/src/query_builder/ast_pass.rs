@@ -263,7 +263,7 @@ where
     ) -> QueryResult<()>
     where
         DB: Backend,
-        for<'bc> DB::BindCollector<'bc>: MovableBindCollector<'bc, DB, MovableData = MD>,
+        for<'bc> DB::BindCollector<'bc>: MovableBindCollector<DB, MovableData = MD>,
         // binds: Vec<<<DB as Backend>::BindCollector<'param> as IntoBinds<'param, DB>>::OwnedBuffer>,
         // for<'mbc> MD: MovableBindCollector<'mbc, DB>::MovableData,
     {
