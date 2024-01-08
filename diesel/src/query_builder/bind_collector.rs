@@ -34,10 +34,14 @@ pub trait BindCollector<'a, DB: TypeMetadata>: Sized {
         U: ToSql<T, DB> + ?Sized + 'a;
 }
 
+pub trait SendableCollector: Send + 'static {
+    fn describe(&self) -> String;
+}
+
 /// A movable version of the bind collector which allows it to be deconstructed, moved and reconstructucted
 pub trait MovableBindCollector<DB: TypeMetadata>: for<'a> BindCollector<'a, DB> {
     /// The movable version of this bind collector
-    type MovableData: Send;
+    type MovableData: SendableCollector;
 
     /// Builds a movable version of the bind collector
     fn movable(&self) -> Self::MovableData;
@@ -119,21 +123,30 @@ where
     }
 }
 
+impl<DB: Backend + TypeMetadata + 'static> SendableCollector for RawBytesBindCollector<DB>
+where
+    <DB as TypeMetadata>::TypeMetadata: Send,
+{
+    fn describe(&self) -> String {
+        String::from("RawBytes")
+    }
+}
+
 impl<DB> MovableBindCollector<DB> for RawBytesBindCollector<DB>
 where
-    for<'a> DB: Backend<BindCollector<'a> = Self> + TypeMetadata,
+    for<'a> DB: Backend<BindCollector<'a> = Self> + TypeMetadata + 'static,
     <DB as TypeMetadata>::TypeMetadata: Clone + Send,
 {
     type MovableData = Self;
 
-    fn movable(&self) -> Self {
+    fn movable(&self) -> Self::MovableData {
         RawBytesBindCollector {
             binds: self.binds.clone(),
             metadata: self.metadata.clone(),
         }
     }
 
-    fn rebuild(&mut self, from: &Self) {
+    fn rebuild(&mut self, from: &Self::MovableData) {
         self.binds = from.binds.clone();
         self.metadata = from.metadata.clone();
     }
