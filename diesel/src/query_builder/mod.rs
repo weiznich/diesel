@@ -40,7 +40,7 @@ pub use self::ast_pass::AstPass;
 #[doc(inline)]
 pub use self::bind_collector::{BindCollector, MovableBindCollector};
 #[doc(inline)]
-pub use self::collected_query::CollectedQuery;
+pub use self::collected_query::{CollectedLoadQuery, CollectedQuery};
 #[doc(inline)]
 pub use self::debug_query::DebugQuery;
 #[doc(inline)]

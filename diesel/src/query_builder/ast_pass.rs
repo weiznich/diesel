@@ -264,11 +264,9 @@ where
     where
         DB: Backend,
         for<'bc> DB::BindCollector<'bc>: MovableBindCollector<DB, MovableData = MD>,
-        // binds: Vec<<<DB as Backend>::BindCollector<'param> as IntoBinds<'param, DB>>::OwnedBuffer>,
-        // for<'mbc> MD: MovableBindCollector<'mbc, DB>::MovableData,
     {
         match self.internals {
-            // AstPassInternals::ToSql(ref mut out, _) => out.push_bind_param(),
+            // TODO AstPassInternals::ToSql(ref mut out, _) => out.push_bind_param(),
             AstPassInternals::CollectBinds {
                 ref mut collector,
                 metadata_lookup: _,

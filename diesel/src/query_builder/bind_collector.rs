@@ -34,12 +34,10 @@ pub trait BindCollector<'a, DB: TypeMetadata>: Sized {
         U: ToSql<T, DB> + ?Sized + 'a;
 }
 
-pub trait SendableCollector: Send + 'static {
-    fn describe(&self) -> String;
-}
+pub trait SendableCollector: Send + 'static {}
 
 /// A movable version of the bind collector which allows it to be deconstructed, moved and reconstructucted
-pub trait MovableBindCollector<DB: TypeMetadata>: for<'a> BindCollector<'a, DB> {
+pub trait MovableBindCollector<DB: TypeMetadata> {
     /// The movable version of this bind collector
     type MovableData: SendableCollector;
 
@@ -123,13 +121,9 @@ where
     }
 }
 
-impl<DB: Backend + TypeMetadata + 'static> SendableCollector for RawBytesBindCollector<DB>
-where
-    <DB as TypeMetadata>::TypeMetadata: Send,
+impl<DB: Backend + TypeMetadata + 'static> SendableCollector for RawBytesBindCollector<DB> where
+    <DB as TypeMetadata>::TypeMetadata: Send
 {
-    fn describe(&self) -> String {
-        String::from("RawBytes")
-    }
 }
 
 impl<DB> MovableBindCollector<DB> for RawBytesBindCollector<DB>

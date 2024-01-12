@@ -1,3 +1,4 @@
+use crate::query_builder::bind_collector::SendableCollector;
 use crate::query_builder::{BindCollector, MovableBindCollector};
 use crate::serialize::{IsNull, Output};
 use crate::sql_types::HasSqlType;
@@ -206,37 +207,65 @@ pub enum OwnedSqliteBindValue {
     Null,
 }
 
-impl<'a> std::convert::From<InternalSqliteBindValue<'a>> for OwnedSqliteBindValue {
-    fn from(value: InternalSqliteBindValue<'a>) -> Self {
+impl<'a> std::convert::From<&InternalSqliteBindValue<'a>> for OwnedSqliteBindValue {
+    fn from(value: &InternalSqliteBindValue<'a>) -> Self {
         match value {
-            InternalSqliteBindValue::String(s) => Self::String(s),
+            InternalSqliteBindValue::String(s) => Self::String(s.clone()),
             InternalSqliteBindValue::BorrowedString(s) => {
-                Self::String(String::from(s).into_boxed_str())
+                Self::String(String::from(*s).into_boxed_str())
             }
-            InternalSqliteBindValue::Binary(b) => Self::Binary(b),
+            InternalSqliteBindValue::Binary(b) => Self::Binary(b.clone()),
             InternalSqliteBindValue::BorrowedBinary(s) => {
-                Self::Binary(Vec::from(s).into_boxed_slice())
+                Self::Binary(Vec::from(*s).into_boxed_slice())
             }
-            InternalSqliteBindValue::I32(val) => Self::I32(val),
-            InternalSqliteBindValue::I64(val) => Self::I64(val),
-            InternalSqliteBindValue::F64(val) => Self::F64(val),
+            InternalSqliteBindValue::I32(val) => Self::I32(*val),
+            InternalSqliteBindValue::I64(val) => Self::I64(*val),
+            InternalSqliteBindValue::F64(val) => Self::F64(*val),
             InternalSqliteBindValue::Null => Self::Null,
         }
     }
 }
 
-// impl<'a> MovableBindCollector<'a, Sqlite> for SqliteBindCollector<'a> {
-//     type OwnedBuffer = OwnedSqliteBindValue;
+impl<'a> std::convert::From<&OwnedSqliteBindValue> for InternalSqliteBindValue<'a> {
+    fn from(value: &OwnedSqliteBindValue) -> Self {
+        match value {
+            OwnedSqliteBindValue::String(s) => Self::String(s.clone()),
+            OwnedSqliteBindValue::Binary(b) => Self::Binary(b.clone()),
+            OwnedSqliteBindValue::I32(val) => Self::I32(*val),
+            OwnedSqliteBindValue::I64(val) => Self::I64(*val),
+            OwnedSqliteBindValue::F64(val) => Self::F64(*val),
+            OwnedSqliteBindValue::Null => Self::Null,
+        }
+    }
+}
 
-//     fn take_binds(self) -> Vec<Self::OwnedBuffer> {
-//         let mut out = Vec::with_capacity(self.binds.len());
-//         let mut binds = self.binds;
-//         for b in binds
-//             .drain(..)
-//             .map(|(bind, _)| OwnedSqliteBindValue::from(bind))
-//         {
-//             out.push(b);
-//         }
-//         out
-//     }
-// }
+pub struct SqliteBindCollectorData {
+    pub(in crate::sqlite) binds: Vec<(OwnedSqliteBindValue, SqliteType)>,
+}
+
+impl SendableCollector for SqliteBindCollectorData {}
+
+impl MovableBindCollector<Sqlite> for SqliteBindCollector<'_> {
+    type MovableData = SqliteBindCollectorData;
+
+    fn movable(&self) -> Self::MovableData {
+        let mut binds = Vec::with_capacity(self.binds.len());
+        for b in self
+            .binds
+            .iter()
+            .map(|(bind, tpe)| (OwnedSqliteBindValue::from(bind), *tpe))
+        {
+            binds.push(b);
+        }
+        SqliteBindCollectorData { binds }
+    }
+
+    fn rebuild(&mut self, from: &Self::MovableData) {
+        self.binds.reserve_exact(from.binds.len());
+        self.binds.extend(
+            from.binds
+                .iter()
+                .map(|(bind, tpe)| (InternalSqliteBindValue::from(bind), *tpe)),
+        );
+    }
+}
