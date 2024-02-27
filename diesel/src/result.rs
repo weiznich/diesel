@@ -416,6 +416,7 @@ impl StdError for UnexpectedEndOfRow {}
 
 /// An error occurred while deserializing a field
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct DeserializeFieldError {
     /// The name of the field that failed to deserialize
     pub field_name: Option<String>,
