@@ -546,7 +546,7 @@ where
         use crate::row::Field;
 
         let field = row.get(0).ok_or(crate::result::UnexpectedEndOfRow)?;
-        Ok(T::from_nullable_sql(field.value()).map_err(|e| {
+        T::from_nullable_sql(field.value()).map_err(|e| {
             if e.is::<crate::result::UnexpectedNullError>() {
                 return e;
             }
@@ -555,7 +555,7 @@ where
                 field_name: field.field_name().map(|s| s.to_string()),
                 error: e,
             })
-        })?)
+        })
     }
 }
 
