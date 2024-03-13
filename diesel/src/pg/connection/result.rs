@@ -11,7 +11,8 @@ use std::{slice, str};
 use super::raw::{RawConnection, RawResult};
 use super::row::PgRow;
 use crate::result::{DatabaseErrorInformation, DatabaseErrorKind, Error, QueryResult};
-use crate::util::OnceCell;
+use std::cell::OnceCell;
+//use crate::util::OnceCell;
 
 #[allow(missing_debug_implementations)]
 pub struct PgResult {
@@ -146,6 +147,7 @@ impl PgResult {
         )
     }
 
+    #[inline(always)] // benchmarks indicate a ~1.7% improvement in instruction count for this
     pub(super) fn column_name(&self, col_idx: usize) -> Option<&str> {
         self.column_name_map
             .get_or_init(|| {
