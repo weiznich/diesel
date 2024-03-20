@@ -43,6 +43,8 @@ impl Drop for OwnedSqliteValue {
     }
 }
 
+unsafe impl Send for OwnedSqliteValue {}
+
 impl<'row, 'stmt, 'query> SqliteValue<'row, 'stmt, 'query> {
     pub(super) fn new(
         row: Ref<'row, PrivateSqliteRow<'stmt, 'query>>,

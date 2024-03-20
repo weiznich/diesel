@@ -148,8 +148,10 @@ where
     }
 }
 
-pub trait IntoOwnedRow<'a, DB: Backend>: Row<'a, DB> {
-    fn into(self) -> impl Row<'static, DB>;
+pub trait IntoOwnedRow<'a, DB: Backend> {
+    type OwnedRow: Row<'a, DB> + Send + 'static;
+
+    fn into_owned(self) -> Self::OwnedRow;
 }
 
 // These traits are not part of the public API

@@ -24,13 +24,14 @@ pub(super) enum PrivateSqliteRow<'stmt, 'query> {
     },
 }
 
-struct OwnedSqliteRow {
+pub struct OwnedSqliteRow {
     values: Vec<Option<OwnedSqliteValue>>,
     column_names: Arc<[Option<String>]>,
 }
 
 impl<'a> IntoOwnedRow<'a, Sqlite> for SqliteRow<'a, '_> {
-    fn into(self) -> impl Row<'static, Sqlite> {
+    type OwnedRow = OwnedSqliteRow;
+    fn into_owned(self) -> Self::OwnedRow {
         // MOMO FIXME: is this the proper way to extract the data out of
         // Rc<RefCell<PrivateSqliteRow<'_> ?
         let SqliteRow { inner, field_count } = self;
@@ -313,8 +314,8 @@ fn fun_with_row_iters() {
 
 impl RowSealed for OwnedSqliteRow {}
 
-impl Row<'static, Sqlite> for OwnedSqliteRow {
-    type Field<'field> = OwnedSqliteField<'field> where Self: 'field;
+impl<'a> Row<'a, Sqlite> for OwnedSqliteRow {
+    type Field<'field> = OwnedSqliteField<'field> where 'a: 'field, Self: 'field;
     type InnerPartialRow = Self;
 
     fn field_count(&self) -> usize {
@@ -323,7 +324,7 @@ impl Row<'static, Sqlite> for OwnedSqliteRow {
 
     fn get<'field, I>(&'field self, idx: I) -> Option<Self::Field<'field>>
     where
-        'static: 'field,
+        'a: 'field,
         Self: RowIndex<I>,
     {
         let idx = self.idx(idx)?;
