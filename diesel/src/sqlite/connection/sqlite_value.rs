@@ -30,6 +30,9 @@ pub struct SqliteValue<'row, 'stmt, 'query> {
 }
 
 #[repr(transparent)]
+// MOMO TODO: impl Send
+// Missing Send because Rust ptr are not Send
+// Unsafe Send impl safe since value is built with sqlite3_value_dup
 pub(super) struct OwnedSqliteValue {
     pub(super) value: NonNull<ffi::sqlite3_value>,
 }

@@ -1,11 +1,12 @@
 use std::cell::{Ref, RefCell};
 use std::convert::TryFrom;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use super::sqlite_value::{OwnedSqliteValue, SqliteValue};
 use super::stmt::StatementUse;
 use crate::backend::Backend;
-use crate::row::{Field, PartialRow, Row, RowIndex, RowSealed};
+use crate::row::{Field, IntoOwnedRow, PartialRow, Row, RowIndex, RowSealed};
 use crate::sqlite::Sqlite;
 
 #[allow(missing_debug_implementations)]
@@ -17,9 +18,28 @@ pub struct SqliteRow<'stmt, 'query> {
 pub(super) enum PrivateSqliteRow<'stmt, 'query> {
     Direct(StatementUse<'stmt, 'query>),
     Duplicated {
+        // starting point to create the OwnedSqliteRow
         values: Vec<Option<OwnedSqliteValue>>,
-        column_names: Rc<[Option<String>]>,
+        column_names: Rc<[Option<String>]>, // Switch to Arc for the OwnedSqliteRow
     },
+}
+
+struct OwnedSqliteRow {
+    values: Vec<Option<OwnedSqliteValue>>,
+    column_names: Arc<[Option<String>]>,
+}
+
+impl<'a> IntoOwnedRow<'a, Sqlite> for SqliteRow<'a, '_> {
+    fn into(self) -> impl Row<'static, Sqlite> {
+        // MOMO FIXME: is this the proper way to extract the data out of
+        // Rc<RefCell<PrivateSqliteRow<'_> ?
+        let SqliteRow { inner, field_count } = self;
+        let inner = &inner.replace(PrivateSqliteRow::Duplicated {
+            values: Vec::new(),
+            column_names: Rc::new([]),
+        });
+        inner.movable()
+    }
 }
 
 impl<'stmt, 'query> PrivateSqliteRow<'stmt, 'query> {
@@ -56,6 +76,39 @@ impl<'stmt, 'query> PrivateSqliteRow<'stmt, 'query> {
                     .map(|v| v.as_ref().map(|v| v.duplicate()))
                     .collect(),
                 column_names: column_names.clone(),
+            },
+        }
+    }
+
+    pub(super) fn movable(&self) -> OwnedSqliteRow {
+        match self {
+            PrivateSqliteRow::Direct(stmt) => {
+                let column_names: Arc<[Option<String>]> = Arc::from(
+                    (0..stmt.column_count())
+                        .map(|idx| stmt.field_name(idx).map(|s| s.to_owned()))
+                        .collect::<Vec<_>>(),
+                );
+                OwnedSqliteRow {
+                    values: (0..stmt.column_count())
+                        .map(|idx| stmt.copy_value(idx))
+                        .collect(),
+                    column_names,
+                }
+            }
+            PrivateSqliteRow::Duplicated {
+                values,
+                column_names,
+            } => OwnedSqliteRow {
+                values: values
+                    .iter()
+                    .map(|v| v.as_ref().map(|v| v.duplicate()))
+                    .collect(),
+                column_names: Arc::from(
+                    (*column_names)
+                        .into_iter()
+                        .map(|s| s.to_owned())
+                        .collect::<Vec<_>>(),
+                ),
             },
         }
     }
@@ -256,4 +309,77 @@ fn fun_with_row_iters() {
         <String as FromSql<sql_types::Text, Sqlite>>::from_nullable_sql(first_values.1).unwrap(),
         expected[0].1
     );
+}
+
+impl RowSealed for OwnedSqliteRow {}
+
+impl Row<'static, Sqlite> for OwnedSqliteRow {
+    type Field<'field> = OwnedSqliteField<'field> where Self: 'field;
+    type InnerPartialRow = Self;
+
+    fn field_count(&self) -> usize {
+        self.values.len()
+    }
+
+    fn get<'field, I>(&'field self, idx: I) -> Option<Self::Field<'field>>
+    where
+        'static: 'field,
+        Self: RowIndex<I>,
+    {
+        let idx = self.idx(idx)?;
+        Some(OwnedSqliteField {
+            row: &self,
+            col_idx: i32::try_from(idx).ok()?,
+        })
+    }
+
+    fn partial_row(&self, range: std::ops::Range<usize>) -> PartialRow<'_, Self::InnerPartialRow> {
+        PartialRow::new(self, range)
+    }
+}
+
+impl RowIndex<usize> for OwnedSqliteRow {
+    fn idx(&self, idx: usize) -> Option<usize> {
+        if idx < self.field_count() {
+            Some(idx)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'idx> RowIndex<&'idx str> for OwnedSqliteRow {
+    fn idx(&self, field_name: &'idx str) -> Option<usize> {
+        self.column_names
+            .iter()
+            .position(|n| n.as_ref().map(|s| s as &str) == Some(field_name))
+    }
+}
+
+#[allow(missing_debug_implementations)]
+pub struct OwnedSqliteField<'row> {
+    pub(super) row: &'row OwnedSqliteRow,
+    pub(super) col_idx: i32,
+}
+
+impl<'row> Field<'row, Sqlite> for OwnedSqliteField<'row> {
+    fn field_name(&self) -> Option<&str> {
+        self.row
+            .column_names
+            .get(self.col_idx as usize)
+            .and_then(|o| o.as_ref().map(|s| s.as_ref()))
+    }
+
+    fn is_null(&self) -> bool {
+        self.value().is_none()
+    }
+
+    fn value(&self) -> Option<<Sqlite as Backend>::RawValue<'_>> {
+        // SqliteValue is RawValue of Sqlite so required as return
+        // SqliteValue contains unused "phantom data like" Ref<'_, PrivateSqliteValue>
+        // to guarantee non mutable underlying row
+        // MOMO FIXME: How to return proper SqliteValue?
+        // SqliteValue::new(Ref::clone(&self.row), self.col_idx)
+        todo!()
+    }
 }

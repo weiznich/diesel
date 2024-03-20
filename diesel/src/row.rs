@@ -148,6 +148,10 @@ where
     }
 }
 
+pub trait IntoOwnedRow<'a, DB: Backend>: Row<'a, DB> {
+    fn into(self) -> impl Row<'static, DB>;
+}
+
 // These traits are not part of the public API
 // because:
 // * we want to control who can implement `Row` (for `RowSealed`)
