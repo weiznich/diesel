@@ -18,7 +18,7 @@ pub struct SqliteValue<'row, 'stmt, 'query> {
     // This field exists to ensure that nobody
     // can modify the underlying row while we are
     // holding a reference to some row value here
-    _row: Ref<'row, PrivateSqliteRow<'stmt, 'query>>,
+    _row: Option<Ref<'row, PrivateSqliteRow<'stmt, 'query>>>,
     // we extract the raw value pointer as part of the constructor
     // to safe the match statements for each method
     // According to benchmarks this leads to a ~20-30% speedup
@@ -57,7 +57,27 @@ impl<'row, 'stmt, 'query> SqliteValue<'row, 'stmt, 'query> {
             }
         };
 
-        let ret = Self { _row: row, value };
+        let ret = Self {
+            _row: Some(row),
+            value,
+        };
+        if ret.value_type().is_none() {
+            None
+        } else {
+            Some(ret)
+        }
+    }
+
+    pub(super) fn from_owned_row(
+        row: &'row super::row::OwnedSqliteRow,
+        col_idx: i32,
+    ) -> Option<SqliteValue<'row, 'stmt, 'query>> {
+        let value = row
+            .values
+            .get(col_idx as usize)
+            .and_then(|v| v.as_ref())?
+            .value;
+        let ret = Self { _row: None, value };
         if ret.value_type().is_none() {
             None
         } else {

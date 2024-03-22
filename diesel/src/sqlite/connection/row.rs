@@ -1,7 +1,6 @@
 use std::cell::{Ref, RefCell};
 use std::convert::TryFrom;
 use std::rc::Rc;
-use std::sync::Arc;
 
 use super::sqlite_value::{OwnedSqliteValue, SqliteValue};
 use super::stmt::StatementUse;
@@ -25,21 +24,14 @@ pub(super) enum PrivateSqliteRow<'stmt, 'query> {
 }
 
 pub struct OwnedSqliteRow {
-    values: Vec<Option<OwnedSqliteValue>>,
-    column_names: Arc<[Option<String>]>,
+    pub(super) values: Vec<Option<OwnedSqliteValue>>,
+    column_names: Box<[Option<String>]>,
 }
 
 impl<'a> IntoOwnedRow<'a, Sqlite> for SqliteRow<'a, '_> {
     type OwnedRow = OwnedSqliteRow;
     fn into_owned(self) -> Self::OwnedRow {
-        // MOMO FIXME: is this the proper way to extract the data out of
-        // Rc<RefCell<PrivateSqliteRow<'_> ?
-        let SqliteRow { inner, field_count } = self;
-        let inner = &inner.replace(PrivateSqliteRow::Duplicated {
-            values: Vec::new(),
-            column_names: Rc::new([]),
-        });
-        inner.movable()
+        self.inner.borrow().moveable()
     }
 }
 
@@ -81,14 +73,13 @@ impl<'stmt, 'query> PrivateSqliteRow<'stmt, 'query> {
         }
     }
 
-    pub(super) fn movable(&self) -> OwnedSqliteRow {
+    pub(super) fn moveable(&self) -> OwnedSqliteRow {
         match self {
             PrivateSqliteRow::Direct(stmt) => {
-                let column_names: Arc<[Option<String>]> = Arc::from(
-                    (0..stmt.column_count())
-                        .map(|idx| stmt.field_name(idx).map(|s| s.to_owned()))
-                        .collect::<Vec<_>>(),
-                );
+                let column_names: Box<[Option<String>]> = (0..stmt.column_count())
+                    .map(|idx| stmt.field_name(idx).map(|s| s.to_owned()))
+                    .collect::<Vec<_>>()
+                    .into_boxed_slice();
                 OwnedSqliteRow {
                     values: (0..stmt.column_count())
                         .map(|idx| stmt.copy_value(idx))
@@ -104,12 +95,11 @@ impl<'stmt, 'query> PrivateSqliteRow<'stmt, 'query> {
                     .iter()
                     .map(|v| v.as_ref().map(|v| v.duplicate()))
                     .collect(),
-                column_names: Arc::from(
-                    (*column_names)
-                        .into_iter()
-                        .map(|s| s.to_owned())
-                        .collect::<Vec<_>>(),
-                ),
+                column_names: (*column_names)
+                    .into_iter()
+                    .map(|s| s.to_owned())
+                    .collect::<Vec<_>>()
+                    .into_boxed_slice(),
             },
         }
     }
@@ -375,12 +365,7 @@ impl<'row> Field<'row, Sqlite> for OwnedSqliteField<'row> {
         self.value().is_none()
     }
 
-    fn value(&self) -> Option<<Sqlite as Backend>::RawValue<'_>> {
-        // SqliteValue is RawValue of Sqlite so required as return
-        // SqliteValue contains unused "phantom data like" Ref<'_, PrivateSqliteValue>
-        // to guarantee non mutable underlying row
-        // MOMO FIXME: How to return proper SqliteValue?
-        // SqliteValue::new(Ref::clone(&self.row), self.col_idx)
-        todo!()
+    fn value(&self) -> Option<SqliteValue<'_, '_, '_>> {
+        SqliteValue::from_owned_row(&self.row, self.col_idx)
     }
 }
