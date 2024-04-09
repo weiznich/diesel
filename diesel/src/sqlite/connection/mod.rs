@@ -124,6 +124,9 @@ pub struct SqliteConnection {
     statement_cache: StatementCache<Sqlite, Statement>,
     raw_connection: RawConnection,
     transaction_state: AnsiTransactionManager,
+    // this exists for the sole purpose of implementing `WithMetadataLookup` crate
+    // and avoiding static mut which will be deprecated in 2024 edition
+    metadata_lookup: (),
     instrumentation: Option<Box<dyn Instrumentation>>,
 }
 
@@ -221,13 +224,10 @@ impl LoadConnection<DefaultLoadingMode> for SqliteConnection {
     }
 }
 
-static mut SQLITE_METADATA_LOOKUP: () = ();
-
 impl WithMetadataLookup for SqliteConnection {
     #[allow(unsafe_code)]
     fn metadata_lookup(&mut self) -> &mut <Sqlite as TypeMetadata>::MetadataLookup {
-        // safe since it's a unit type
-        unsafe { &mut SQLITE_METADATA_LOOKUP }
+        &mut self.metadata_lookup
     }
 }
 
@@ -540,6 +540,7 @@ impl SqliteConnection {
             statement_cache: StatementCache::new(),
             raw_connection,
             transaction_state: AnsiTransactionManager::default(),
+            metadata_lookup: (),
             instrumentation: None,
         };
         conn.register_diesel_sql_functions()
