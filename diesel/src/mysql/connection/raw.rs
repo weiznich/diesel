@@ -49,7 +49,7 @@ impl RawConnection {
         let client_flags = connection_options.client_flags();
 
         if let Some(ssl_mode) = connection_options.ssl_mode() {
-            self.set_ssl_mode(ssl_mode)
+            self.set_ssl_mode(ssl_mode)?;
         }
         if let Some(ssl_ca) = connection_options.ssl_ca() {
             self.set_ssl_ca(ssl_ca)
@@ -175,7 +175,7 @@ impl RawConnection {
     }
 
     fn more_results(&self) -> bool {
-        unsafe { ffi::mysql_more_results(self.0.as_ptr()) != 0 }
+        unsafe { ffi::mysql_more_results(self.0.as_ptr()) != ffi::FALSE }
     }
 
     fn next_result(&self) -> QueryResult<()> {
@@ -183,17 +183,29 @@ impl RawConnection {
         self.did_an_error_occur()
     }
 
-    fn set_ssl_mode(&self, ssl_mode: mysqlclient_sys::mysql_ssl_mode) {
-        let v = ssl_mode as u32;
-        let v_ptr: *const u32 = &v;
-        let n = ptr::NonNull::new(v_ptr as *mut u32).expect("NonNull::new failed");
-        unsafe {
-            mysqlclient_sys::mysql_options(
-                self.0.as_ptr(),
-                mysqlclient_sys::mysql_option::MYSQL_OPT_SSL_MODE,
-                n.as_ptr() as *const std::ffi::c_void,
-            )
-        };
+    fn set_ssl_mode(&self, ssl_mode: mysqlclient_sys::mysql_ssl_mode) -> ConnectionResult<()> {
+        if mysqlclient_sys::SUPPORTS_MYSQL_SSL_MODE {
+            let v = ssl_mode as u32;
+            let v_ptr: *const u32 = &v;
+            let n = ptr::NonNull::new(v_ptr as *mut u32).expect("NonNull::new failed");
+            unsafe {
+                mysqlclient_sys::mysql_options(
+                    self.0.as_ptr(),
+                    mysqlclient_sys::mysql_option::MYSQL_OPT_SSL_MODE,
+                    n.as_ptr() as *const std::ffi::c_void,
+                )
+            };
+        } else {
+            return Err(ConnectionError::CouldntSetupConfiguration(
+                crate::result::Error::DatabaseError(
+                    crate::result::DatabaseErrorKind::UnableToSendCommand,
+                    Box::new(String::from(
+                        "mysql_ssl_mode mode is not supported by your version of libmysqlclient",
+                    )),
+                ),
+            ));
+        }
+        Ok(())
     }
 
     fn set_ssl_ca(&self, ssl_ca: &CStr) {

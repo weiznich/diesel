@@ -389,13 +389,13 @@ impl BindData {
             length,
             capacity,
             flags,
-            is_null: 0,
-            is_truncated: Some(0),
+            is_null: ffi::FALSE,
+            is_truncated: Some(ffi::FALSE),
         }
     }
 
     fn is_truncated(&self) -> bool {
-        self.is_truncated.unwrap_or(0) != 0
+        self.is_truncated.unwrap_or(ffi::FALSE) != ffi::FALSE
     }
 
     fn is_fixed_size_buffer(&self) -> bool {
@@ -423,7 +423,7 @@ impl BindData {
     }
 
     pub(super) fn is_null(&self) -> bool {
-        self.is_null != 0
+        self.is_null != ffi::FALSE
     }
 
     fn update_buffer_length(&mut self) {
@@ -711,6 +711,7 @@ impl From<(ffi::enum_field_types, Flags)> for MysqlType {
                  something has gone wrong. Please open an issue at \
                  the diesel github repo."
             ),
+            _ => unimplemented!(),
         }
     }
 }
