@@ -13,7 +13,7 @@ body:
       label: Rust Version
       description: The Rust version required to reproduce the bug. You can usually get that version by using `rustc --version` in your project directory.
       placeholder: 1.89.0
-    validation:
+    validations:
       required: true
     
   - type: textarea
