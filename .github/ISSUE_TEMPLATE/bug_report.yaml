@@ -48,10 +48,12 @@ body:
         value: |
             ## Checklist
   - type: checkboxes
-    id: duplicate
+    id: Checklist
     attributes:
-      label: Duplicate
-      description: I have already looked over the [issue tracker](https://github.com/diesel-rs/diesel/issues) and the [discussion forum](https://github.com/diesel-rs/diesel/discussions) for similar possible closed issues.
+      label: Checklist
+      description: 
       options:
-        - label: I have already looked over the [issue tracker](https://github.com/diesel-rs/diesel/issues) and the [discussion forum](https://github.com/diesel-rs/diesel/discussions) for similar possible closed issues.
-          required: true
+        - label: |
+            I have already looked over the [issue tracker](https://github.com/diesel-rs/diesel/issues) and the [discussion forum](https://github.com/diesel-rs/diesel/discussions) for similar possible closed issues.
+        - label: This issue can be reproduced on Rust's stable channel. (Please submit the issue in the Rust issue tracker instead if that's not the case)
+        - label: This issue can be reproduced without requiring a third party crate
