@@ -67,8 +67,15 @@ body:
           
           * The exact code where your hit the problem
           * Relevant parts your schema, so any `table!` macro calls required for
-          * Any other type definitions involved in the code, which produces your proble
+          * Any other type definitions involved in the code, which produces your problem
       render: rust
+
+- type: textarea
+    id: error
+    attributes:
+      label: Compile time error
+      description: The error you encountered while compiling your code. Please make sure to include the complete error emitted by **rustc** and not by your IDE
+      
 
 
   - type: checkboxes
