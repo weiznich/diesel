@@ -59,7 +59,7 @@ body:
       required: true
 
   - type: textarea
-    id: Expected behaviour
+    id: Expected-behaviour
     attributes:
       label: What did you expect to happen?
       description: Describe what would you expect to happen instead. Again more details make it easier for us to resolve this issue.
