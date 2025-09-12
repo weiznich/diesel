@@ -59,6 +59,22 @@ body:
       required: true
 
   - type: textarea
+    id: Expected behaviour
+    attributes:
+      label: What did you expect to happen?
+      description: Describe what would you expect to happen instead. Again more details make it easier for us to resolve this issue.
+      placeholder: Tell us what you expected to happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-details
+    attributes:
+      label: Additional details
+      description: Anything else that might be relvant and that we should know but that did not fit the template above?
+      placeholder: Additional details and information
+
+  - type: textarea
     id: code
     attributes:
       label: Steps to reproduce
@@ -76,8 +92,6 @@ body:
       label: Compile time error
       description: The error you encountered while compiling your code. Please make sure to include the complete error emitted by **rustc** and not by your IDE
       
-
-
   - type: checkboxes
     id: Checklist
     attributes:
