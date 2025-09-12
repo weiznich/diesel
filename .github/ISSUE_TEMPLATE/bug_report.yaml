@@ -70,7 +70,7 @@ body:
           * Any other type definitions involved in the code, which produces your problem
       render: rust
 
-- type: textarea
+  - type: textarea
     id: error
     attributes:
       label: Compile time error
