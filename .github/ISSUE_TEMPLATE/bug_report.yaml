@@ -15,6 +15,39 @@ body:
       placeholder: 1.89.0
     validations:
       required: true
+  - type: input
+    id: diesel-version
+    attributes:
+      label: Diesel Version
+      description: The Diesel version required to reproduce the bug. You can get that version from your `Cargo.lock` file.
+      placeholder: 2.3.0
+    validations:
+      required: true
+  - type: input
+    id: diesel-features
+    attributes:
+      label: Diesel Features
+      description: The Cargo features enabled for Diesel. You can get that information from your `Cargo.toml` file.
+      placeholder: sqlite extras
+    validations:
+      required: true
+  - type: input
+    id: database-version
+    attributes:
+      label: Database Version
+      description: Type and exact version of the database system required to reproduce the bug.
+      placeholder: PostgreSQL 17.4
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: Operating System Version
+      description: Information about your operating system
+      placeholder: Fedora Linux 42 (Workstation Edition) x86_64 GNU/Linux
+    validations:
+      required: true
+  
     
   - type: textarea
     id: problem-description
