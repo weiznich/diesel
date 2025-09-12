@@ -53,32 +53,23 @@ body:
     id: problem-description
     attributes:
       label: What happened?
-      description: Describe wh
-      placeholder: Tell us what you see!
-      value: "A bug happened!"
+      description: Describe the bug you encountered. The more details you add here, the easier it is for us to reproduce your problem and help you resolving it.
+      placeholder: Tell us what happened
     validations:
       required: true
-  - type: dropdown
-    id: version
-    attributes:
-      label: Version
-      description: What version of our software are you running?
-      options:
-        - 1.0.2 (Default)
-        - 1.0.3 (Edge)
-      default: 0
-    validations:
-      required: true
-  - type: dropdown
-    id: browsers
-    attributes:
-      label: What browsers are you seeing the problem on?
-      multiple: true
-      options:
-        - Firefox
-        - Chrome
-        - Safari
-        - Microsoft Edge
+
+  - type: textarea
+    id: code
+    attribute:
+      label: Steps to reproduce
+      description: |
+          Please include as much of your codebase as needed to reproduce the error.  If the relevant files are large, please consider linking to a public repository or a [Gist](https://gist.github.com/). This includes normally the following parts:
+          
+          * The exact code where your hit the problem
+          * Relevant parts your schema, so any `table!` macro calls required for
+          * Any other type definitions involved in the code, which produces your proble
+      render: rust
+
 
   - type: checkboxes
     id: Checklist
