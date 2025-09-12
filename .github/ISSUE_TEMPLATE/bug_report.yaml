@@ -60,7 +60,7 @@ body:
 
   - type: textarea
     id: code
-    attribute:
+    attributes:
       label: Steps to reproduce
       description: |
           Please include as much of your codebase as needed to reproduce the error.  If the relevant files are large, please consider linking to a public repository or a [Gist](https://gist.github.com/). This includes normally the following parts:
