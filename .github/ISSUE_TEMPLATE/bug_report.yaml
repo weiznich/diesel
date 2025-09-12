@@ -8,11 +8,13 @@ body:
         Thanks for taking the time to fill out this bug report!
         Any bugreport helps us to improve Diesel.
   - type: input
-    label: Rust Version
-    description: The Rust version required to reproduce the bug. You can usually get that version by using `rustc --version` in your project directory.
-    placeholder: 1.89.0
+    id: rust-version
+    attributes:
+      label: Rust Version
+      description: The Rust version required to reproduce the bug. You can usually get that version by using `rustc --version` in your project directory.
+      placeholder: 1.89.0
     validation:
-        required: true
+      required: true
     
   - type: textarea
     id: problem-description
