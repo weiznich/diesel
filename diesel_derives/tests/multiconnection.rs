@@ -1,5 +1,5 @@
 use crate::schema::users;
-use diesel::connection::Instrumentation;
+use diesel::connection::{Instrumentation, InstrumentationEvent};
 use diesel::prelude::*;
 
 #[derive(diesel::MultiConnection)]
@@ -436,4 +436,22 @@ fn nullable_type_checks() {
     assert!(result.10.is_none());
     assert!(result.11.is_none());
     assert!(result.12.is_none());
+}
+
+#[test]
+fn contains_binds() {
+    let mut conn = establish_connection();
+    conn.set_instrumentation(|event: InstrumentationEvent<'_>| {
+        if let InstrumentationEvent::StartQuery { query, .. } = event {
+            #[cfg(any(feature = "sqlite", feature = "mysql"))]
+            assert_eq!(query.to_string(), "SELECT ? -- binds: [1]");
+            #[cfg(feature = "postgres")]
+            assert_eq!(query.to_string(), "SELECT $1 -- binds: [1]");
+        }
+    });
+
+    let res = diesel::select(1.into_sql::<diesel::sql_types::Integer>())
+        .get_result::<i32>(&mut conn)
+        .unwrap();
+    assert_eq!(res, 1);
 }

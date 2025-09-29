@@ -219,6 +219,7 @@ where
                 ref mut metadata_lookup,
             } => collector.push_bound_value(bind, metadata_lookup)?,
             AstPassInternals::DebugBinds(ref mut f) => {
+                dbg!("hier");
                 f.push(Box::new(bind));
             }
             AstPassInternals::IsNoop(ref mut result) => **result = false,
@@ -240,6 +241,7 @@ where
         DB: HasSqlType<T>,
         U: ToSql<T, DB> + ?Sized,
     {
+        dbg!("da");
         match self.internals {
             AstPassInternals::CollectBinds { .. } | AstPassInternals::DebugBinds(..) => {
                 self.push_bind_param(bind)?
@@ -268,6 +270,7 @@ where
         DB: Backend,
         for<'bc> DB::BindCollector<'bc>: MoveableBindCollector<DB, BindData = MD>,
     {
+        dbg!("dort");
         match self.internals {
             AstPassInternals::CollectBinds {
                 ref mut collector,
@@ -377,6 +380,15 @@ where
     /// This function allows to access the inner bind collector if
     /// this `AstPass` represents a collect binds pass.
     fn bind_collector(&mut self) -> Option<(&mut DB::BindCollector<'b>, &mut DB::MetadataLookup)>;
+
+    /// This function allows to access the inner debug bind collector pass
+    fn debug_binds(&mut self) -> Option<(&mut &'a mut Vec<Box<dyn fmt::Debug + 'b>>, &'b DB)>;
+
+    /// Construct a new AstPass for collecting bind values into the provided buffer
+    fn collect_debug_binds_pass(
+        formatter: &'a mut Vec<Box<dyn fmt::Debug + 'b>>,
+        backend: &'b DB,
+    ) -> AstPass<'a, 'b, DB>;
 }
 
 impl<'a, 'b, DB> AstPassHelper<'a, 'b, DB> for AstPass<'a, 'b, DB>
@@ -433,5 +445,20 @@ where
         } else {
             None
         }
+    }
+
+    fn debug_binds(&mut self) -> Option<(&mut &'a mut Vec<Box<dyn fmt::Debug + 'b>>, &'b DB)> {
+        if let AstPassInternals::DebugBinds(formatter) = &mut self.internals {
+            Some((formatter, self.backend))
+        } else {
+            None
+        }
+    }
+
+    fn collect_debug_binds_pass(
+        formatter: &'a mut Vec<Box<dyn fmt::Debug + 'b>>,
+        backend: &'b DB,
+    ) -> AstPass<'a, 'b, DB> {
+        AstPass::debug_binds(formatter, backend)
     }
 }
