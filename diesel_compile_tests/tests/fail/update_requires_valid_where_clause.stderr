@@ -1,88 +1,106 @@
-error[E0277]: the trait bound `SelectStatement<_, _, _, _>: IntoUpdateTarget` is not satisfied
+error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
    --> tests/fail/update_requires_valid_where_clause.rs:23:12
     |
  LL |     update(users::table.filter(posts::id.eq(1)));
-    |     ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `IntoUpdateTarget` is not implemented for `SelectStatement<FromClause<table>, _, _, _>`
+    |     ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Once`, found `Never`
     |     |
     |     required by a bound introduced by this call
     |
-    = note: only tables or select statements with only the filter clause applied are valid update targets
-help: the trait `IntoUpdateTarget` is conditionally implemented for `SelectStatement<FromClause<F>, _, _, W>`
-   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
+   --> tests/fail/update_requires_valid_where_clause.rs:13:9
     |
-LL | / impl<F, W> IntoUpdateTarget
-LL | |     for SelectStatement<FromClause<F>, DefaultSelectClause<FromClause<F>>, NoDistinctClau...
-LL | | where
-LL | |     F: QuerySource,
-LL | |     Self: HasTable,
-LL | |     W: ValidWhereClause<F>,
-    | |________-------------------^
-    |          |
-    |          unsatisfied requirement introduced here: `diesel::query_builder::where_clause::WhereClause<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<posts::columns::id, diesel::internal::derives::as_expression::Bound<diesel::sql_types::Integer, i32>>>>: diesel::query_builder::where_clause::ValidWhereClause<users::table>`
+ LL |         id -> Integer,
+    |         ^^
+    = note: associated types for the current `impl` cannot be restricted in `where` clauses
+    = note: 2 redundant requirements hidden
+    = note: required for `Grouped<Eq<id, Bound<Integer, i32>>>` to implement `AppearsOnTable<users::table>`
+    = note: required for `WhereClause<Grouped<Eq<id, Bound<Integer, i32>>>>` to implement `ValidWhereClause<table>`
+    = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `IntoUpdateTarget`
 note: required by a bound in `diesel::update`
    --> DIESEL/diesel/diesel/src/query_builder/functions.rs
     |
 LL | pub fn update<T: IntoUpdateTarget>(source: T) -> UpdateStatement<T::Table, T::WhereClause> {
     |                  ^^^^^^^^^^^^^^^^ required by this bound in `update`
  
-    help: consider removing this method call, as the receiver has type `users::table` and `users::table: IntoUpdateTarget` trivially holds
-    |
- 23 -     update(users::table.filter(posts::id.eq(1)));
- 23 +     update(users::table);
-    |
+        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/update_requires_valid_where_clause.rs:27:26
-   |
-LL |     update(users::table).filter(posts::id.eq(1));
-   |                          ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/update_requires_valid_where_clause.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 2 redundant requirements hidden
-   = note: required for `Grouped<Eq<id, Bound<Integer, i32>>>` to implement `AppearsOnTable<users::table>`
-   = note: required for `UpdateStatement<table, NoWhereClause>` to implement `FilterDsl<Grouped<Eq<id, Bound<Integer, i32>>>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/update_requires_valid_where_clause.rs:32:10
-   |
-LL |         .filter(posts::id.eq(1));
-   |          ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/update_requires_valid_where_clause.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 2 redundant requirements hidden
-   = note: required for `Grouped<Eq<id, Bound<Integer, i32>>>` to implement `AppearsOnTable<users::table>`
-   = note: required for `UpdateStatement<table, NoWhereClause, _>` to implement `FilterDsl<Grouped<Eq<id, Bound<Integer, i32>>>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `SelectStatement<_, _, _, _>: IntoUpdateTarget` is not satisfied
-   --> tests/fail/update_requires_valid_where_clause.rs:23:5
+error[E0277]: the trait bound `UpdateStatement<table, _>: FilterDsl<_>` is not satisfied
+   --> tests/fail/update_requires_valid_where_clause.rs:27:33
     |
- LL |     update(users::table.filter(posts::id.eq(1)));
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `IntoUpdateTarget` is not implemented for `SelectStatement<FromClause<table>, _, _, _>`
+ LL |     update(users::table).filter(posts::id.eq(1));
+    |                          ------ ^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                          |
+    |                          required by a bound introduced by this call
     |
-    = note: only tables or select statements with only the filter clause applied are valid update targets
-help: the trait `IntoUpdateTarget` is conditionally implemented for `SelectStatement<FromClause<F>, _, _, W>`
-   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    = help: the trait `FilterDsl<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<posts::columns::id, diesel::internal::derives::as_expression::Bound<diesel::sql_types::Integer, i32>>>>` is not implemented for `UpdateStatement<table, NoWhereClause>`
+help: the trait `FilterDsl<Predicate>` is conditionally implemented for `UpdateStatement<T, U, V, Ret>`
+   --> DIESEL/diesel/diesel/src/query_builder/update_statement/mod.rs
     |
-LL | / impl<F, W> IntoUpdateTarget
-LL | |     for SelectStatement<FromClause<F>, DefaultSelectClause<FromClause<F>>, NoDistinctClau...
+LL | / impl<T, U, V, Ret, Predicate> FilterDsl<Predicate> for UpdateStatement<T, U, V, Ret>
 LL | | where
-LL | |     F: QuerySource,
-LL | |     Self: HasTable,
-LL | |     W: ValidWhereClause<F>,
-    | |________-------------------^
+LL | |     T: QuerySource,
+LL | |     U: WhereAnd<Predicate>,
+LL | |     Predicate: AppearsOnTable<T>,
+    | |________________-----------------^
+    |                  |
+    |                  unsatisfied requirement introduced here: `_: AppearsOnTable<_>`
+note: required by a bound in `UpdateStatement::<T, U, V, Ret>::filter`
+   --> DIESEL/diesel/diesel/src/query_builder/update_statement/mod.rs
+    |
+ LL | impl<T: QuerySource, U, V, Ret> UpdateStatement<T, U, V, Ret> {
+...
+LL |     pub fn filter<Predicate>(self, predicate: Predicate) -> Filter<Self, Predicate>
+LL |     where
+LL |         Self: FilterDsl<Predicate>,
+    |               ^^^^^^^^^^^^^^^^^^^^ required by this bound in `UpdateStatement::<T, U, V, Ret>::filter`
+ 
+    
+error[E0277]: the trait bound `UpdateStatement<table, _, _>: FilterDsl<_>` is not satisfied
+   --> tests/fail/update_requires_valid_where_clause.rs:32:17
+    |
+ LL |         .filter(posts::id.eq(1));
+    |          ------ ^^^^^^^^^^^^^^^ unsatisfied trait bound
     |          |
-    |          unsatisfied requirement introduced here: `diesel::query_builder::where_clause::WhereClause<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<posts::columns::id, diesel::internal::derives::as_expression::Bound<diesel::sql_types::Integer, i32>>>>: diesel::query_builder::where_clause::ValidWhereClause<users::table>`
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `FilterDsl<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<posts::columns::id, diesel::internal::derives::as_expression::Bound<diesel::sql_types::Integer, i32>>>>` is not implemented for `UpdateStatement<table, NoWhereClause, _>`
+help: the trait `FilterDsl<Predicate>` is conditionally implemented for `UpdateStatement<T, U, V, Ret>`
+   --> DIESEL/diesel/diesel/src/query_builder/update_statement/mod.rs
+    |
+LL | / impl<T, U, V, Ret, Predicate> FilterDsl<Predicate> for UpdateStatement<T, U, V, Ret>
+LL | | where
+LL | |     T: QuerySource,
+LL | |     U: WhereAnd<Predicate>,
+LL | |     Predicate: AppearsOnTable<T>,
+    | |________________-----------------^
+    |                  |
+    |                  unsatisfied requirement introduced here: `_: AppearsOnTable<_>`
+note: required by a bound in `UpdateStatement::<T, U, V, Ret>::filter`
+   --> DIESEL/diesel/diesel/src/query_builder/update_statement/mod.rs
+    |
+ LL | impl<T: QuerySource, U, V, Ret> UpdateStatement<T, U, V, Ret> {
+...
+LL |     pub fn filter<Predicate>(self, predicate: Predicate) -> Filter<Self, Predicate>
+LL |     where
+LL |         Self: FilterDsl<Predicate>,
+    |               ^^^^^^^^^^^^^^^^^^^^ required by this bound in `UpdateStatement::<T, U, V, Ret>::filter`
+ 
+    
+error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+  --> tests/fail/update_requires_valid_where_clause.rs:23:5
+   |
+LL |     update(users::table.filter(posts::id.eq(1)));
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Once`, found `Never`
+   |
+note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
+  --> tests/fail/update_requires_valid_where_clause.rs:13:9
+   |
+LL |         id -> Integer,
+   |         ^^
+   = note: associated types for the current `impl` cannot be restricted in `where` clauses
+   = note: 2 redundant requirements hidden
+   = note: required for `Grouped<Eq<id, Bound<Integer, i32>>>` to implement `AppearsOnTable<users::table>`
+   = note: required for `WhereClause<Grouped<Eq<id, Bound<Integer, i32>>>>` to implement `ValidWhereClause<table>`
+   = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `IntoUpdateTarget`
+
+      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -58,7 +58,7 @@ fn main() {
     insert_into(users)
         .values((id.eq(42), name.eq("John")))
         .on_conflict((dsl::DuplicatedKeys, name))
-        //~^ ERROR: the trait bound `ConflictTarget<(_, name)>: OnConflictTarget<table>` is not satisfied
+        //~^ ERROR: the trait bound `(DuplicatedKeys, columns::name): Column` is not satisfied
         .do_nothing()
         .execute(&mut connection);
     //~^ ERROR: `OnConflictValues<ValuesClause<_, table>, _, _>` is no valid SQL fragment for the `Mysql` backend
@@ -79,7 +79,7 @@ fn main() {
         .on_conflict(dsl::DuplicatedKeys)
         .do_nothing()
         .execute(&mut connection);
-    //~^ ERROR: `diesel::query_builder::ConflictTarget<DuplicatedKeys>` is no valid SQL fragment for the `Pg` backend
+    //~^ ERROR: `OnConflictValues<ValuesClause<_, table>, _, _>` is no valid SQL fragment for the `Pg` backend
 
     insert_into(users)
         .values((id.eq(42), name.eq("John")))
@@ -87,13 +87,13 @@ fn main() {
         //~^ ERROR: the trait bound `ConflictTarget<(name, _)>: OnConflictTarget<table>` is not satisfied
         .do_nothing()
         .execute(&mut connection);
-    //~^ ERROR: `ConflictTarget<(name, DuplicatedKeys)>` is no valid SQL fragment for the `Pg` backend
+    //~^ ERROR: `OnConflictValues<ValuesClause<_, table>, _, _>` is no valid SQL fragment for the `Pg` backend
 
     insert_into(users)
         .values((id.eq(42), name.eq("John")))
         .on_conflict((dsl::DuplicatedKeys, name))
-        //~^ ERROR: the trait bound `ConflictTarget<(_, name)>: OnConflictTarget<table>` is not satisfied
+        //~^ ERROR: the trait bound `(DuplicatedKeys, columns::name): Column` is not satisfied
         .do_nothing()
         .execute(&mut connection);
-    //~^ ERROR: `ConflictTarget<(DuplicatedKeys, name)>` is no valid SQL fragment for the `Pg` backend
+    //~^ ERROR: `OnConflictValues<ValuesClause<_, table>, _, _>` is no valid SQL fragment for the `Pg` backend
 }

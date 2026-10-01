@@ -19,11 +19,9 @@ fn main() {
     let mut conn = PgConnection::establish("").unwrap();
 
     insert_into(users::table).values(&posts::id.eq(1));
-    //~^ ERROR: type mismatch resolving `<id as Column>::Table == table`
+    //~^ ERROR: the trait bound `Eq<id, &Bound<Integer, i32>>: Insertable<table>` is not satisfied
 
     insert_into(users::table).values(&(posts::id.eq(1), users::id.eq(2)));
-    //~^ ERROR: type mismatch resolving `<&_ as Insertable<table>>::Values == ValuesClause<_, table>`
-    //~| ERROR: type mismatch resolving `<id as Column>::Table == table`
-    //~| ERROR: type mismatch resolving `<&_ as Insertable<table>>::Values == ValuesClause<_, table>`
+    //~^ ERROR: the trait bound `Eq<id, &Bound<Integer, i32>>: Insertable<table>` is not satisfied
     //FIXME: Bad error on the second one
 }

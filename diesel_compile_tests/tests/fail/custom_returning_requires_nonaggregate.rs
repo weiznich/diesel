@@ -30,5 +30,5 @@ fn main() {
     let stmt = insert_into(users)
         .values(&new_user)
         .returning((name, count(name)));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `(name, count<Text, name>): NonAggregate` is not satisfied
 }

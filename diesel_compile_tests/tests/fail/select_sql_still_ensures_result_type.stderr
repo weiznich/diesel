@@ -1,25 +1,56 @@
-error[E0277]: cannot deserialize a value of the database type `BigInt` as `std::string::String`
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, String>` is not satisfied
     --> tests/fail/select_sql_still_ensures_result_type.rs:16:51
      |
   LL |     let count = select_count.get_result::<String>(&mut connection).unwrap();
-     |                                                   ^^^^^^^^^^^^^^^ the trait `FromSql<BigInt, _>` is not implemented for `std::string::String`
+     |                              ----------           ^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |                              |
+     |                              required by a bound introduced by this call
      |
-     = note: double check your type mappings via the documentation of `BigInt`
-     = help: `std::string::String` implements trait `FromSql<A, DB>`:
-               FromSql<Citext, Pg>
-               FromSql<TimestamptzSqlite, Sqlite>
-               FromSql<diesel::sql_types::Date, Sqlite>
-               FromSql<diesel::sql_types::Time, Sqlite>
-               FromSql<diesel::sql_types::Timestamp, Sqlite>
-     = note: required for `std::string::String` to implement `Queryable<BigInt, _>`
-     = note: required for `std::string::String` to implement `FromSqlRow<BigInt, _>`
-     = note: required for `BigInt` to implement `CompatibleType<String, _>`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `LoadQuery<'_, _, std::string::String>`
+     = help: the trait `LoadQuery<'_, _, std::string::String>` is not implemented for `SelectStatement<FromClause<table>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
+     |
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `get_result`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn get_result<'query, U>(self, conn: &mut Conn) -> QueryResult<U>
-     |        ---------- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::get_result`

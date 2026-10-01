@@ -1,179 +1,164 @@
-error[E0277]: cannot select `posts::columns::id` from `users::table`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:21:31
-   |
-LL |     let source = users::table.select(sum(posts::id));
-   |                               ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::id`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: `posts::columns::id` is no valid selection for `users::table`
-   = help: `posts::columns::id` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-   = note: required for `sum<Integer, id>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<sum<Integer, id>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:21:31
-   |
-LL |     let source = users::table.select(sum(posts::id));
-   |                               ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `sum<Integer, id>` to implement `AppearsOnTable<users::table>`
-   = note: required for `sum<Integer, id>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<sum<Integer, id>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::id` from `users::table`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:24:31
-   |
-LL |     let source = users::table.select(avg(posts::id));
-   |                               ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::id`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: `posts::columns::id` is no valid selection for `users::table`
-   = help: `posts::columns::id` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-   = note: required for `avg<Integer, id>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<avg<Integer, id>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:24:31
-   |
-LL |     let source = users::table.select(avg(posts::id));
-   |                               ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `avg<Integer, id>` to implement `AppearsOnTable<users::table>`
-   = note: required for `avg<Integer, id>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<avg<Integer, id>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::id` from `users::table`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:27:31
-   |
-LL |     let source = users::table.select(max(posts::id));
-   |                               ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::id`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: `posts::columns::id` is no valid selection for `users::table`
-   = help: `posts::columns::id` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-   = note: required for `max<Integer, id>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<max<Integer, id>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:27:31
-   |
-LL |     let source = users::table.select(max(posts::id));
-   |                               ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `max<Integer, id>` to implement `AppearsOnTable<users::table>`
-   = note: required for `max<Integer, id>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<max<Integer, id>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::id` from `users::table`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:30:31
-   |
-LL |     let source = users::table.select(min(posts::id));
-   |                               ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::id`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: `posts::columns::id` is no valid selection for `users::table`
-   = help: `posts::columns::id` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-   = note: required for `min<Integer, id>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<min<Integer, id>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:30:31
-   |
-LL |     let source = users::table.select(min(posts::id));
-   |                               ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:13:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `min<Integer, id>` to implement `AppearsOnTable<users::table>`
-   = note: required for `min<Integer, id>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<min<Integer, id>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
+   --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:21:38
+    |
+ LL |     let source = users::table.select(sum(posts::id));
+    |                               ------ ^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                               |
+    |                               required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<diesel::expression::functions::aggregate_folding::sum_utils::sum<diesel::sql_types::Integer, posts::columns::id>>` is not implemented for `SelectStatement<FromClause<table>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+    = note: required for `users::table` to implement `SelectDsl<sum<Integer, id>>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
+   --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:23:38
+    |
+ LL |     let source = users::table.select(avg(posts::id));
+    |                               ------ ^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                               |
+    |                               required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<diesel::expression::functions::aggregate_folding::avg_utils::avg<diesel::sql_types::Integer, posts::columns::id>>` is not implemented for `SelectStatement<FromClause<table>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+    = note: required for `users::table` to implement `SelectDsl<avg<Integer, id>>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
+   --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:25:38
+    |
+ LL |     let source = users::table.select(max(posts::id));
+    |                               ------ ^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                               |
+    |                               required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<diesel::expression::functions::aggregate_ordering::max_utils::max<diesel::sql_types::Integer, posts::columns::id>>` is not implemented for `SelectStatement<FromClause<table>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+    = note: required for `users::table` to implement `SelectDsl<max<Integer, id>>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
+   --> tests/fail/aggregate_expression_requires_column_from_same_table.rs:27:38
+    |
+ LL |     let source = users::table.select(min(posts::id));
+    |                               ------ ^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                               |
+    |                               required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<diesel::expression::functions::aggregate_ordering::min_utils::min<diesel::sql_types::Integer, posts::columns::id>>` is not implemented for `SelectStatement<FromClause<table>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+    = note: required for `users::table` to implement `SelectDsl<min<Integer, id>>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    For more information about this error, try `rustc --explain E0277`.

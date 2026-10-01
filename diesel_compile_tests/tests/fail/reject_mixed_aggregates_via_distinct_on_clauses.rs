@@ -24,7 +24,7 @@ fn main() {
     let _ = posts::table
         .group_by(posts::user_id)
         .distinct_on(posts::id)
-        //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: DistinctOnDsl<_>` is not satisfied
+        //~^ ERROR: the trait bound `(_, (id, user_id, hair_color)): ValidGrouping<_>` is not satisfied
         .select(posts::user_id)
         .get_results::<i32>(&mut conn);
 
@@ -32,13 +32,13 @@ fn main() {
         .distinct_on(posts::id)
         .group_by(posts::user_id)
         .select(posts::user_id)
-        //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
+        //~^ ERROR: the trait bound `(columns::id, _): ValidGrouping<columns::user_id>` is not satisfied
         .get_results::<i32>(&mut conn);
 
     let _ = posts::table
         .distinct_on(posts::user_id)
         .select(dsl::count(posts::id))
-        //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+        //~^ ERROR: the trait bound `SelectStatement<_, _, _>: SelectDsl<_>` is not satisfied
         .get_result::<i64>(&mut conn);
 
     let _ = posts::table

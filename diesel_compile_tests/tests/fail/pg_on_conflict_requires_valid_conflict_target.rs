@@ -39,7 +39,7 @@ fn main() {
     let column_from_other_table = insert_into(users)
         .values(&NewUser("Sean"))
         .on_conflict(posts::id);
-    //~^ ERROR: type mismatch resolving `<id as Column>::Table == table`
+    //~^ ERROR: the trait bound `ConflictTarget<id>: OnConflictTarget<table>` is not satisfied
 
     let expression_using_column_from_other_table = insert_into(users)
         .values(&NewUser("Sean"))

@@ -5,29 +5,16 @@ LL | #[derive(Selectable, Queryable)]
    |          ---------- in this derive macro expansion
 ...
 LL |     name: i32,
-   |           ^^^ the trait `FromSql<diesel::sql_types::Text, Pg>` is not implemented for `i32`
+   |           ^^^ the trait `FromSqlRow<diesel::sql_types::Text, Pg>` is not implemented for `i32`
    |
    = note: double check your type mappings via the documentation of `diesel::sql_types::Text`
    = note: `diesel::sql_query` requires the loading target to column names for loading values.
            You need to provide a type that explicitly derives `diesel::deserialize::QueryableByName`
-help: `i32` implements trait `FromSql<A, DB>`
-  --> DIESEL/diesel/diesel/src/sqlite/types/mod.rs
-   |
-LL | impl FromSql<sql_types::Integer, Sqlite> for i32 {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `FromSql<diesel::sql_types::Integer, Sqlite>`
-   |
-  ::: DIESEL/diesel/diesel/src/pg/types/integers.rs
-   |
-LL | impl FromSql<sql_types::Integer, Pg> for i32 {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `FromSql<diesel::sql_types::Integer, Pg>`
-   |
-  ::: DIESEL/diesel/diesel/src/mysql_like/types/primitives.rs
-   |
-LL | impl<DB: MysqlLikeBackend> FromSql<Integer, DB> for i32 {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `FromSql<diesel::sql_types::Integer, DB>`
-   = note: required for `i32` to implement `diesel::Queryable<diesel::sql_types::Text, Pg>`
-   = note: required for `i32` to implement `FromSqlRow<diesel::sql_types::Text, Pg>`
    = note: this error originates in the derive macro `Selectable` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
 error[E0277]: the trait bound `std::string::String: FromSqlRow<diesel::sql_types::Integer, Pg>` is not satisfied
   --> tests/fail/selectable_with_typemisamatch.rs:16:9
@@ -36,22 +23,18 @@ LL | #[derive(Selectable, Queryable)]
    |          ---------- in this derive macro expansion
 ...
 LL |     id: String,
-   |         ^^^^^^ the trait `FromSql<diesel::sql_types::Integer, Pg>` is not implemented for `std::string::String`
+   |         ^^^^^^ the trait `FromSqlRow<diesel::sql_types::Integer, Pg>` is not implemented for `std::string::String`
    |
    = note: double check your type mappings via the documentation of `diesel::sql_types::Integer`
    = note: `diesel::sql_query` requires the loading target to column names for loading values.
            You need to provide a type that explicitly derives `diesel::deserialize::QueryableByName`
-   = help: `std::string::String` implements trait `FromSql<A, DB>`:
-             FromSql<Citext, Pg>
-             FromSql<TimestamptzSqlite, Sqlite>
-             FromSql<diesel::sql_types::Date, Sqlite>
-             FromSql<diesel::sql_types::Time, Sqlite>
-             FromSql<diesel::sql_types::Timestamp, Sqlite>
-   = note: required for `std::string::String` to implement `diesel::Queryable<diesel::sql_types::Integer, Pg>`
-   = note: required for `std::string::String` to implement `FromSqlRow<diesel::sql_types::Integer, Pg>`
    = note: this error originates in the derive macro `Selectable` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
-error[E0277]: the trait bound `(String, i32): FromStaticSqlRow<(_, Text), Pg>` is not satisfied
+error[E0277]: the trait bound `User: FromSqlRow<(Integer, Text), Pg>` is not satisfied
   --> tests/fail/selectable_with_typemisamatch.rs:34:17
    |
 LL | #[derive(Selectable, Queryable)]
@@ -60,63 +43,73 @@ LL | #[derive(Selectable, Queryable)]
 LL |     embed_user: User,
    |                 ^^^^ unsatisfied trait bound
    |
-   = help: the trait `FromStaticSqlRow<(diesel::sql_types::Integer, diesel::sql_types::Text), Pg>` is not implemented for `(std::string::String, i32)`
-   = help: the following other types implement trait `FromStaticSqlRow<ST, DB>`:
-             `(T,)` implements `FromStaticSqlRow<(ST,), __DB>`
-             `(T1, T)` implements `FromStaticSqlRow<(ST1, ST), __DB>`
-             `(T1, T2, T)` implements `FromStaticSqlRow<(ST1, ST2, ST), __DB>`
-             `(T1, T2, T3, T)` implements `FromStaticSqlRow<(ST1, ST2, ST3, ST), __DB>`
-             `(T1, T2, T3, T4, T)` implements `FromStaticSqlRow<(ST1, ST2, ST3, ST4, ST), __DB>`
-             `(T1, T2, T3, T4, T5, T)` implements `FromStaticSqlRow<(ST1, ST2, ST3, ST4, ST5, ST), __DB>`
-             `(T1, T2, T3, T4, T5, T6, T)` implements `FromStaticSqlRow<(ST1, ST2, ST3, ST4, ST5, ST6, ST), __DB>`
-             `(T1, T2, T3, T4, T5, T6, T7, T)` implements `FromStaticSqlRow<(ST1, ST2, ST3, ST4, ST5, ST6, ST7, ST), __DB>`
-           and N others
-note: required for `User` to implement `Queryable<(Integer, Text), Pg>`
-  --> tests/fail/selectable_with_typemisamatch.rs:15:8
+help: the trait `FromSqlRow<(diesel::sql_types::Integer, diesel::sql_types::Text), Pg>` is not implemented for `User`
+  --> tests/fail/selectable_with_typemisamatch.rs:15:1
    |
-LL | #[derive(Selectable, Queryable)]
-   |                      --------- type parameter would need to implement `Queryable<(Integer, Text), Pg>`
-...
 LL | struct User {
-   |        ^^^^
-   = help: consider manually implementing `Queryable<(Integer, Text), Pg>` to avoid undesired bounds caused by "imperfect derives"
-   = note: to learn more, visit <https://github.com/rust-lang/rust/issues/26925>
-   = note: required for `User` to implement `FromSqlRow<(Integer, Text), Pg>`
+   | ^^^^^^^^^^^
+   = note: double check your type mappings via the documentation of `(diesel::sql_types::Integer, diesel::sql_types::Text)`
+   = note: `diesel::sql_query` requires the loading target to column names for loading values.
+           You need to provide a type that explicitly derives `diesel::deserialize::QueryableByName`
 
       = note: this error originates in the derive macro `Selectable` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: add `#![feature(trivial_bounds)]` to the crate attributes to enable
+   |
+ 1 + #![feature(trivial_bounds)]
+   |
 
-error[E0277]: the trait bound `SelectBy<User, _>: CompatibleType<_, _>` is not satisfied
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
     --> tests/fail/selectable_with_typemisamatch.rs:43:15
      |
   LL |         .load(&mut conn)
-     |          ---- ^^^^^^^^^ unsatisfied trait bound
+     |          ---- ^^^^^^^^^ the trait `LoadQuery<'_, _, _>` is not implemented for `SelectStatement<FromClause<table>, _>`
      |          |
      |          required by a bound introduced by this call
      |
-     = help: the trait `diesel::query_dsl::load_dsl::private::CompatibleType<_, _>` is not implemented for `diesel::expression::select_by::SelectBy<User, _>`
-     = note: this is a mismatch between what your query returns and what your type expects the query to return
-     = note: the fields in your struct need to match the fields returned by your query in count, order and type
-     = note: consider using `#[diesel(check_for_backend(_))]` on either `#[derive(Selectable)]` or `#[derive(QueryableByName)]` 
-             on your struct `_` and in your query `.select(_::as_select())` to get a better error message
-help: the trait `diesel::query_dsl::load_dsl::private::CompatibleType<U, DB>` is conditionally implemented for `diesel::expression::select_by::SelectBy<U, DB>`
-    --> DIESEL/diesel/diesel/src/query_dsl/load_dsl.rs
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
- LL | /     impl<U, DB, E, ST> CompatibleType<U, DB> for SelectBy<U, DB>
- LL | |     where
- LL | |         DB: Backend,
- LL | |         ST: TypedExpressionType + SqlTypeLikeMarker,
- LL | |         U: Selectable<DB, SelectExpression = E>,
- LL | |         E: Expression<SqlType = ST>,
- LL | |         U: FromSqlRow<<ST as SqlTypeLikeMarker>::SqlType, DB>,
-     | |____________--------------------------------------------------^
-     |              |
-     |              unsatisfied requirement introduced here: `User: FromSqlRow<<(diesel::sql_types::Integer, diesel::sql_types::Text) as diesel::deserialize::SqlTypeLikeMarker>::SqlType, _>`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `LoadQuery<'_, _, _>`
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`

@@ -1,36 +1,65 @@
 error[E0425]: cannot find type `name` in module `users`
-  --> tests/fail/derive/no_column.rs:13:5
+  --> tests/fail/derive/no_column.rs:14:5
    |
 LL |     name: String,
    |     ^^^^ not found in `users`
 
 error[E0425]: cannot find value `name` in module `users`
-  --> tests/fail/derive/no_column.rs:13:5
+  --> tests/fail/derive/no_column.rs:14:5
    |
 LL |     name: String,
    |     ^^^^ not found in `users`
 
 error[E0425]: cannot find type `name` in module `users`
-  --> tests/fail/derive/no_column.rs:21:28
+  --> tests/fail/derive/no_column.rs:23:28
    |
 LL |     #[diesel(column_name = name)]
    |                            ^^^^ not found in `users`
 
 error[E0425]: cannot find value `name` in module `users`
-  --> tests/fail/derive/no_column.rs:21:28
+  --> tests/fail/derive/no_column.rs:23:28
    |
 LL |     #[diesel(column_name = name)]
    |                            ^^^^ not found in `users`
 
 error[E0425]: cannot find type `name` in module `users`
-  --> tests/fail/derive/no_column.rs:29:41
+  --> tests/fail/derive/no_column.rs:32:41
    |
 LL | struct UserTuple(#[diesel(column_name = name)] String);
    |                                         ^^^^ not found in `users`
 
 error[E0425]: cannot find value `name` in module `users`
-  --> tests/fail/derive/no_column.rs:29:41
+  --> tests/fail/derive/no_column.rs:32:41
    |
 LL | struct UserTuple(#[diesel(column_name = name)] String);
    |                                         ^^^^ not found in `users`
-For more information about this error, try `rustc --explain E0425`.
+
+error[E0284]: type annotations needed
+  --> tests/fail/derive/no_column.rs:10:10
+   |
+LL | #[derive(AsChangeset)]
+   |          ^^^^^^^^^^^ cannot infer type for tuple `(diesel::query_builder::update_statement::changeset::Assign<_, _>,)`
+   |
+   = note: cannot satisfy `<UserStruct1 as AsChangeset>::Changeset == (_,)`
+
+      = note: this error originates in the derive macro `AsChangeset` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0284]: type annotations needed
+  --> tests/fail/derive/no_column.rs:19:10
+   |
+LL | #[derive(AsChangeset)]
+   |          ^^^^^^^^^^^ cannot infer type for tuple `(diesel::query_builder::update_statement::changeset::Assign<_, _>,)`
+   |
+   = note: cannot satisfy `<UserStruct2 as AsChangeset>::Changeset == (_,)`
+
+      = note: this error originates in the derive macro `AsChangeset` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0284]: type annotations needed
+  --> tests/fail/derive/no_column.rs:29:10
+   |
+LL | #[derive(AsChangeset)]
+   |          ^^^^^^^^^^^ cannot infer type for tuple `(diesel::query_builder::update_statement::changeset::Assign<_, _>,)`
+   |
+   = note: cannot satisfy `<UserTuple as AsChangeset>::Changeset == (_,)`
+
+      = note: this error originates in the derive macro `AsChangeset` (in Nightly builds, run with -Z macro-backtrace for more info)

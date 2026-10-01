@@ -3,7 +3,7 @@ error: references are not supported in `Queryable` types
   --> tests/fail/derive/selectable.rs:38:11
    |
 LL |     name: &'a str,
-   |           ^
+   |           ^^^^^^^
 
 error[E0308]: mismatched types
   --> tests/fail/derive/selectable.rs:27:29

@@ -8,6 +8,7 @@ table! {
 }
 
 #[derive(AsChangeset)]
+//~^ ERROR: type annotations needed
 #[diesel(table_name = users)]
 struct UserStruct1 {
     name: String,
@@ -16,6 +17,7 @@ struct UserStruct1 {
 }
 
 #[derive(AsChangeset)]
+//~^ ERROR: type annotations needed
 #[diesel(table_name = users)]
 struct UserStruct2 {
     #[diesel(column_name = name)]
@@ -25,6 +27,7 @@ struct UserStruct2 {
 }
 
 #[derive(AsChangeset)]
+//~^ ERROR: type annotations needed
 #[diesel(table_name = users)]
 struct UserTuple(#[diesel(column_name = name)] String);
 //~^ ERROR: cannot find type `name` in module `users`

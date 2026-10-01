@@ -20,6 +20,5 @@ fn main() {
         .offset(42)
         .into_boxed()
         //~^ ERROR: the trait bound `LimitOffsetClause<_, _>: IntoBoxedClause<'_, Mysql>` is not satisfied
-        //~| ERROR: the trait bound `LimitOffsetClause<_, _>: IntoBoxedClause<'_, Mysql>` is not satisfied
         .get_result::<(i32, String)>(&mut connection);
 }

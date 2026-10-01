@@ -35,7 +35,7 @@ fn main() {
         .returning(UpsertOldNew::as_select())
         //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
         .get_result::<UpsertOldNew>(&mut connection)
-        //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
+        //~^ ERROR: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 
     // The plain tuple version mirrors the same constraint: writing
@@ -48,7 +48,7 @@ fn main() {
         .returning(old(users::name))
         //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
         .get_result::<String>(&mut connection)
-        //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
+        //~^ ERROR: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, String>` is not satisfied
         .unwrap();
 
     // With Nullable, this compiles

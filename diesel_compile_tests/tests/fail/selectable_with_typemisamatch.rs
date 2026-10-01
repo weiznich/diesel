@@ -32,7 +32,7 @@ struct UserCorrect {
 struct SelectableWithEmbed {
     #[diesel(embed)]
     embed_user: User,
-    //~^ ERROR: the trait bound `(String, i32): FromStaticSqlRow<(_, Text), Pg>` is not satisfied
+    //~^ ERROR: the trait bound `User: FromSqlRow<(Integer, Text), Pg>` is not satisfied
 }
 
 fn main() {
@@ -41,7 +41,7 @@ fn main() {
     users::table
         .select(User::as_select())
         .load(&mut conn)
-        //~^ ERROR: the trait bound `SelectBy<User, _>: CompatibleType<_, _>` is not satisfied
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
     users::table
         .select(UserCorrect::as_select())

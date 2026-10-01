@@ -1,4 +1,4 @@
-error[E0277]: cannot deserialize a value of the database type `diesel::sql_types::Nullable<diesel::sql_types::Bool>` as `bool`
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, bool>` is not satisfied
     --> tests/fail/eq_any_is_nullable.rs:18:15
      |
   LL |         .load(&mut conn)
@@ -6,32 +6,51 @@ error[E0277]: cannot deserialize a value of the database type `diesel::sql_types
      |          |
      |          required by a bound introduced by this call
      |
-     = help: the trait `FromSql<diesel::sql_types::Nullable<diesel::sql_types::Bool>, Pg>` is not implemented for `bool`
-     = note: double check your type mappings via the documentation of `diesel::sql_types::Nullable<diesel::sql_types::Bool>`
-help: `bool` implements trait `FromSql<A, DB>`
-    --> DIESEL/diesel/diesel/src/sqlite/types/mod.rs
+     = help: the trait `LoadQuery<'_, diesel::PgConnection, bool>` is not implemented for `SelectStatement<FromClause<table>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
-  LL | impl FromSql<sql_types::Bool, Sqlite> for bool {
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `FromSql<diesel::sql_types::Bool, Sqlite>`
-     |
-    ::: DIESEL/diesel/diesel/src/pg/types/primitives.rs
-     |
-  LL | impl FromSql<sql_types::Bool, Pg> for bool {
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `FromSql<diesel::sql_types::Bool, Pg>`
-     |
-    ::: DIESEL/diesel/diesel/src/mysql_like/types/mod.rs
-     |
- LL | impl<DB: MysqlLikeBackend> FromSql<Bool, DB> for bool {
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `FromSql<diesel::sql_types::Bool, DB>`
-     = note: required for `bool` to implement `Queryable<Nullable<Bool>, Pg>`
-     = note: required for `bool` to implement `FromSqlRow<Nullable<Bool>, Pg>`
-     = note: required for `diesel::sql_types::Nullable<diesel::sql_types::Bool>` to implement `diesel::query_dsl::load_dsl::private::CompatibleType<bool, Pg>`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `LoadQuery<'_, diesel::PgConnection, bool>`
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`

@@ -149,7 +149,7 @@ fn main() {
     // it's not possible to set an invalid order clause after we set
     // the distinct on clause
     let _ = users::table.distinct_on(users::name).order_by(users::id);
-    //~^ ERROR: invalid order of elements in your `DISTINCT ON` clause in relation to your `ORDER BY` clause
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _>: OrderDsl<id>` is not satisfied
 
     // we cannot box invalid queries
     let _ = users::table
@@ -195,7 +195,7 @@ fn main() {
     let _ = users::table
         .distinct_on(users::name)
         .order_by(users::id)
-        //~^ ERROR: invalid order of elements in your `DISTINCT ON` clause in relation to your `ORDER BY` clause
+        //~^ ERROR: the trait bound `SelectStatement<_, _, _>: OrderDsl<id>` is not satisfied
         .into_boxed();
 
     // verify that we cannot use `then_order_by` to
@@ -211,7 +211,7 @@ fn main() {
         .order_by(users::name)
         .distinct_on((users::name, users::id))
         .then_order_by(users::hair_color);
-    //~^ ERROR: invalid order of elements in your `DISTINCT ON` clause in relation to your `ORDER BY` clause
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _>: ThenOrderDsl<_>` is not satisfied
 
     // using joins works, also with more than 5 columns
     users::table.inner_join(posts::table).order_by((
@@ -227,7 +227,7 @@ fn main() {
         .inner_join(posts::table)
         .distinct_on(users::id)
         .order_by(posts::id);
-    //~^ ERROR: invalid order of elements in your `DISTINCT ON` clause in relation to your `ORDER BY` clause
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<_>, _, _>: OrderDsl<id>` is not satisfied
 
     // we reject ordering by more than 5 columns
     // (If we change the number, it's fine to update this example)
@@ -235,7 +235,7 @@ fn main() {
         .inner_join(posts::table)
         .distinct_on(users::id)
         .order_by((
-            //~^ ERROR: invalid order of elements in your `DISTINCT ON` clause in relation to your `ORDER BY` clause
+            //~^ ERROR: the trait bound `SelectStatement<FromClause<_>, _, _>: OrderDsl<_>` is not satisfied
             users::id,
             posts::id,
             users::hair_color,
@@ -249,7 +249,7 @@ fn main() {
         .distinct_on((users::id, posts::id))
         .order_by(users::id)
         .then_order_by((
-            //~^ ERROR: invalid order of elements in your `DISTINCT ON` clause in relation to your `ORDER BY` clause
+            //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _>: ThenOrderDsl<_>` is not satisfied
             posts::id,
             users::hair_color,
             users::name,

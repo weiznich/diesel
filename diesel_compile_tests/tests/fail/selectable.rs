@@ -16,8 +16,6 @@ table! {
         user_id -> Integer,
     }
 }
-//~^^^^^^^ ERROR: cannot find type `titel` in module `posts`
-//~| ERROR: cannot find value `titel` in module `posts`
 
 joinable!(posts -> users(user_id));
 allow_tables_to_appear_in_same_query!(users, posts);
@@ -53,6 +51,8 @@ struct PostWithWrongField {
     id: i32,
     // There is a typo here:
     titel: String,
+    //~^ ERROR: cannot find type `titel` in module `posts`
+    //~| ERROR: cannot find value `titel` in module `posts`
 }
 
 #[derive(Selectable)]
@@ -163,13 +163,9 @@ fn main() {
     let _ = users::table
         .left_join(posts::table)
         .select(UserWithEmbeddedPost::as_select())
-        //~^ ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-        //~| ERROR: cannot select `posts::columns::id` from `users::table`
-        //~| ERROR: cannot select `posts::columns::title` from `users::table`
+        //~^ ERROR: the trait bound `SelectStatement<FromClause<_>>: SelectDsl<_>` is not satisfied
         .load(&mut conn)
-        //~^ ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-        //~| ERROR: cannot select `posts::columns::id` from `users::table`
-        //~| ERROR: cannot select `posts::columns::title` from `users::table`
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 
     // group by clauses are considered
@@ -177,17 +173,18 @@ fn main() {
         .inner_join(posts::table)
         .group_by(posts::id)
         .select(UserWithEmbeddedPost::as_select())
-        //~^ ERROR: the trait bound `id: IsContainedInGroupBy<id>` is not satisfied
-        //~| ERROR: the trait bound `id: IsContainedInGroupBy<name>` is not satisfied
+        //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
         .load(&mut conn)
+        //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 
     // missing group by clause
     let _ = users::table
         .inner_join(posts::table)
         .select(UserWithPostCount::as_select())
-        //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+        //~^ ERROR: the trait bound `SelectStatement<FromClause<JoinOn<_, _>>>: Table` is not satisfied
         .load(&mut conn)
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 
     // cannot load results from more than one table via
@@ -196,12 +193,8 @@ fn main() {
         .values(users::name.eq(""))
         .returning(UserWithEmbeddedPost::as_select())
         //~^ ERROR: cannot select `posts::columns::id` from `ReturningQuerySource<_, table>`
-        //~| ERROR: cannot select `posts::columns::title` from `ReturningQuerySource<_, table>`
-        //~| ERROR: type mismatch resolving `<ReturningQuerySource<_, table> as AppearsInFromClause<table>>::Count == Once`
         .load(&mut conn)
-        //~^ ERROR: cannot select `posts::columns::id` from `ReturningQuerySource<_, table>`
-        //~| ERROR: cannot select `posts::columns::title` from `ReturningQuerySource<_, table>`
-        //~| ERROR: type mismatch resolving `<ReturningQuerySource<_, table> as AppearsInFromClause<table>>::Count == Once`
+        //~^ ERROR: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 
     // cannot load results from more than one table via
@@ -210,12 +203,8 @@ fn main() {
         .set(users::name.eq(""))
         .returning(UserWithEmbeddedPost::as_select())
         //~^ ERROR: cannot select `posts::columns::id` from `ReturningQuerySource<UpdateStmt, table>`
-        //~| ERROR: cannot select `posts::columns::title` from `ReturningQuerySource<UpdateStmt, table>`
-        //~| ERROR: type mismatch resolving `<ReturningQuerySource<_, table> as AppearsInFromClause<table>>::Count == Once`
         .load(&mut conn)
-        //~^ ERROR: cannot select `posts::columns::id` from `ReturningQuerySource<UpdateStmt, table>`
-        //~| ERROR: cannot select `posts::columns::title` from `ReturningQuerySource<UpdateStmt, table>`
-        //~| ERROR: type mismatch resolving `<ReturningQuerySource<_, table> as AppearsInFromClause<table>>::Count == Once`
+        //~^ ERROR: the trait bound `UpdateStatement<table, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 
     // cannot load results from more than one table via
@@ -223,12 +212,8 @@ fn main() {
     let _ = diesel::delete(users::table)
         .returning(UserWithEmbeddedPost::as_select())
         //~^ ERROR: cannot select `posts::columns::id` from `ReturningQuerySource<DeleteStmt, table>`
-        //~| ERROR: cannot select `posts::columns::title` from `ReturningQuerySource<DeleteStmt, table>`
-        //~| ERROR: type mismatch resolving `<ReturningQuerySource<_, table> as AppearsInFromClause<table>>::Count == Once`
         .load(&mut conn)
-        //~^ ERROR: cannot select `posts::columns::id` from `ReturningQuerySource<DeleteStmt, table>`
-        //~| ERROR: cannot select `posts::columns::title` from `ReturningQuerySource<DeleteStmt, table>`
-        //~| ERROR: type mismatch resolving `<ReturningQuerySource<_, table> as AppearsInFromClause<table>>::Count == Once`
+        //~^ ERROR: the trait bound `DeleteStatement<table, _, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 
     // cannot use this method without deriving selectable
@@ -242,27 +227,24 @@ fn main() {
     let _ = posts::table
         .select(Post::as_select())
         .load::<(i32, String)>(&mut conn)
-        //~^ ERROR: the trait bound `diesel::expression::select_by::SelectBy<Post, _>: SingleValue` is not satisfied
-        //~| ERROR: the trait bound `(i32, String): Queryable<SelectBy<Post, _>, _>` is not satisfied
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
     let _ = posts::table
         .select(Post::as_select())
         .into_boxed()
         .load::<(i32, String)>(&mut conn)
-        //~^ ERROR: the trait bound `diesel::expression::select_by::SelectBy<Post, _>: SingleValue` is not satisfied
-        //~| ERROR: the trait bound `(i32, String): Queryable<SelectBy<Post, _>, _>` is not satisfied
+        //~^ ERROR: the trait bound `BoxedSelectStatement<'_, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
     let _ = posts::table
         .select((Post::as_select(), posts::title))
         .load::<((i32, String), String)>(&mut conn)
-        //~^ ERROR: the trait bound `(SelectBy<Post, _>, Text): CompatibleType<_, _>` is not satisfied
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
     let _ = diesel::insert_into(posts::table)
         .values(posts::title.eq(""))
         .returning(Post::as_select())
         .load::<(i32, String, i32)>(&mut conn)
-        //~^ ERROR: the trait bound `diesel::expression::select_by::SelectBy<Post, _>: SingleValue` is not satisfied
-        //~| ERROR: the trait bound `(i32, String, i32): Queryable<_, _>` is not satisfied
+        //~^ ERROR: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 
     // cannot use backend specific selectable with other backend

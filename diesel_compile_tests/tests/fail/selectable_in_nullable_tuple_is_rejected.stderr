@@ -1,4 +1,4 @@
-error[E0277]: the trait bound `(Text, Nullable<(_,)>): CompatibleType<_, _>` is not satisfied
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
     --> tests/fail/selectable_in_nullable_tuple_is_rejected.rs:41:56
      |
   LL |     let _ = query.get_result::<(String, Option<Post>)>(&mut conn).unwrap();
@@ -6,27 +6,51 @@ error[E0277]: the trait bound `(Text, Nullable<(_,)>): CompatibleType<_, _>` is 
      |                   |
      |                   required by a bound introduced by this call
      |
-     = help: the trait `diesel::query_dsl::load_dsl::private::CompatibleType<(std::string::String, Option<Post>), _>` is not implemented for `(Text, Nullable<(SelectBy<Post, Sqlite>,)>)`
-     = note: this is a mismatch between what your query returns and what your type expects the query to return
-     = note: the fields in your struct need to match the fields returned by your query in count, order and type
-     = note: consider using `#[diesel(check_for_backend(_))]` on either `#[derive(Selectable)]` or `#[derive(QueryableByName)]` 
-             on your struct `(std::string::String, Option<Post>)` and in your query `.select((std::string::String, Option<Post>)::as_select())` to get a better error message
-     = help: the following other types implement trait `diesel::query_dsl::load_dsl::private::CompatibleType<U, DB>`:
-               `Nullable<(ST, ST1)>` implements `CompatibleType<Option<__T>, __DB>`
-               `Nullable<(ST, ST1, ST2)>` implements `CompatibleType<Option<__T>, __DB>`
-               `Nullable<(ST, ST1, ST2, ST3)>` implements `CompatibleType<Option<__T>, __DB>`
-               `Nullable<(ST, ST1, ST2, ST3, ST4)>` implements `CompatibleType<Option<__T>, __DB>`
-               `Nullable<(ST, ST1, ST2, ST3, ST4, ST5)>` implements `CompatibleType<Option<__T>, __DB>`
-               `Nullable<(ST, ST1, ST2, ST3, ST4, ST5, ST6)>` implements `CompatibleType<Option<__T>, __DB>`
-               `Nullable<(ST, ST1, ST2, ST3, ST4, ST5, ST6, ST7)>` implements `CompatibleType<Option<__T>, __DB>`
-               `Nullable<(ST, ST1, ST2, ST3, ST4, ST5, ST6, ST7, ST8)>` implements `CompatibleType<Option<__T>, __DB>`
-             and N others
-     = note: required for `SelectStatement<FromClause<JoinOn<_, _>>, _>` to implement `LoadQuery<'_, _, (std::string::String, Option<Post>)>`
+     = help: the trait `LoadQuery<'_, _, (std::string::String, Option<Post>)>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
+     |
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `get_result`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn get_result<'query, U>(self, conn: &mut Conn) -> QueryResult<U>
-     |        ---------- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::get_result`

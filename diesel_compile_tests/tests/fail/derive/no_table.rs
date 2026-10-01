@@ -2,6 +2,7 @@
 extern crate diesel;
 
 #[derive(AsChangeset)]
+//~^ ERROR: type annotations needed
 struct User {
     //~^ ERROR: cannot find module or crate `users` in this scope
     id: i32,
@@ -9,6 +10,7 @@ struct User {
 }
 
 #[derive(AsChangeset)]
+//~^ ERROR: type annotations needed
 #[diesel(table_name = users)]
 //~^ ERROR: cannot find module or crate `users` in this scope
 struct UserForm {

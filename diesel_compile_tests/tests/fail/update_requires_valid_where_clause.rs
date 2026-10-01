@@ -21,14 +21,14 @@ fn main() {
     update(users::table).filter(users::id.eq(1));
 
     update(users::table.filter(posts::id.eq(1)));
-    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _>: IntoUpdateTarget` is not satisfied
-    //~| ERROR: the trait bound `SelectStatement<_, _, _, _>: IntoUpdateTarget` is not satisfied
+    //~^ ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+    //~| ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
 
     update(users::table).filter(posts::id.eq(1));
-    //~^ ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+    //~^ ERROR: the trait bound `UpdateStatement<table, _>: FilterDsl<_>` is not satisfied
 
     update(users::table)
         .set(users::id.eq(1))
         .filter(posts::id.eq(1));
-    //~^ ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+    //~^ ERROR: the trait bound `UpdateStatement<table, _, _>: FilterDsl<_>` is not satisfied
 }

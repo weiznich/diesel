@@ -24,14 +24,15 @@ LL | |     Self: AppearsOnTable<ReturningQuerySource<UpdateStmt, C::Table>>,
 note: required by a bound in `InsertStatement::<T, U, Op>::returning`
    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/mod.rs
     |
+LL | impl<T: QuerySource, U, Op> InsertStatement<T, U, Op> {
+...
 LL |     pub fn returning<E>(self, returns: E) -> InsertStatement<T, U, Op, ReturningClause<E>>
-    |            --------- required by a bound in this associated function
 LL |     where
 LL |         InsertStatement<T, U, Op, ReturningClause<E>>: Query,
     |                                                        ^^^^^ required by this bound in `InsertStatement::<T, U, Op>::returning`
  
     
-error[E0277]: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
+error[E0277]: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, _>` is not satisfied
     --> tests/fail/old_in_insert_on_conflict_do_update_requires_nullable.rs:37:37
      |
   LL |         .get_result::<UpsertOldNew>(&mut connection)
@@ -39,27 +40,51 @@ error[E0277]: cannot select `diesel::pg::returning::old_impl::Old<columns::name>
      |          |
      |          required by a bound introduced by this call
      |
-     = note: `diesel::pg::returning::old_impl::Old<columns::name>` is no valid selection for `ReturningQuerySource<_, table>`
-help: the trait `SelectableExpression<ReturningQuerySource<diesel::internal::table_macro::returning::InsertStmtWithOnConflictDoUpdate, _>>` is not implemented for `diesel::pg::returning::old_impl::Old<columns::name>`
-      but trait `SelectableExpression<ReturningQuerySource<diesel::internal::table_macro::returning::UpdateStmt, _>>` is implemented for it
-    --> DIESEL/diesel/diesel/src/pg/returning/old_impl.rs
+     = help: the trait `LoadQuery<'_, _, UpsertOldNew>` is not implemented for `InsertStatement<table, _, Insert, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
- LL | / impl<C> SelectableExpression<ReturningQuerySource<UpdateStmt, C::Table>> for Old<C>
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
  LL | | where
- LL | |     C: Column,
- LL | |     Self: AppearsOnTable<ReturningQuerySource<UpdateStmt, C::Table>>,
-     | |_____________________________________________________________________^
-     = help: for that trait implementation, expected `diesel::internal::table_macro::returning::UpdateStmt`, found `InsertStmtWithOnConflictDoUpdate`
-     = note: required for `(Old<name>, name)` to implement `SelectableExpression<ReturningQuerySource<_, table>>`
-     = note: 1 redundant requirement hidden
-     = note: required for `diesel::expression::select_by::SelectBy<UpsertOldNew, _>` to implement `SelectableExpression<ReturningQuerySource<_, table>>`
-     = note: required for `InsertStatement<table, _, Insert, _>` to implement `Query`
-     = note: required for `InsertStatement<table, _, Insert, _>` to implement `LoadQuery<'_, _, UpsertOldNew>`
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `get_result`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn get_result<'query, U>(self, conn: &mut Conn) -> QueryResult<U>
-     |        ---------- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::get_result`
@@ -88,14 +113,15 @@ LL | |     Self: AppearsOnTable<ReturningQuerySource<UpdateStmt, C::Table>>,
 note: required by a bound in `InsertStatement::<T, U, Op>::returning`
    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/mod.rs
     |
+LL | impl<T: QuerySource, U, Op> InsertStatement<T, U, Op> {
+...
 LL |     pub fn returning<E>(self, returns: E) -> InsertStatement<T, U, Op, ReturningClause<E>>
-    |            --------- required by a bound in this associated function
 LL |     where
 LL |         InsertStatement<T, U, Op, ReturningClause<E>>: Query,
     |                                                        ^^^^^ required by this bound in `InsertStatement::<T, U, Op>::returning`
  
     
-error[E0277]: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
+error[E0277]: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, String>` is not satisfied
     --> tests/fail/old_in_insert_on_conflict_do_update_requires_nullable.rs:50:31
      |
   LL |         .get_result::<String>(&mut connection)
@@ -103,24 +129,51 @@ error[E0277]: cannot select `diesel::pg::returning::old_impl::Old<columns::name>
      |          |
      |          required by a bound introduced by this call
      |
-     = note: `diesel::pg::returning::old_impl::Old<columns::name>` is no valid selection for `ReturningQuerySource<_, table>`
-help: the trait `SelectableExpression<ReturningQuerySource<diesel::internal::table_macro::returning::InsertStmtWithOnConflictDoUpdate, _>>` is not implemented for `diesel::pg::returning::old_impl::Old<columns::name>`
-      but trait `SelectableExpression<ReturningQuerySource<diesel::internal::table_macro::returning::UpdateStmt, _>>` is implemented for it
-    --> DIESEL/diesel/diesel/src/pg/returning/old_impl.rs
+     = help: the trait `LoadQuery<'_, _, std::string::String>` is not implemented for `InsertStatement<table, _, Insert, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
- LL | / impl<C> SelectableExpression<ReturningQuerySource<UpdateStmt, C::Table>> for Old<C>
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
  LL | | where
- LL | |     C: Column,
- LL | |     Self: AppearsOnTable<ReturningQuerySource<UpdateStmt, C::Table>>,
-     | |_____________________________________________________________________^
-     = help: for that trait implementation, expected `diesel::internal::table_macro::returning::UpdateStmt`, found `InsertStmtWithOnConflictDoUpdate`
-     = note: required for `InsertStatement<table, _, Insert, _>` to implement `Query`
-     = note: required for `InsertStatement<table, _, Insert, _>` to implement `LoadQuery<'_, _, std::string::String>`
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `get_result`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn get_result<'query, U>(self, conn: &mut Conn) -> QueryResult<U>
-     |        ---------- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::get_result`

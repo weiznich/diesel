@@ -21,5 +21,5 @@ allow_tables_to_appear_in_same_query!(users, posts);
 
 fn main() {
     users::table.into_boxed_clone::<Pg>().order(posts::title.desc());
-    //~^ ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+    //~^ ERROR: the trait bound `BoxedCloneSelectStatement<'_, _, _, Pg>: OrderDsl<Desc<title>>` is not satisfied
 }

@@ -41,24 +41,22 @@ pub fn check(conn: &mut PgConnection) {
     users::table
         .inner_join(post_alias)
         .inner_join(post_alias)
-        //~^ ERROR: type mismatch resolving `<Once as Plus<Once>>::Output == Once`
-        //~| ERROR: type mismatch resolving `<Join<_, Alias<posts2>, Inner> as AppearsInFromClause<Alias<posts2>>>::Count == Once`
+        //~^ ERROR: the trait bound `SelectStatement<_>: InternalJoinDsl<Alias<posts2>, Inner, _>` is not satisfied
         .select(users::id)
-        //~^ ERROR: no method named `select` found for struct `SelectStatement<From, Select, Distinct, Where, Order, LimitOffset, GroupBy, Having, Locking>` in the current scope
         .load::<i32>(conn)
         .unwrap();
 
     // Selecting the raw field on the aliased table
     user_alias.select(users::id).load::<i32>(conn).unwrap();
-    //~^ ERROR: cannot select `users::columns::id` from `Alias<users2>`
-    //~| ERROR: cannot select `users::columns::id` from `Alias<users2>`
+    //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, i32>` is not satisfied
+    //~| ERROR: the trait bound `Alias<users2>: SelectDsl<users::columns::id>` is not satisfied
 
     let user2_alias = alias!(users as user3);
 
     // don't allow joins to not joinable tables
     pets::table
         .inner_join(user_alias)
-        //~^ ERROR: cannot join `pets::table` to `Alias<users2>` due to missing relation
+        //~^ ERROR: the trait bound `table: JoinWithImplicitOnClause<Alias<users2>, Inner>` is not satisfied
         .select(pets::id)
         .load::<i32>(conn)
         .unwrap();
@@ -67,16 +65,15 @@ pub fn check(conn: &mut PgConnection) {
     let post_alias_2 = alias!(posts as posts3);
     let posts = post_alias
         .inner_join(
-        //~^ ERROR: the trait bound `Join<Alias<posts2>, Alias<posts3>, Inner>: AppearsInFromClause<Alias<posts3>>` is not satisfied
-        //~| ERROR: the trait bound `Join<Alias<posts2>, Alias<posts3>, Inner>: AppearsInFromClause<Alias<posts2>>` is not satisfied
             post_alias_2.on(post_alias
                 .field(posts::author)
                 .eq(post_alias_2.field(posts::author))),
-            //~^^^ ERROR: the trait bound `Alias<posts3>: AppearsInFromClause<Alias<posts2>>` is not satisfied
+            //~^^^ ERROR: the trait bound `Alias<posts2>: InternalJoinDsl<Alias<posts3>, Inner, _>` is not satisfied
         )
         .select((post_alias.field(posts::id), post_alias_2.field(posts::id)))
-        //~^ ERROR: no method named `select` found for struct `SelectStatement<From, Select, Distinct, Where, Order, LimitOffset, GroupBy, Having, Locking>` in the current scope
+        //~^ ERROR: the trait bound `SelectStatement<FromClause<_>>: SelectDsl<_>` is not satisfied
         .load::<(i32, i32)>(conn)
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 }
 

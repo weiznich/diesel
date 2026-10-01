@@ -56,6 +56,7 @@ fn main() {
     diesel::copy_to(users::table).load::<User, _>(conn).unwrap();
     //~^ ERROR: the trait bound `MysqlLikeConnection<Mysql>: ExecuteCopyToConnection` is not satisfied
     //~| ERROR: the trait bound `MysqlLikeConnection<Mysql>: ExecuteCopyToConnection` is not satisfied
+    //~| ERROR: the trait bound `MysqlLikeConnection<Mysql>: ExecuteCopyToConnection` is not satisfied
 
     let conn = &mut SqliteConnection::establish("_").unwrap();
 
@@ -68,5 +69,6 @@ fn main() {
         .unwrap();
     diesel::copy_to(users::table).load::<User, _>(conn).unwrap();
     //~^ ERROR: the trait bound `SqliteConnection: ExecuteCopyToConnection` is not satisfied
+    //~| ERROR: the trait bound `SqliteConnection: ExecuteCopyToConnection` is not satisfied
     //~| ERROR: the trait bound `SqliteConnection: ExecuteCopyToConnection` is not satisfied
 }

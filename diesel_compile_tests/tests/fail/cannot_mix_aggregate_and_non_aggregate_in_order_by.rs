@@ -40,19 +40,19 @@ fn main() {
 
     // aggregate SELECT + non-aggregate ORDER BY
     let _ = users.select(max(id)).order_by(name);
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<_, _>: OrderDsl<name>` is not satisfied
 
     // non-aggregate SELECT + aggregate ORDER BY
     let _ = users.select(id).order_by(max(id));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<table>, _>: OrderDsl<_>` is not satisfied
 
     // aggregate SELECT + aggregate ORDER BY + non-aggregate then_order_by
     let _ = users.select(max(id)).order_by(max(id)).then_order_by(name);
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _>: ThenOrderDsl<name>` is not satisfied
 
     // non-aggregate ORDER BY first, then aggregate SELECT (issue #3815)
     let _ = users.order_by(name).select(max(id));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _>: SelectDsl<_>` is not satisfied
 
     // non-aggregate ORDER BY first, then .count() (issue #3815)
     let _ = users.order_by(name).count();
@@ -60,15 +60,15 @@ fn main() {
 
     // aggregate ORDER BY without explicit SELECT (default non-aggregate select, no GROUP BY)
     let _ = users.order_by(max(id));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: OrderDsl<_>` is not satisfied
 
     // non-aggregate SELECT + aggregate then_order_by (ThenOrderDsl→NoOrderClause path)
     let _ = users.select(id).then_order_by(max(id));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<_, _>: ThenOrderDsl<_>` is not satisfied
 
     // non-aggregate ORDER BY + aggregate then_order_by (ThenOrderDsl→existing OrderClause path)
     let _ = users.order_by(name).then_order_by(max(id));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _>: ThenOrderDsl<_>` is not satisfied
 
     // -------------------------------------------------------------------------
     // With GROUP BY — non-grouped non-aggregate column in ORDER BY is invalid
@@ -87,7 +87,7 @@ fn main() {
     // When select is first, S::Selection satisfies ValidGrouping, so the error
     // narrows to the specific column's IsContainedInGroupBy constraint
     let _ = users.group_by(name).select((name, max(id))).order_by(id);
-    //~^ ERROR: IsContainedInGroupBy
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: OrderDsl<id>` is not satisfied
 
     // valid order_by (aggregate), then non-grouped column in then_order_by; select first
     let _ = users
@@ -95,7 +95,7 @@ fn main() {
         .select((name, max(id)))
         .order_by(max(id))
         .then_order_by(id);
-    //~^ ERROR: IsContainedInGroupBy
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: ThenOrderDsl<id>` is not satisfied
 
     // valid order_by (grouped column), then non-grouped column in then_order_by; select first
     let _ = users
@@ -103,15 +103,15 @@ fn main() {
         .select((name, max(id)))
         .order_by(name)
         .then_order_by(id);
-    //~^ ERROR: IsContainedInGroupBy
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: ThenOrderDsl<id>` is not satisfied
 
     // non-grouped then_order_by after grouped col order_by, order-before-select
     let _ = users.group_by(name).order_by(name).then_order_by(id);
-    //~^ ERROR: IsContainedInGroupBy
+    //~^ ERROR: the trait bound `(name, id): ValidGrouping<name>` is not satisfied
 
     // non-grouped then_order_by after aggregate order_by, order-before-select
     let _ = users.group_by(name).order_by(max(id)).then_order_by(id);
-    //~^ ERROR: IsContainedInGroupBy
+    //~^ ERROR: the trait bound `(max<Integer, id>, id): ValidGrouping<name>` is not satisfied
 
     // multi-column GROUP BY, non-grouped column in order_by, default select
     let _ = users.group_by((name, hair_color)).order_by(id);
@@ -134,7 +134,7 @@ fn main() {
         .group_by(parent::id)
         .order_by(parent::id)
         .then_order_by(child::value);
-    //~^ ERROR: IsContainedInGroupBy
+    //~^ ERROR: the trait bound `(id, value): ValidGrouping<id>` is not satisfied
 
     // also check existing order clause
     let _ = parent::table
@@ -142,7 +142,7 @@ fn main() {
         .order_by(child::value)
         .group_by(parent::id)
         .get_result(conn);
-    //~^ ERROR: the trait bound `SkipSelectableExpressionBoundCheckWrapper<_>: ValidGrouping<id>` is not satisfied
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
 
     // also check existing order clause
     let _ = parent::table
@@ -150,5 +150,5 @@ fn main() {
         .order_by(child::value)
         .group_by(parent::id)
         .then_order_by(parent::id);
-    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: ThenOrderDsl<_>` is not satisfied
+    //~^ ERROR: the trait bound `(child::columns::value, _): ValidGrouping<parent::columns::id>` is not satisfied
 }

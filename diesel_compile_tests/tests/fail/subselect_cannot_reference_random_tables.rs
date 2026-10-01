@@ -30,17 +30,17 @@ fn main() {
     let _ = users::table
         .filter(users::id.eq_any(posts::table.select(posts::id).filter(comments::id.eq(1))))
         .load::<(i32,)>(&mut conn);
-    //~^ ERROR: type mismatch resolving `<Join<table, table, Inner> as AppearsInFromClause<table>>::Count == Once`
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
 
     let _ = users::table
         .filter(users::id.eq(any(
             posts::table.select(posts::id).filter(comments::id.eq(1)),
         )))
         .load::<(i32,)>(&mut conn);
-    //~^ ERROR: type mismatch resolving `<Join<table, table, Inner> as AppearsInFromClause<table>>::Count == Once`
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
 
     let _ = users::table
         .filter(exists(posts::table.filter(comments::id.eq(1))))
         .load::<(i32,)>(&mut conn);
-    //~^ ERROR: type mismatch resolving `<Join<table, table, Inner> as AppearsInFromClause<table>>::Count == Once`
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
 }

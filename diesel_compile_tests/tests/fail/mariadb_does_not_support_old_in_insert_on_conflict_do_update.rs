@@ -35,7 +35,7 @@ fn main() {
         .returning(UpsertOldNew::as_select())
         //~^ ERROR: cannot select `diesel::mariadb::returning::old_impl::OldValue<columns::name>` from `ReturningQuerySource<_, table>`
         .get_result::<UpsertOldNew>(&mut connection)
-        //~^ ERROR: cannot select `diesel::mariadb::returning::old_impl::OldValue<columns::name>` from `ReturningQuerySource<_, table>`
+        //~^ ERROR: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, _>` is not satisfied
         .unwrap();
 
     // The plain tuple version mirrors the same constraint: writing
@@ -48,7 +48,7 @@ fn main() {
         .returning(old_value(users::name))
         //~^ ERROR: cannot select `diesel::mariadb::returning::old_impl::OldValue<columns::name>` from `ReturningQuerySource<_, table>`
         .get_result::<String>(&mut connection)
-        //~^ ERROR: cannot select `diesel::mariadb::returning::old_impl::OldValue<columns::name>` from `ReturningQuerySource<_, table>`
+        //~^ ERROR: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, String>` is not satisfied
         .unwrap();
 
     // Even With Nullable this does not compile
@@ -58,9 +58,9 @@ fn main() {
         .do_update()
         .set(users::name.eq(""))
         .returning(old_value(users::name).nullable())
-        //~^ ERROR: cannot select `NullableExpression<OldValue<name>>` from `ReturningQuerySource<_, table>`
+        //~^ ERROR: the trait bound `OldValue<name>: AppearsOnTable<_>` is not satisfied
         .get_result::<Option<String>>(&mut connection)
-        //~^ ERROR: cannot select `NullableExpression<OldValue<name>>` from `ReturningQuerySource<_, table>`
+        //~^ ERROR: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, Option<String>>` is not satisfied
         .unwrap();
 
     // Sanity check: returning the column itself works

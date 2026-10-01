@@ -8,6 +8,7 @@ table! {
 }
 
 #[derive(AsChangeset)]
+//~^ ERROR: type annotations needed
 #[diesel(table_name = users)]
 struct UserStruct1 {
     #[column_name = "name"]
@@ -15,6 +16,7 @@ struct UserStruct1 {
 }
 
 #[derive(AsChangeset)]
+//~^ ERROR: type annotations needed
 #[diesel(table_name = users)]
 struct UserTuple(#[column_name = "name"] String);
 

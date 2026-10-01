@@ -1,204 +1,409 @@
+error[E0277]: the trait bound `users::table: GroupByDsl<posts::columns::id>` is not satisfied
+    --> tests/fail/invalid_group_by.rs:27:19
+     |
+  LL |         .group_by(posts::id)
+     |          -------- ^^^^^^^^^ unsatisfied trait bound
+     |          |
+     |          required by a bound introduced by this call
+     |
+help: the trait `GroupByDsl<posts::columns::id>` is not implemented for `users::table`
+    --> tests/fail/invalid_group_by.rs:6:1
+     |
+   LL | / table! {
+   LL | |     users {
+     | |_________^
+help: the trait `GroupByDsl<Expr>` is implemented for `Alias<S>`
+    --> DIESEL/diesel/diesel/src/query_source/aliasing/dsl_impls.rs
+     |
+ LL | / impl<S, Expr> GroupByDsl<Expr> for Alias<S>
+ LL | | where
+ LL | |     Expr: Expression,
+ LL | |     Self: QuerySource + AsQuery<Query = SelectStatement<FromClause<Self>>>,
+...    |
+ LL | |     <Self as AsQuery>::SqlType: TypedExpressionType,
+ LL | |     <Self as AsQuery>::Query: GroupByDsl<Expr>,
+     | |_______________________________________________^
+note: required by a bound in `diesel::QueryDsl::group_by`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
+...
+LL |     fn group_by<GB>(self, group_by: GB) -> GroupBy<Self, GB>
+...
+LL |         Self: methods::GroupByDsl<GB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::group_by`
+     = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<id>` is not satisfied
+   --> tests/fail/invalid_group_by.rs:29:17
+    |
+ LL |         .select(users::id)
+    |          ------ ^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<users::columns::id>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
 error[E0271]: type mismatch resolving `<FromClause<table> as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/invalid_group_by.rs:27:10
-   |
-LL |         .group_by(posts::id)
-   |          ^^^^^^^^ expected `Once`, found `Never`
-   |
+    --> tests/fail/invalid_group_by.rs:37:19
+     |
+  LL |         .group_by(posts::id)
+     |          -------- ^^^^^^^^^ expected `Once`, found `Never`
+     |          |
+     |          required by a bound introduced by this call
+     |
 note: required for `posts::columns::id` to implement `AppearsOnTable<FromClause<table>>`
-  --> tests/fail/invalid_group_by.rs:15:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: required for `SelectStatement<FromClause<table>>` to implement `GroupByDsl<posts::columns::id>`
+    --> tests/fail/invalid_group_by.rs:15:9
+     |
+  LL |         id -> Integer,
+     |         ^^
+     = note: associated types for the current `impl` cannot be restricted in `where` clauses
+     = note: required for `SelectStatement<FromClause<table>, _>` to implement `GroupByDsl<posts::columns::id>`
+note: required by a bound in `diesel::QueryDsl::group_by`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
+...
+LL |     fn group_by<GB>(self, group_by: GB) -> GroupBy<Self, GB>
+...
+LL |         Self: methods::GroupByDsl<GB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::group_by`
+  
+          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `Alias<user1>: GroupByDsl<posts::columns::id>` is not satisfied
+    --> tests/fail/invalid_group_by.rs:46:19
+     |
+  LL |         .group_by(posts::id)
+     |          -------- ^^^^^^^^^ the trait `GroupByDsl<posts::columns::id>` is not implemented for `Alias<user1>`
+     |          |
+     |          required by a bound introduced by this call
+     |
+help: the trait `GroupByDsl<Expr>` is conditionally implemented for `Alias<S>`
+    --> DIESEL/diesel/diesel/src/query_source/aliasing/dsl_impls.rs
+     |
+ LL | / impl<S, Expr> GroupByDsl<Expr> for Alias<S>
+ LL | | where
+ LL | |     Expr: Expression,
+ LL | |     Self: QuerySource + AsQuery<Query = SelectStatement<FromClause<Self>>>,
+...    |
+ LL | |     <Self as AsQuery>::SqlType: TypedExpressionType,
+ LL | |     <Self as AsQuery>::Query: GroupByDsl<Expr>,
+     | |_______________________________----------------^
+     |                                 |
+     |                                 unsatisfied requirement introduced here: `<Alias<_> as AsQuery>::Query: GroupByDsl<_>`
+note: required by a bound in `diesel::QueryDsl::group_by`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
+...
+LL |     fn group_by<GB>(self, group_by: GB) -> GroupBy<Self, GB>
+...
+LL |         Self: methods::GroupByDsl<GB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::group_by`
 
-error[E0271]: type mismatch resolving `<id as IsContainedInGroupBy<id>>::Output == Yes`
-  --> tests/fail/invalid_group_by.rs:29:10
-   |
-LL |         .select(users::id)
-   |          ^^^^^^ type mismatch resolving `<id as IsContainedInGroupBy<id>>::Output == Yes`
-   |
-note: expected this to be `diesel::expression::is_contained_in_group_by::Yes`
-  --> tests/fail/invalid_group_by.rs:20:1
-   |
-LL | allow_columns_to_appear_in_same_group_by_clause!(users::id, posts::id);
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-note: required for `users::columns::id` to implement `ValidGrouping<posts::columns::id>`
-  --> tests/fail/invalid_group_by.rs:8:9
-   |
- LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<users::columns::id>`
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
+   --> tests/fail/invalid_group_by.rs:48:17
+    |
+ LL |         .select(user_alias.field(users::id))
+    |          ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<AliasedField<user1, users::columns::id>>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    help: consider removing this method call, as the receiver has type `Alias<user1>` and `Alias<user1>: SelectDsl<AliasedField<user1, users::columns::id>>` trivially holds
+    |
+ 48 -         .select(user_alias.field(users::id))
+ 48 +         .select(user_alias)
+    |
 
-      = note: this error originates in the macro `__static_cond` which comes from the expansion of the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `users::table: GroupByDsl<AliasedField<post1, posts::columns::id>>` is not satisfied
+    --> tests/fail/invalid_group_by.rs:54:19
+     |
+  LL |         .group_by(post_alias.field(posts::id))
+     |          -------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |          |
+     |          required by a bound introduced by this call
+     |
+help: the trait `GroupByDsl<AliasedField<post1, posts::columns::id>>` is not implemented for `users::table`
+    --> tests/fail/invalid_group_by.rs:6:1
+     |
+   LL | / table! {
+   LL | |     users {
+     | |_________^
+help: the trait `GroupByDsl<Expr>` is implemented for `Alias<S>`
+    --> DIESEL/diesel/diesel/src/query_source/aliasing/dsl_impls.rs
+     |
+ LL | / impl<S, Expr> GroupByDsl<Expr> for Alias<S>
+ LL | | where
+ LL | |     Expr: Expression,
+ LL | |     Self: QuerySource + AsQuery<Query = SelectStatement<FromClause<Self>>>,
+...    |
+ LL | |     <Self as AsQuery>::SqlType: TypedExpressionType,
+ LL | |     <Self as AsQuery>::Query: GroupByDsl<Expr>,
+     | |_______________________________________________^
+note: required by a bound in `diesel::QueryDsl::group_by`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
+...
+LL |     fn group_by<GB>(self, group_by: GB) -> GroupBy<Self, GB>
+...
+LL |         Self: methods::GroupByDsl<GB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::group_by`
+     = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider removing this method call, as the receiver has type `Alias<post1>` and `Alias<post1>: GroupByDsl<AliasedField<post1, posts::columns::id>>` trivially holds
+     |
+  54 -         .group_by(post_alias.field(posts::id))
+  54 +         .group_by(post_alias)
+     |
 
-error[E0271]: type mismatch resolving `<FromClause<table> as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/invalid_group_by.rs:37:10
-   |
-LL |         .group_by(posts::id)
-   |          ^^^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<FromClause<table>>`
-  --> tests/fail/invalid_group_by.rs:15:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: required for `SelectStatement<FromClause<table>, _>` to implement `GroupByDsl<posts::columns::id>`
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<id>` is not satisfied
+   --> tests/fail/invalid_group_by.rs:56:17
+    |
+ LL |         .select(users::id)
+    |          ------ ^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<users::columns::id>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `Alias<user1>: GroupByDsl<AliasedField<post1, posts::columns::id>>` is not satisfied
+    --> tests/fail/invalid_group_by.rs:62:19
+     |
+  LL |         .group_by(post_alias.field(posts::id))
+     |          -------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+     |          |
+     |          required by a bound introduced by this call
+     |
+     = help: the trait `GroupByDsl<AliasedField<post1, posts::columns::id>>` is not implemented for `Alias<user1>`
+help: the trait `GroupByDsl<Expr>` is conditionally implemented for `Alias<S>`
+    --> DIESEL/diesel/diesel/src/query_source/aliasing/dsl_impls.rs
+     |
+ LL | / impl<S, Expr> GroupByDsl<Expr> for Alias<S>
+ LL | | where
+ LL | |     Expr: Expression,
+ LL | |     Self: QuerySource + AsQuery<Query = SelectStatement<FromClause<Self>>>,
+...    |
+ LL | |     <Self as AsQuery>::SqlType: TypedExpressionType,
+ LL | |     <Self as AsQuery>::Query: GroupByDsl<Expr>,
+     | |_______________________________----------------^
+     |                                 |
+     |                                 unsatisfied requirement introduced here: `<Alias<_> as AsQuery>::Query: GroupByDsl<_>`
+note: required by a bound in `diesel::QueryDsl::group_by`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
+...
+LL |     fn group_by<GB>(self, group_by: GB) -> GroupBy<Self, GB>
+...
+LL |         Self: methods::GroupByDsl<GB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::group_by`
+help: consider removing this method call, as the receiver has type `Alias<post1>` and `Alias<post1>: GroupByDsl<AliasedField<post1, posts::columns::id>>` trivially holds
+     |
+  62 -         .group_by(post_alias.field(posts::id))
+  62 +         .group_by(post_alias)
+     |
 
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
+   --> tests/fail/invalid_group_by.rs:64:17
+    |
+ LL |         .select(user_alias.field(users::id))
+    |          ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<AliasedField<user1, users::columns::id>>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    help: consider removing this method call, as the receiver has type `Alias<user1>` and `Alias<user1>: SelectDsl<AliasedField<user1, users::columns::id>>` trivially holds
+    |
+ 64 -         .select(user_alias.field(users::id))
+ 64 +         .select(user_alias)
+    |
 
 error[E0271]: type mismatch resolving `<FromClause<Alias<user1>> as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/invalid_group_by.rs:46:10
-   |
-LL |         .group_by(posts::id)
-   |          ^^^^^^^^ expected `Once`, found `Never`
-   |
+    --> tests/fail/invalid_group_by.rs:71:19
+     |
+  LL |         .group_by(posts::id)
+     |          -------- ^^^^^^^^^ expected `Once`, found `Never`
+     |          |
+     |          required by a bound introduced by this call
+     |
 note: required for `posts::columns::id` to implement `AppearsOnTable<FromClause<Alias<user1>>>`
-  --> tests/fail/invalid_group_by.rs:15:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: required for `SelectStatement<FromClause<Alias<user1>>>` to implement `GroupByDsl<posts::columns::id>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `AliasedField<user1, id>: ValidGrouping<id>` is not satisfied
-  --> tests/fail/invalid_group_by.rs:48:10
-   |
-LL |         .select(user_alias.field(users::id))
-   |          ^^^^^^ unsatisfied trait bound
-   |
-   = help: the trait `ValidGrouping<posts::columns::id>` is not implemented for `AliasedField<user1, users::columns::id>`
-help: the following other types implement trait `ValidGrouping<GroupByClause>`
-  --> DIESEL/diesel/diesel/src/query_source/aliasing/aliased_field.rs
-   |
-LL | / impl<S, C> ValidGrouping<()> for AliasedField<S, C>
-LL | | where
-LL | |     S: AliasSource,
-LL | |     C: QueryRelationField<QueryRelation = S::Target>,
-   | |_____________________________________________________^ `AliasedField<S, C>` implements `ValidGrouping<()>`
+    --> tests/fail/invalid_group_by.rs:15:9
+     |
+  LL |         id -> Integer,
+     |         ^^
+     = note: associated types for the current `impl` cannot be restricted in `where` clauses
+     = note: required for `SelectStatement<FromClause<Alias<user1>>, _>` to implement `GroupByDsl<posts::columns::id>`
+note: required by a bound in `diesel::QueryDsl::group_by`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
 ...
-LL | / impl<S, C1, C2> ValidGrouping<AliasedField<S, C1>> for AliasedField<S, C2>
-LL | | where
-LL | |     S: AliasSource,
-LL | |     C1: QueryRelationField<QueryRelation = S::Target>,
-LL | |     C2: QueryRelationField<QueryRelation = S::Target>,
-LL | |     C2: ValidGrouping<C1, IsAggregate = is_aggregate::Yes>,
-   | |___________________________________________________________^ `AliasedField<S, C2>` implements `ValidGrouping<AliasedField<S, C1>>`
-   = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<AliasedField<user1, users::columns::id>>`
-
-   
-error[E0271]: type mismatch resolving `<FromClause<table> as AppearsInFromClause<Alias<post1>>>::Count == Once`
-  --> tests/fail/invalid_group_by.rs:54:10
-   |
-LL |         .group_by(post_alias.field(posts::id))
-   |          ^^^^^^^^ expected `Once`, found `Never`
-   |
-   = note: required for `AliasedField<post1, posts::columns::id>` to implement `AppearsOnTable<FromClause<table>>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `GroupByDsl<AliasedField<post1, posts::columns::id>>`
-
-   
-error[E0277]: the trait bound `AliasedField<post1, id>: IsContainedInGroupBy<id>` is not satisfied
-  --> tests/fail/invalid_group_by.rs:56:10
-   |
-LL |         .select(users::id)
-   |          ^^^^^^ unsatisfied trait bound
-   |
-   = help: the trait `diesel::expression::IsContainedInGroupBy<users::columns::id>` is not implemented for `AliasedField<post1, posts::columns::id>`
-   = note: if your query contains columns from several tables in your group by or select clause make sure to call `allow_columns_to_appear_in_same_group_by_clause!` with these columns
-help: the following other types implement trait `diesel::expression::IsContainedInGroupBy<T>`
-  --> tests/fail/invalid_group_by.rs:6:1
-   |
- LL | / table! {
- LL | |     users {
- LL | |         id -> Integer,
-   | |         ^^ `users::columns::id`
- LL | |         name -> VarChar,
-   | |____________^ `users::columns::name`
+LL |     fn group_by<GB>(self, group_by: GB) -> GroupBy<Self, GB>
 ...
-LL |   allow_columns_to_appear_in_same_group_by_clause!(users::id, posts::id);
-   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `posts::columns::id`
-note: required for `users::columns::id` to implement `ValidGrouping<AliasedField<post1, posts::columns::id>>`
-  --> tests/fail/invalid_group_by.rs:8:9
-   |
- LL |         id -> Integer,
-   |         ^^
-   = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<users::columns::id>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<FromClause<Alias<user1>> as AppearsInFromClause<Alias<post1>>>::Count == Once`
-  --> tests/fail/invalid_group_by.rs:62:10
-   |
-LL |         .group_by(post_alias.field(posts::id))
-   |          ^^^^^^^^ expected `Once`, found `Never`
-   |
-   = note: required for `AliasedField<post1, posts::columns::id>` to implement `AppearsOnTable<FromClause<Alias<user1>>>`
-   = note: required for `SelectStatement<FromClause<Alias<user1>>>` to implement `GroupByDsl<AliasedField<post1, posts::columns::id>>`
-
-   
-error[E0277]: the trait bound `AliasedField<user1, id>: ValidGrouping<_>` is not satisfied
-  --> tests/fail/invalid_group_by.rs:64:10
-   |
-LL |         .select(user_alias.field(users::id))
-   |          ^^^^^^ unsatisfied trait bound
-   |
-   = help: the trait `ValidGrouping<AliasedField<post1, posts::columns::id>>` is not implemented for `AliasedField<user1, users::columns::id>`
-help: the following other types implement trait `ValidGrouping<GroupByClause>`
-  --> DIESEL/diesel/diesel/src/query_source/aliasing/aliased_field.rs
-   |
-LL | / impl<S, C> ValidGrouping<()> for AliasedField<S, C>
-LL | | where
-LL | |     S: AliasSource,
-LL | |     C: QueryRelationField<QueryRelation = S::Target>,
-   | |_____________________________________________________^ `AliasedField<S, C>` implements `ValidGrouping<()>`
-...
-LL | / impl<S, C1, C2> ValidGrouping<AliasedField<S, C1>> for AliasedField<S, C2>
-LL | | where
-LL | |     S: AliasSource,
-LL | |     C1: QueryRelationField<QueryRelation = S::Target>,
-LL | |     C2: QueryRelationField<QueryRelation = S::Target>,
-LL | |     C2: ValidGrouping<C1, IsAggregate = is_aggregate::Yes>,
-   | |___________________________________________________________^ `AliasedField<S, C2>` implements `ValidGrouping<AliasedField<S, C1>>`
-   = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<AliasedField<user1, users::columns::id>>`
-
-   
-error[E0271]: type mismatch resolving `<FromClause<Alias<user1>> as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/invalid_group_by.rs:71:10
-   |
-LL |         .group_by(posts::id)
-   |          ^^^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<FromClause<Alias<user1>>>`
-  --> tests/fail/invalid_group_by.rs:15:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: required for `SelectStatement<FromClause<Alias<user1>>, _>` to implement `GroupByDsl<posts::columns::id>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+LL |         Self: methods::GroupByDsl<GB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::group_by`
+  
+          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0271]: type mismatch resolving `<FromClause<table> as AppearsInFromClause<Alias<post1>>>::Count == Once`
-  --> tests/fail/invalid_group_by.rs:78:10
-   |
-LL |         .group_by(post_alias.field(posts::id))
-   |          ^^^^^^^^ expected `Once`, found `Never`
-   |
-   = note: required for `AliasedField<post1, posts::columns::id>` to implement `AppearsOnTable<FromClause<table>>`
-   = note: required for `SelectStatement<FromClause<table>, _>` to implement `GroupByDsl<AliasedField<post1, posts::columns::id>>`
-
-   
+    --> tests/fail/invalid_group_by.rs:78:19
+     |
+  LL |         .group_by(post_alias.field(posts::id))
+     |          -------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Once`, found `Never`
+     |          |
+     |          required by a bound introduced by this call
+     |
+     = note: required for `AliasedField<post1, posts::columns::id>` to implement `AppearsOnTable<FromClause<table>>`
+     = note: required for `SelectStatement<FromClause<table>, _>` to implement `GroupByDsl<AliasedField<post1, posts::columns::id>>`
+note: required by a bound in `diesel::QueryDsl::group_by`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
+...
+LL |     fn group_by<GB>(self, group_by: GB) -> GroupBy<Self, GB>
+...
+LL |         Self: methods::GroupByDsl<GB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::group_by`
+  
+     
 error[E0271]: type mismatch resolving `<FromClause<Alias<user1>> as AppearsInFromClause<Alias<post1>>>::Count == Once`
-  --> tests/fail/invalid_group_by.rs:85:10
-   |
-LL |         .group_by(post_alias.field(posts::id))
-   |          ^^^^^^^^ expected `Once`, found `Never`
-   |
-   = note: required for `AliasedField<post1, posts::columns::id>` to implement `AppearsOnTable<FromClause<Alias<user1>>>`
-   = note: required for `SelectStatement<FromClause<Alias<user1>>, _>` to implement `GroupByDsl<AliasedField<post1, posts::columns::id>>`
+    --> tests/fail/invalid_group_by.rs:85:19
+     |
+  LL |         .group_by(post_alias.field(posts::id))
+     |          -------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Once`, found `Never`
+     |          |
+     |          required by a bound introduced by this call
+     |
+     = note: required for `AliasedField<post1, posts::columns::id>` to implement `AppearsOnTable<FromClause<Alias<user1>>>`
+     = note: required for `SelectStatement<FromClause<Alias<user1>>, _>` to implement `GroupByDsl<AliasedField<post1, posts::columns::id>>`
+note: required by a bound in `diesel::QueryDsl::group_by`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
+...
+LL |     fn group_by<GB>(self, group_by: GB) -> GroupBy<Self, GB>
+...
+LL |         Self: methods::GroupByDsl<GB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::group_by`

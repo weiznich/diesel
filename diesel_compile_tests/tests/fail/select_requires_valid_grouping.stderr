@@ -1,76 +1,160 @@
-error[E0271]: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
-  --> tests/fail/select_requires_valid_grouping.rs:85:53
-   |
-LL |     let source = users::table.group_by(users::name).select(users::id);
-   |                                                     ^^^^^^ type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
-   |
-note: expected this to be `diesel::expression::is_contained_in_group_by::Yes`
-  --> tests/fail/select_requires_valid_grouping.rs:5:1
-   |
- LL | / table! {
- LL | |     users {
- LL | |         id -> Integer,
- LL | |         name -> Text,
-...  |
-LL | | }
-   | |_^
-note: required for `users::columns::id` to implement `ValidGrouping<users::columns::name>`
-  --> tests/fail/select_requires_valid_grouping.rs:7:9
-   |
- LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<users::columns::id>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<(name, hair_color) as IsContainedInGroupBy<id>>::Output == Yes`
-  --> tests/fail/select_requires_valid_grouping.rs:89:10
-   |
-LL |         .select(users::id);
-   |          ^^^^^^ expected `Yes`, found `No`
-   |
-note: required for `users::columns::id` to implement `ValidGrouping<(users::columns::name, users::columns::hair_color)>`
-  --> tests/fail/select_requires_valid_grouping.rs:7:9
-   |
- LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<users::columns::id>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<(name, hair_color) as IsContainedInGroupBy<id>>::Output == Yes`
-  --> tests/fail/select_requires_valid_grouping.rs:93:10
-   |
-LL |         .select(users::id);
-   |          ^^^^^^ expected `Yes`, found `No`
-   |
-note: required for `users::columns::id` to implement `ValidGrouping<(users::columns::name, users::columns::hair_color)>`
-  --> tests/fail/select_requires_valid_grouping.rs:7:9
-   |
- LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<users::columns::id>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<(id, title) as IsContainedInGroupBy<id>>::Output == Yes`
-  --> tests/fail/select_requires_valid_grouping.rs:98:10
-   |
-LL |         .select((users::all_columns, posts::id));
-   |          ^^^^^^ expected `Yes`, found `No`
-   |
-note: required for `posts::columns::id` to implement `ValidGrouping<(users::columns::id, posts::columns::title)>`
-  --> tests/fail/select_requires_valid_grouping.rs:15:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `((id, name, hair_color), id)` to implement `ValidGrouping<(users::columns::id, posts::columns::title)>`
-   = note: required for `SelectStatement<FromClause<_>, _, _, _, _, _, _>` to implement `SelectDsl<((id, name, hair_color), id)>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-For more information about this error, try `rustc --explain E0271`.
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<id>` is not satisfied
+   --> tests/fail/select_requires_valid_grouping.rs:85:60
+    |
+ LL |     let source = users::table.group_by(users::name).select(users::id);
+    |                                                     ------ ^^^^^^^^^ unsatisfied trait bound
+    |                                                     |
+    |                                                     required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<users::columns::id>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<id>` is not satisfied
+   --> tests/fail/select_requires_valid_grouping.rs:89:17
+    |
+ LL |         .select(users::id);
+    |          ------ ^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<users::columns::id>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<id>` is not satisfied
+   --> tests/fail/select_requires_valid_grouping.rs:93:17
+    |
+ LL |         .select(users::id);
+    |          ------ ^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<users::columns::id>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
+   --> tests/fail/select_requires_valid_grouping.rs:98:17
+    |
+ LL |         .select((users::all_columns, posts::id));
+    |          ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<((users::columns::id, users::columns::name, users::columns::hair_color), posts::columns::id)>` is not implemented for `SelectStatement<FromClause<_>, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    For more information about this error, try `rustc --explain E0277`.

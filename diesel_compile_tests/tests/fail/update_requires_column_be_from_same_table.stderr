@@ -29,8 +29,9 @@ LL |     let command = update(users).set(posts::title.eq("Hello"));
 note: required by a bound in `UpdateStatement::<T, U>::set`
   --> DIESEL/diesel/diesel/src/query_builder/update_statement/mod.rs
    |
+LL | impl<T: QuerySource, U> UpdateStatement<T, U, SetNotCalled> {
+...
 LL |     pub fn set<V>(self, values: V) -> crate::dsl::Set<Self, V>
-   |            --- required by a bound in this associated function
 ...
 LL |         V: changeset::AsChangeset<Target = T>,
    |                                   ^^^^^^^^^^ required by this bound in `UpdateStatement::<T, U>::set`
@@ -38,10 +39,12 @@ LL |         V: changeset::AsChangeset<Target = T>,
       = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/update_requires_column_be_from_same_table.rs:26:33
+  --> tests/fail/update_requires_column_be_from_same_table.rs:26:37
    |
 LL |     let command = update(users).set(name.eq(posts::title));
-   |                                 ^^^ expected `Once`, found `Never`
+   |                                 --- ^^^^^^^^^^^^^^^^^^^^^ expected `Once`, found `Never`
+   |                                 |
+   |                                 required by a bound introduced by this call
    |
 note: required for `posts::columns::title` to implement `AppearsOnTable<users::table>`
   --> tests/fail/update_requires_column_be_from_same_table.rs:15:9
@@ -50,6 +53,35 @@ LL |         title -> VarChar,
    |         ^^^^^
    = note: associated types for the current `impl` cannot be restricted in `where` clauses
    = note: required for `Eq<name, title>` to implement `AsChangeset`
+   = note: 1 redundant requirement hidden
+   = note: required for `Grouped<Eq<name, title>>` to implement `AsChangeset`
+note: required by a bound in `UpdateStatement::<T, U>::set`
+  --> DIESEL/diesel/diesel/src/query_builder/update_statement/mod.rs
+   |
+LL | impl<T: QuerySource, U> UpdateStatement<T, U, SetNotCalled> {
+...
+LL |     pub fn set<V>(self, values: V) -> crate::dsl::Set<Self, V>
+...
+LL |         V: changeset::AsChangeset<Target = T>,
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `UpdateStatement::<T, U>::set`
+
+      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+  --> tests/fail/update_requires_column_be_from_same_table.rs:26:19
+   |
+LL |     let command = update(users).set(name.eq(posts::title));
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Once`, found `Never`
+   |
+note: required for `posts::columns::title` to implement `AppearsOnTable<users::table>`
+  --> tests/fail/update_requires_column_be_from_same_table.rs:15:9
+   |
+LL |         title -> VarChar,
+   |         ^^^^^
+   = note: associated types for the current `impl` cannot be restricted in `where` clauses
+   = note: required for `Eq<name, title>` to implement `AsChangeset`
+   = note: 1 redundant requirement hidden
+   = note: required for `Grouped<Eq<name, title>>` to implement `AsChangeset`
 
       = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 For more information about this error, try `rustc --explain E0271`.

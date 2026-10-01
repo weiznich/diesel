@@ -1,91 +1,80 @@
-error[E0271]: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
-  --> tests/fail/select_requires_valid_grouping2.rs:45:10
-   |
-LL |         .select((users::name, users::id));
-   |          ^^^^^^ type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
-   |
-note: expected this to be `diesel::expression::is_contained_in_group_by::Yes`
-  --> tests/fail/select_requires_valid_grouping2.rs:5:1
-   |
- LL | / table! {
- LL | |     users {
- LL | |         id -> Integer,
- LL | |         name -> Text,
-...  |
-LL | | }
-   | |_^
-note: required for `users::columns::id` to implement `ValidGrouping<users::columns::name>`
-  --> tests/fail/select_requires_valid_grouping2.rs:7:9
-   |
- LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `(users::columns::name, users::columns::id)` to implement `ValidGrouping<users::columns::name>`
-   = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `SelectDsl<(users::columns::name, users::columns::id)>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `id: IsContainedInGroupBy<id>` is not satisfied
-  --> tests/fail/select_requires_valid_grouping2.rs:51:10
-   |
-LL |         .select((users::all_columns, posts::all_columns, comments::id));
-   |          ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `diesel::expression::IsContainedInGroupBy<comments::columns::id>` is not implemented for `users::columns::id`
-  --> tests/fail/select_requires_valid_grouping2.rs:7:9
-   |
- LL |         id -> Integer,
-   |         ^^
-   = note: if your query contains columns from several tables in your group by or select clause make sure to call `allow_columns_to_appear_in_same_group_by_clause!` with these columns
-   = help: `users::columns::id` implements trait `diesel::expression::IsContainedInGroupBy<T>`:
-             diesel::expression::IsContainedInGroupBy<posts::columns::id>
-             diesel::expression::IsContainedInGroupBy<posts::columns::title>
-             diesel::expression::IsContainedInGroupBy<posts::columns::user_id>
-             IsContainedInGroupBy<hair_color>
-             diesel::expression::IsContainedInGroupBy<users::columns::id>
-             diesel::expression::IsContainedInGroupBy<users::columns::name>
-   = note: required for `(users::columns::id, posts::columns::id)` to implement `diesel::expression::IsContainedInGroupBy<comments::columns::id>`
-note: required for `comments::columns::id` to implement `ValidGrouping<(users::columns::id, posts::columns::id)>`
-  --> tests/fail/select_requires_valid_grouping2.rs:23:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: 2 redundant requirements hidden
-   = note: required for `((id, name, hair_color), (id, title, user_id), id)` to implement `ValidGrouping<(users::columns::id, posts::columns::id)>`
-   = note: required for `SelectStatement<FromClause<_>, _, _, _, _, _, _>` to implement `SelectDsl<((id, name, hair_color), _, id)>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `id: IsContainedInGroupBy<id>` is not satisfied
-  --> tests/fail/select_requires_valid_grouping2.rs:51:10
-   |
-LL |         .select((users::all_columns, posts::all_columns, comments::id));
-   |          ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `diesel::expression::IsContainedInGroupBy<comments::columns::id>` is not implemented for `posts::columns::id`
-  --> tests/fail/select_requires_valid_grouping2.rs:15:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: if your query contains columns from several tables in your group by or select clause make sure to call `allow_columns_to_appear_in_same_group_by_clause!` with these columns
-   = help: `posts::columns::id` implements trait `diesel::expression::IsContainedInGroupBy<T>`:
-             diesel::expression::IsContainedInGroupBy<posts::columns::id>
-             diesel::expression::IsContainedInGroupBy<posts::columns::title>
-             diesel::expression::IsContainedInGroupBy<posts::columns::user_id>
-             IsContainedInGroupBy<hair_color>
-             diesel::expression::IsContainedInGroupBy<users::columns::id>
-             diesel::expression::IsContainedInGroupBy<users::columns::name>
-   = note: required for `(posts::columns::id,)` to implement `diesel::expression::IsContainedInGroupBy<comments::columns::id>`
-   = note: 1 redundant requirement hidden
-   = note: required for `(users::columns::id, posts::columns::id)` to implement `diesel::expression::IsContainedInGroupBy<comments::columns::id>`
-note: required for `comments::columns::id` to implement `ValidGrouping<(users::columns::id, posts::columns::id)>`
-  --> tests/fail/select_requires_valid_grouping2.rs:23:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: 2 redundant requirements hidden
-   = note: required for `((id, name, hair_color), (id, title, user_id), id)` to implement `ValidGrouping<(users::columns::id, posts::columns::id)>`
-   = note: required for `SelectStatement<FromClause<_>, _, _, _, _, _, _>` to implement `SelectDsl<((id, name, hair_color), _, id)>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
+   --> tests/fail/select_requires_valid_grouping2.rs:45:17
+    |
+ LL |         .select((users::name, users::id));
+    |          ------ ^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<(users::columns::name, users::columns::id)>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
+   --> tests/fail/select_requires_valid_grouping2.rs:51:17
+    |
+ LL |         .select((users::all_columns, posts::all_columns, comments::id));
+    |          ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<((users::columns::id, users::columns::name, users::columns::hair_color), (posts::columns::id, posts::columns::title, posts::columns::user_id), comments::columns::id)>` is not implemented for `SelectStatement<FromClause<_>, _, _, _, _, _, _>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    For more information about this error, try `rustc --explain E0277`.

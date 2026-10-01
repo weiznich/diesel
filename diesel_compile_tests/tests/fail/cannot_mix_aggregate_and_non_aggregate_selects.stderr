@@ -1,73 +1,87 @@
-error[E0277]: mixing aggregate and not aggregate expressions is not allowed in SQL
-   --> tests/fail/cannot_mix_aggregate_and_non_aggregate_selects.rs:23:24
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
+   --> tests/fail/cannot_mix_aggregate_and_non_aggregate_selects.rs:23:31
     |
  LL |     let source = users.select((id, count_star()));
-    |                        ^^^^^^ unsatisfied trait bound
+    |                        ------ ^^^^^^^^^^^^^^^^^^ the trait `Table` is not implemented for `SelectStatement<FromClause<table>>`
+    |                        |
+    |                        required by a bound introduced by this call
     |
-    = help: the trait `MixedAggregates<diesel::expression::is_aggregate::Yes>` is not implemented for `diesel::expression::is_aggregate::No`
-    = note: you tried to combine expressions that aggregate over a certain column with expressions that don't aggregate over that column
-    = note: try to either use aggregate functions like `min`/`max`/… for this column or add the column to your `GROUP BY` clause
-    = note: also there are clauses like `WHERE` or `RETURNING` that does not accept aggregate expressions at all
-help: `diesel::expression::is_aggregate::No` implements trait `MixedAggregates<Other>`
-   --> DIESEL/diesel/diesel/src/expression/mod.rs
-    |
-LL |     impl MixedAggregates<No> for No {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::No>`
-...
-LL |     impl MixedAggregates<Never> for No {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Never>`
-    = note: required for `(columns::id, diesel::dsl::CountStar)` to implement `ValidGrouping<()>`
+    = help: the following other types implement trait `Table`:
+              Only<S>
+              Tablesample<S, TSM>
+              pg::metadata_lookup::pg_namespace::table
+              pg::metadata_lookup::pg_type::table
+              users::table
+    = note: required for `SelectStatement<FromClause<table>>` to implement `QueryRelation`
     = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<(columns::id, diesel::dsl::CountStar)>`
+    = note: 1 redundant requirement hidden
+    = note: required for `users::table` to implement `SelectDsl<(columns::id, diesel::dsl::CountStar)>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
     
-error[E0277]: mixing aggregate and not aggregate expressions is not allowed in SQL
-   --> tests/fail/cannot_mix_aggregate_and_non_aggregate_selects.rs:26:24
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
+   --> tests/fail/cannot_mix_aggregate_and_non_aggregate_selects.rs:26:31
     |
  LL |     let source = users.select(nullable_int_col + max(nullable_int_col));
-    |                        ^^^^^^ unsatisfied trait bound
+    |                        ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Table` is not implemented for `SelectStatement<FromClause<table>>`
+    |                        |
+    |                        required by a bound introduced by this call
     |
-    = help: the trait `MixedAggregates<diesel::expression::is_aggregate::Yes>` is not implemented for `diesel::expression::is_aggregate::No`
-    = note: you tried to combine expressions that aggregate over a certain column with expressions that don't aggregate over that column
-    = note: try to either use aggregate functions like `min`/`max`/… for this column or add the column to your `GROUP BY` clause
-    = note: also there are clauses like `WHERE` or `RETURNING` that does not accept aggregate expressions at all
-help: `diesel::expression::is_aggregate::No` implements trait `MixedAggregates<Other>`
-   --> DIESEL/diesel/diesel/src/expression/mod.rs
-    |
-LL |     impl MixedAggregates<No> for No {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::No>`
-...
-LL |     impl MixedAggregates<Never> for No {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Never>`
-    = note: required for `Add<nullable_int_col, max<Nullable<Integer>, _>>` to implement `ValidGrouping<()>`
+    = help: the following other types implement trait `Table`:
+              Only<S>
+              Tablesample<S, TSM>
+              pg::metadata_lookup::pg_namespace::table
+              pg::metadata_lookup::pg_type::table
+              users::table
+    = note: required for `SelectStatement<FromClause<table>>` to implement `QueryRelation`
     = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<Add<nullable_int_col, max<_, _>>>`
+    = note: 1 redundant requirement hidden
+    = note: required for `users::table` to implement `SelectDsl<Add<nullable_int_col, max<_, _>>>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
     
-error[E0277]: mixing aggregate and not aggregate expressions is not allowed in SQL
-   --> tests/fail/cannot_mix_aggregate_and_non_aggregate_selects.rs:29:24
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
+   --> tests/fail/cannot_mix_aggregate_and_non_aggregate_selects.rs:29:31
     |
  LL |     let source = users.select(f(nullable_int_col, max(nullable_int_col)));
-    |                        ^^^^^^ unsatisfied trait bound
+    |                        ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Table` is not implemented for `SelectStatement<FromClause<table>>`
+    |                        |
+    |                        required by a bound introduced by this call
     |
-    = help: the trait `MixedAggregates<diesel::expression::is_aggregate::Yes>` is not implemented for `diesel::expression::is_aggregate::No`
-    = note: you tried to combine expressions that aggregate over a certain column with expressions that don't aggregate over that column
-    = note: try to either use aggregate functions like `min`/`max`/… for this column or add the column to your `GROUP BY` clause
-    = note: also there are clauses like `WHERE` or `RETURNING` that does not accept aggregate expressions at all
-help: `diesel::expression::is_aggregate::No` implements trait `MixedAggregates<Other>`
-   --> DIESEL/diesel/diesel/src/expression/mod.rs
-    |
-LL |     impl MixedAggregates<No> for No {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::No>`
-...
-LL |     impl MixedAggregates<Never> for No {
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `MixedAggregates<diesel::expression::is_aggregate::Never>`
-note: required for `__Derived<nullable_int_col, max<Nullable<_>, _>>` to implement `ValidGrouping<()>`
-   --> tests/fail/cannot_mix_aggregate_and_non_aggregate_selects.rs:14:1
-    |
- LL | #[declare_sql_function]
-    | ^^^^^^^^^^^^^^^^^^^^^^^ type parameter would need to implement `ValidGrouping<()>`
-    = help: consider manually implementing `ValidGrouping<()>` to avoid undesired bounds caused by "imperfect derives"
-    = note: to learn more, visit <https://github.com/rust-lang/rust/issues/26925>
+    = help: the following other types implement trait `Table`:
+              Only<S>
+              Tablesample<S, TSM>
+              pg::metadata_lookup::pg_namespace::table
+              pg::metadata_lookup::pg_type::table
+              users::table
+    = note: required for `SelectStatement<FromClause<table>>` to implement `QueryRelation`
     = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<f<nullable_int_col, max<_, _>>>`
+    = note: 1 redundant requirement hidden
+    = note: required for `users::table` to implement `SelectDsl<f<nullable_int_col, max<_, _>>>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
-        = note: this error originates in the attribute macro `declare_sql_function` (in Nightly builds, run with -Z macro-backtrace for more info)
-For more information about this error, try `rustc --explain E0277`.
+    For more information about this error, try `rustc --explain E0277`.

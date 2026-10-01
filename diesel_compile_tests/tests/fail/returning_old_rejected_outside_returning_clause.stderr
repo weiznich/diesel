@@ -1,24 +1,45 @@
-error[E0277]: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `users::table`
-   --> tests/fail/returning_old_rejected_outside_returning_clause.rs:21:10
+error[E0277]: the trait bound `SelectStatement<_>: SelectDsl<Old<name>>` is not satisfied
+   --> tests/fail/returning_old_rejected_outside_returning_clause.rs:21:17
     |
  LL |         .select(old(name))
-    |          ^^^^^^ unsatisfied trait bound
+    |          ------ ^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
     |
-    = note: `diesel::pg::returning::old_impl::Old<columns::name>` is no valid selection for `users::table`
-help: the trait `SelectableExpression<table>` is not implemented for `diesel::pg::returning::old_impl::Old<columns::name>`
-      but trait `SelectableExpression<diesel::internal::table_macro::returning::ReturningQuerySource<diesel::internal::table_macro::returning::UpdateStmt, table>>` is implemented for it
-   --> DIESEL/diesel/diesel/src/pg/returning/old_impl.rs
+    = help: the trait `SelectDsl<diesel::pg::returning::old_impl::Old<columns::name>>` is not implemented for `SelectStatement<FromClause<table>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
     |
-LL | / impl<C> SelectableExpression<ReturningQuerySource<UpdateStmt, C::Table>> for Old<C>
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
 LL | | where
-LL | |     C: Column,
-LL | |     Self: AppearsOnTable<ReturningQuerySource<UpdateStmt, C::Table>>,
-    | |_____________________________________________________________________^
-    = help: for that trait implementation, expected `ReturningQuerySource<UpdateStmt, table>`, found `users::table`
-    = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<diesel::pg::returning::old_impl::Old<columns::name>>`
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+    = note: required for `users::table` to implement `SelectDsl<diesel::pg::returning::old_impl::Old<columns::name>>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
     
-error[E0277]: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `users::table`
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, String>` is not satisfied
     --> tests/fail/returning_old_rejected_outside_returning_clause.rs:23:25
      |
   LL |         .load::<String>(&mut connection)
@@ -26,178 +47,152 @@ error[E0277]: cannot select `diesel::pg::returning::old_impl::Old<columns::name>
      |          |
      |          required by a bound introduced by this call
      |
-     = note: `diesel::pg::returning::old_impl::Old<columns::name>` is no valid selection for `users::table`
-help: the trait `SelectableExpression<table>` is not implemented for `diesel::pg::returning::old_impl::Old<columns::name>`
-      but trait `SelectableExpression<diesel::internal::table_macro::returning::ReturningQuerySource<diesel::internal::table_macro::returning::UpdateStmt, table>>` is implemented for it
-    --> DIESEL/diesel/diesel/src/pg/returning/old_impl.rs
+     = help: the trait `LoadQuery<'_, _, std::string::String>` is not implemented for `SelectStatement<FromClause<table>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
- LL | / impl<C> SelectableExpression<ReturningQuerySource<UpdateStmt, C::Table>> for Old<C>
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
  LL | | where
- LL | |     C: Column,
- LL | |     Self: AppearsOnTable<ReturningQuerySource<UpdateStmt, C::Table>>,
-     | |_____________________________________________________________________^
-     = help: for that trait implementation, expected `ReturningQuerySource<UpdateStmt, table>`, found `users::table`
-     = note: required for `SelectClause<Old<name>>` to implement `SelectClauseExpression<FromClause<table>>`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `LoadQuery<'_, _, std::string::String>`
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
   
      
-error[E0277]: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `users::table`
-   --> tests/fail/returning_old_rejected_outside_returning_clause.rs:29:10
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
+   --> tests/fail/returning_old_rejected_outside_returning_clause.rs:29:17
     |
  LL |         .select(old(name).nullable())
-    |          ^^^^^^ unsatisfied trait bound
+    |          ------ ^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
     |
-    = note: `diesel::pg::returning::old_impl::Old<columns::name>` is no valid selection for `users::table`
-help: the trait `SelectableExpression<table>` is not implemented for `diesel::pg::returning::old_impl::Old<columns::name>`
-      but trait `SelectableExpression<diesel::internal::table_macro::returning::ReturningQuerySource<diesel::internal::table_macro::returning::UpdateStmt, table>>` is implemented for it
-   --> DIESEL/diesel/diesel/src/pg/returning/old_impl.rs
+    = help: the trait `SelectDsl<diesel::internal::table_macro::NullableExpression<diesel::pg::returning::old_impl::Old<columns::name>>>` is not implemented for `SelectStatement<FromClause<table>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
     |
-LL | / impl<C> SelectableExpression<ReturningQuerySource<UpdateStmt, C::Table>> for Old<C>
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
 LL | | where
-LL | |     C: Column,
-LL | |     Self: AppearsOnTable<ReturningQuerySource<UpdateStmt, C::Table>>,
-    | |_____________________________________________________________________^
-    = help: for that trait implementation, expected `ReturningQuerySource<UpdateStmt, table>`, found `users::table`
-    = note: required for `NullableExpression<Old<name>>` to implement `SelectableExpression<users::table>`
-    = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<NullableExpression<Old<name>>>`
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+    = note: required for `users::table` to implement `SelectDsl<NullableExpression<Old<name>>>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
     
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<OldIdent>>::Count == Once`
-  --> tests/fail/returning_old_rejected_outside_returning_clause.rs:29:10
-   |
-LL |         .select(old(name).nullable())
-   |          ^^^^^^ expected `Once`, found `Never`
-   |
-   = note: required for `diesel::pg::returning::old_impl::Old<columns::name>` to implement `AppearsOnTable<users::table>`
-   = note: 1 redundant requirement hidden
-   = note: required for `NullableExpression<Old<name>>` to implement `AppearsOnTable<users::table>`
-   = note: required for `NullableExpression<Old<name>>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<NullableExpression<Old<name>>>`
-
-   
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<_>>::Count == Once`
-  --> tests/fail/returning_old_rejected_outside_returning_clause.rs:29:10
-   |
-LL |         .select(old(name).nullable())
-   |          ^^^^^^ type mismatch resolving `<table as AppearsInFromClause<_>>::Count == Once`
-   |
-note: expected this to be `diesel::query_source::Once`
-  --> tests/fail/returning_old_rejected_outside_returning_clause.rs:6:1
-   |
- LL | / table! {
- LL | |     users {
- LL | |         id -> Integer,
- LL | |         name -> VarChar,
-LL | |     }
-LL | | }
-   | |_^
-   = note: required for `diesel::pg::returning::old_impl::Old<columns::name>` to implement `AppearsOnTable<users::table>`
-   = note: 1 redundant requirement hidden
-   = note: required for `NullableExpression<Old<name>>` to implement `AppearsOnTable<users::table>`
-   = note: required for `NullableExpression<Old<name>>` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<NullableExpression<Old<name>>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `users::table`
-    --> tests/fail/returning_old_rejected_outside_returning_clause.rs:33:33
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, Option<String>>` is not satisfied
+    --> tests/fail/returning_old_rejected_outside_returning_clause.rs:31:33
      |
   LL |         .load::<Option<String>>(&mut connection)
      |          ----                   ^^^^^^^^^^^^^^^ unsatisfied trait bound
      |          |
      |          required by a bound introduced by this call
      |
-     = note: `diesel::pg::returning::old_impl::Old<columns::name>` is no valid selection for `users::table`
-help: the trait `SelectableExpression<table>` is not implemented for `diesel::pg::returning::old_impl::Old<columns::name>`
-      but trait `SelectableExpression<diesel::internal::table_macro::returning::ReturningQuerySource<diesel::internal::table_macro::returning::UpdateStmt, table>>` is implemented for it
-    --> DIESEL/diesel/diesel/src/pg/returning/old_impl.rs
+     = help: the trait `LoadQuery<'_, _, Option<std::string::String>>` is not implemented for `SelectStatement<FromClause<table>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
- LL | / impl<C> SelectableExpression<ReturningQuerySource<UpdateStmt, C::Table>> for Old<C>
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
  LL | | where
- LL | |     C: Column,
- LL | |     Self: AppearsOnTable<ReturningQuerySource<UpdateStmt, C::Table>>,
-     | |_____________________________________________________________________^
-     = help: for that trait implementation, expected `ReturningQuerySource<UpdateStmt, table>`, found `users::table`
-     = note: required for `NullableExpression<Old<name>>` to implement `SelectableExpression<users::table>`
-     = note: required for `SelectClause<NullableExpression<Old<name>>>` to implement `SelectClauseExpression<FromClause<table>>`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `LoadQuery<'_, _, Option<std::string::String>>`
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
   
-     
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<OldIdent>>::Count == Once`
-    --> tests/fail/returning_old_rejected_outside_returning_clause.rs:33:33
-     |
-  LL |         .load::<Option<String>>(&mut connection)
-     |          ----                   ^^^^^^^^^^^^^^^ expected `Once`, found `Never`
-     |          |
-     |          required by a bound introduced by this call
-     |
-     = note: required for `diesel::pg::returning::old_impl::Old<columns::name>` to implement `AppearsOnTable<users::table>`
-     = note: 1 redundant requirement hidden
-     = note: required for `NullableExpression<Old<name>>` to implement `AppearsOnTable<users::table>`
-     = note: required for `NullableExpression<Old<name>>` to implement `SelectableExpression<users::table>`
-     = note: required for `SelectClause<NullableExpression<Old<name>>>` to implement `SelectClauseExpression<FromClause<table>>`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `LoadQuery<'_, _, Option<std::string::String>>`
-note: required by a bound in `load`
-    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
-     |
-LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
-LL |     where
-LL |         Self: LoadQuery<'query, Conn, U>,
-     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
-  
-     
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<_>>::Count == Once`
-    --> tests/fail/returning_old_rejected_outside_returning_clause.rs:33:33
-     |
-  LL |         .load::<Option<String>>(&mut connection)
-     |          ----                   ^^^^^^^^^^^^^^^ type mismatch resolving `<table as AppearsInFromClause<_>>::Count == Once`
-     |          |
-     |          required by a bound introduced by this call
-     |
-note: expected this to be `diesel::query_source::Once`
-    --> tests/fail/returning_old_rejected_outside_returning_clause.rs:6:1
-     |
-   LL | / table! {
-   LL | |     users {
-   LL | |         id -> Integer,
-   LL | |         name -> VarChar,
-  LL | |     }
-  LL | | }
-     | |_^
-     = note: required for `diesel::pg::returning::old_impl::Old<columns::name>` to implement `AppearsOnTable<users::table>`
-     = note: 1 redundant requirement hidden
-     = note: required for `NullableExpression<Old<name>>` to implement `AppearsOnTable<users::table>`
-     = note: required for `NullableExpression<Old<name>>` to implement `SelectableExpression<users::table>`
-     = note: required for `SelectClause<NullableExpression<Old<name>>>` to implement `SelectClauseExpression<FromClause<table>>`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<table>, _>` to implement `LoadQuery<'_, _, Option<std::string::String>>`
-note: required by a bound in `load`
-    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
-     |
-LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
-LL |     where
-LL |         Self: LoadQuery<'query, Conn, U>,
-     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
-  
-          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+     For more information about this error, try `rustc --explain E0277`.

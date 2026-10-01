@@ -24,7 +24,7 @@ fn main() {
         .unwrap();
 
     users::table.filter(exists(true));
-    //~^ ERROR: the trait bound `bool: SelectQuery` is not satisfied
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
     users::table.filter(exists(users::id));
-    //~^ ERROR: the trait bound `users::columns::id: SelectQuery` is not satisfied
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
 }

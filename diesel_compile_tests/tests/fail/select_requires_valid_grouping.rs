@@ -83,18 +83,18 @@ fn main() {
 
     // cases that should fail to compile
     let source = users::table.group_by(users::name).select(users::id);
-    //~^ ERROR: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<id>` is not satisfied
     let source = users::table
         .group_by((users::name, users::hair_color))
         .select(users::id);
-    //~^ ERROR: type mismatch resolving `<(name, hair_color) as IsContainedInGroupBy<id>>::Output == Yes`
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<id>` is not satisfied
     let source = users::table
         .group_by((users::name, users::hair_color))
         .select(users::id);
-    //~^ ERROR: type mismatch resolving `<(name, hair_color) as IsContainedInGroupBy<id>>::Output == Yes`
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<id>` is not satisfied
     let source = users::table
         .inner_join(posts::table)
         .group_by((users::id, posts::title))
         .select((users::all_columns, posts::id));
-    //~^ ERROR: type mismatch resolving `<(id, title) as IsContainedInGroupBy<id>>::Output == Yes`
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
 }

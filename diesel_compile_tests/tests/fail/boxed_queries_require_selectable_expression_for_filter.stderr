@@ -1,18 +1,39 @@
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/boxed_queries_require_selectable_expression_for_filter.rs:25:10
-   |
-LL |         .filter(posts::title.eq("Hello"));
-   |          ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::title` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/boxed_queries_require_selectable_expression_for_filter.rs:16:9
-   |
-LL |         title -> VarChar,
-   |         ^^^^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 2 redundant requirements hidden
-   = note: required for `Grouped<Eq<title, Bound<Text, &str>>>` to implement `AppearsOnTable<users::table>`
-   = note: required for `BoxedSelectStatement<'_, (Integer, Text), _, Pg>` to implement `FilterDsl<Grouped<Eq<title, Bound<Text, &str>>>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-For more information about this error, try `rustc --explain E0271`.
+error[E0277]: the trait bound `BoxedSelectStatement<'_, _, _, Pg>: FilterDsl<_>` is not satisfied
+   --> tests/fail/boxed_queries_require_selectable_expression_for_filter.rs:25:17
+    |
+ LL |         .filter(posts::title.eq("Hello"));
+    |          ------ ^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `FilterDsl<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<posts::columns::title, diesel::internal::derives::as_expression::Bound<diesel::sql_types::Text, &str>>>>` is not implemented for `BoxedSelectStatement<'_, (Integer, Text), _, Pg>`
+help: the following other types implement trait `FilterDsl<Predicate>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/boxed.rs
+    |
+LL | / impl<'a, ST, QS, DB, Predicate, GB> FilterDsl<Predicate>
+LL | |     for BoxedSelectStatement<'a, ST, FromClause<QS>, DB, GB>
+LL | | where
+LL | |     QS: QuerySource,
+LL | |     BoxedWhereClause<'a, DB>: WhereAnd<Predicate, Output = BoxedWhereClause<'a, DB>>,
+LL | |     Predicate: AppearsOnTable<QS> + NonAggregate,
+LL | |     Predicate::SqlType: BoolOrNullableBool,
+    | |___________________________________________^ `BoxedSelectStatement<'_, ST, _, DB, GB>`
+...
+LL | / impl<'a, ST, DB, Predicate, GB> FilterDsl<Predicate>
+LL | |     for BoxedSelectStatement<'a, ST, NoFromClause, DB, GB>
+LL | | where
+LL | |     BoxedWhereClause<'a, DB>: WhereAnd<Predicate, Output = BoxedWhereClause<'a, DB>>,
+LL | |     Predicate: AppearsOnTable<NoFromClause> + NonAggregate,
+LL | |     Predicate::SqlType: BoolOrNullableBool,
+    | |___________________________________________^ `BoxedSelectStatement<'_, ST, NoFromClause, DB, GB>`
+note: required by a bound in `diesel::QueryDsl::filter`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn filter<Predicate>(self, predicate: Predicate) -> Filter<Self, Predicate>
+LL |     where
+LL |         Self: methods::FilterDsl<Predicate>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::filter`
+ 
+    For more information about this error, try `rustc --explain E0277`.

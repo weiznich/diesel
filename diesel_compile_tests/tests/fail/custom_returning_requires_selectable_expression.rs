@@ -39,5 +39,4 @@ fn main() {
         .values(&new_user)
         .returning((name, bad::age));
     //~^ ERROR: cannot select `bad::columns::age` from `ReturningQuerySource<_, table>`
-    //~| ERROR: type mismatch resolving `<ReturningQuerySource<_, table> as AppearsInFromClause<table>>::Count == Once`
 }

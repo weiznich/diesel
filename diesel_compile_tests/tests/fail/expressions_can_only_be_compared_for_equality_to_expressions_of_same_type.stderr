@@ -1,8 +1,10 @@
 error[E0277]: the trait bound `&str: AsExpression<diesel::sql_types::Integer>` is not satisfied
-  --> tests/fail/expressions_can_only_be_compared_for_equality_to_expressions_of_same_type.rs:15:19
+  --> tests/fail/expressions_can_only_be_compared_for_equality_to_expressions_of_same_type.rs:15:22
    |
 LL |     let pred = id.eq("string");
-   |                   ^^ the trait `AsExpression<diesel::sql_types::Integer>` is not implemented for `&str`
+   |                   -- ^^^^^^^^ the trait `AsExpression<diesel::sql_types::Integer>` is not implemented for `&str`
+   |                   |
+   |                   required by a bound introduced by this call
    |
    = help: `&str` implements trait `AsExpression<T>`:
              AsExpression<Citext>
@@ -11,12 +13,23 @@ LL |     let pred = id.eq("string");
              AsExpression<diesel::sql_types::Text>
              AsExpression<diesel::sql_types::Time>
              AsExpression<diesel::sql_types::Timestamp>
+note: required by a bound in `diesel::ExpressionMethods::eq`
+  --> DIESEL/diesel/diesel/src/expression_methods/global_expression_methods.rs
+   |
+ LL | pub trait ExpressionMethods: Expression + Sized {
+...
+LL |     fn eq<T>(self, other: T) -> dsl::Eq<Self, T>
+...
+LL |         T: AsExpression<Self::SqlType>,
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ExpressionMethods::eq`
 
 error[E0277]: the trait bound `columns::name: AsExpression<diesel::sql_types::Integer>` is not satisfied
-  --> tests/fail/expressions_can_only_be_compared_for_equality_to_expressions_of_same_type.rs:17:19
+  --> tests/fail/expressions_can_only_be_compared_for_equality_to_expressions_of_same_type.rs:17:22
    |
 LL |     let pred = id.eq(name);
-   |                   ^^ unsatisfied trait bound
+   |                   -- ^^^^ unsatisfied trait bound
+   |                   |
+   |                   required by a bound introduced by this call
    |
 help: the trait `AsExpression<diesel::sql_types::Integer>` is not implemented for `columns::name`
   --> tests/fail/expressions_can_only_be_compared_for_equality_to_expressions_of_same_type.rs:8:9
@@ -31,5 +44,14 @@ help: the trait `AsExpression<diesel::sql_types::Integer>` is not implemented fo
              Box<i32>
              Rc<i32>
              i32
+note: required by a bound in `diesel::ExpressionMethods::eq`
+  --> DIESEL/diesel/diesel/src/expression_methods/global_expression_methods.rs
+   |
+ LL | pub trait ExpressionMethods: Expression + Sized {
+...
+LL |     fn eq<T>(self, other: T) -> dsl::Eq<Self, T>
+...
+LL |         T: AsExpression<Self::SqlType>,
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ExpressionMethods::eq`
    = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 For more information about this error, try `rustc --explain E0277`.

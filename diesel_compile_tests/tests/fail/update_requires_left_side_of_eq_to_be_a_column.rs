@@ -14,5 +14,6 @@ fn main() {
 
     let foo = "foo".into_sql::<sql_types::VarChar>();
     let command = update(users).set(foo.eq(name));
-    //~^ ERROR: the trait bound `Bound<Text, &str>: Column` is not satisfied
+    //~^ ERROR: the trait bound `Eq<Bound<Text, &str>, name>: AsChangeset` is not satisfied
+    //~| ERROR: the trait bound `Eq<Bound<Text, &str>, name>: AsChangeset` is not satisfied
 }

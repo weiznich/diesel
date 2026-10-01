@@ -43,12 +43,11 @@ fn main() {
     let source = users::table
         .group_by(users::name)
         .select((users::name, users::id));
-    //~^ ERROR: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
 
     let source = users::table
         .inner_join(posts::table.inner_join(comments::table))
         .group_by((users::id, posts::id))
         .select((users::all_columns, posts::all_columns, comments::id));
-    //~^ ERROR: the trait bound `id: IsContainedInGroupBy<id>` is not satisfied
-    //~| ERROR: the trait bound `id: IsContainedInGroupBy<id>` is not satisfied
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
 }

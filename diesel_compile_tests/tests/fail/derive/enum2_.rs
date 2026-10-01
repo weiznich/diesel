@@ -35,17 +35,17 @@ fn main() {
 
     let _r = diesel::select(1_i32.into_sql::<diesel::sql_types::Integer>())
         .get_result::<Test2>(conn)
-        //~^ ERROR: the trait bound `diesel::sql_types::Integer: EnumSqlType<false, _>` is not satisfied
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, Test2>` is not satisfied
         .unwrap();
 
     let _r = diesel::select(b"abc".into_sql::<diesel::sql_types::Blob>())
         .get_result::<Test2>(conn)
-        //~^ ERROR: cannot deserialize a value of the database type `diesel::sql_types::Binary` as `Test2`
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, Test2>` is not satisfied
         .unwrap();
 
     // it works with a pg connection
     let _r = diesel::select(diesel::dsl::sql::<SqlEnum>("_")).get_result::<Test4>(pg_conn);
     // it fails with a sqlite connection
     let r = diesel::select(diesel::dsl::sql::<SqlEnum>("_")).get_result::<Test4>(conn);
-    //~^ ERROR: `diesel::internal::derives::sql_type::EnumTypeMapping` is no valid strategy to map an enum for backend `Sqlite`
+    //~^ ERROR: the trait bound `Test4: FromSqlRow<SqlEnum, Sqlite>` is not satisfied
 }

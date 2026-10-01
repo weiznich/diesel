@@ -73,7 +73,6 @@ fn main() {
         .set(users::name.eq("Renamed"))
         .returning(users::name.eq(old_value(users::name)))
         //~^ ERROR: the trait bound `OldValue<name>: AsExpression<Text>` is not satisfied
-        //~| ERROR: the trait bound `OldValueOf<Text>: SqlType` is not satisfied
         .execute(&mut conn);
     diesel::update(users::table)
         .set(users::name.eq("Renamed"))
@@ -95,8 +94,7 @@ fn main() {
     diesel::update(users::table)
         .set(users::name.eq("Renamed"))
         .returning(diesel::dsl::case_when(users::id.eq(1), old_value(users::name)))
-        //~^ ERROR: the trait bound `OldValueOf<Text>: SqlType` is not satisfied
-        //~| ERROR: the trait bound `OldValueOf<Nullable<Text>>: SqlType` is not satisfied
+        //~^ ERROR: the trait bound `OldValue<name>: AsExpression<_>` is not satisfied
         .execute(&mut conn);
     diesel::update(users::table)
         .set(users::name.eq("Renamed"))
@@ -108,16 +106,15 @@ fn main() {
     diesel::update(users::table)
         .set(users::name.eq("Renamed"))
         .returning(diesel::dsl::case_when(
-            //~^ ERROR: the trait bound `Nullable<(OldValueOf<Text>,)>: IntoNullable` is not satisfied
-            //~| ERROR: the trait bound `OldValueOf<Text>: SqlType` is not satisfied
             users::id.eq(1),
             (old_value(users::name),).nullable(),
+            //~^ ERROR: the trait bound `NullableExpression<(_,)>: AsExpression<_>` is not satisfied
         ))
         .execute(&mut conn);
     diesel::update(users::table)
         .set(users::name.eq("Renamed"))
         .returning((old_value(users::name),).nullable().assume_not_null())
-        //~^ ERROR: cannot select `AssumeNotNull<NullableExpression<(_,)>>` from `ReturningQuerySource<UpdateStmt, table>`
+        //~^ ERROR: the trait bound `AssumeNotNull<NullableExpression<_>>: Expression` is not satisfied
         .execute(&mut conn);
     diesel::update(users::table)
         .set(users::name.eq("Renamed"))

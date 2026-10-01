@@ -1,18 +1,32 @@
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/boxed_clone_queries_require_selectable_expression_for_order.rs:23:43
-   |
-LL |     users::table.into_boxed_clone::<Pg>().order(posts::title.desc());
-   |                                           ^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::title` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/boxed_clone_queries_require_selectable_expression_for_order.rs:16:9
-   |
-LL |         title -> VarChar,
-   |         ^^^^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `diesel::expression::operators::Desc<posts::columns::title>` to implement `AppearsOnTable<users::table>`
-   = note: required for `BoxedCloneSelectStatement<'_, (_, Text), _, Pg>` to implement `OrderDsl<Desc<title>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-For more information about this error, try `rustc --explain E0271`.
+error[E0277]: the trait bound `BoxedCloneSelectStatement<'_, _, _, Pg>: OrderDsl<Desc<title>>` is not satisfied
+   --> tests/fail/boxed_clone_queries_require_selectable_expression_for_order.rs:23:49
+    |
+ LL |     users::table.into_boxed_clone::<Pg>().order(posts::title.desc());
+    |                                           ----- ^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                                           |
+    |                                           required by a bound introduced by this call
+    |
+    = help: the trait `OrderDsl<diesel::expression::operators::Desc<posts::columns::title>>` is not implemented for `BoxedCloneSelectStatement<'_, (_, Text), _, Pg>`
+help: the trait `OrderDsl<Order>` is conditionally implemented for `BoxedCloneSelectStatement<'_, ST, _, DB, GB>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/boxed_clone.rs
+    |
+LL | / impl<'a, ST, QS, DB, Order, GB> OrderDsl<Order>
+LL | |     for BoxedCloneSelectStatement<'a, ST, FromClause<QS>, DB, GB>
+LL | | where
+LL | |     DB: Backend,
+LL | |     QS: QuerySource,
+LL | |     Order: QueryFragment<DB> + AppearsOnTable<QS> + Send + Sync + 'a,
+    | |________________________________------------------___________________^
+    |                                  |
+    |                                  unsatisfied requirement introduced here: `_: AppearsOnTable<_>`
+note: required by a bound in `diesel::QueryDsl::order`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn order<Expr>(self, expr: Expr) -> Order<Self, Expr>
+...
+LL |         Self: methods::OrderDsl<Expr>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::order`
+ 
+    For more information about this error, try `rustc --explain E0277`.

@@ -63,6 +63,8 @@ fn less_arguments_than_generics() -> _ {
 }
 
 #[derive(Queryable, Selectable)]
+//~^ ERROR: type annotations needed
+//~| ERROR: type annotations needed: cannot satisfy `<User as Selectable<__DB>>::SelectExpression == (id, name, _)`
 struct User {
     id: i32,
     name: String,

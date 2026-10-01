@@ -1,136 +1,90 @@
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:44:18
-   |
-LL |     let _ = join.select(posts::title);
-   |                  ^^^^^^ type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-   |
-note: expected this to be `diesel::query_source::Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:13:1
-   |
-LL | / table! {
-LL | |     posts {
-LL | |         id -> Integer,
-LL | |         title -> Text,
-...  |
-LL | | }
-   | |_^
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<_, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `users::table`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:44:18
-   |
-LL |     let _ = join.select(posts::title);
-   |                  ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::title`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: `posts::columns::title` is no valid selection for `users::table`
-   = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: 1 redundant requirement hidden
-   = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<_, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:52:18
-   |
-LL |     let _ = join.select(lower(posts::title));
-   |                  ^^^^^^ type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-   |
-note: expected this to be `diesel::query_source::Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:13:1
-   |
-LL | / table! {
-LL | |     posts {
-LL | |         id -> Integer,
-LL | |         title -> Text,
-...  |
-LL | | }
-   | |_^
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 2 redundant requirements hidden
-   = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<_, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `users::table`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:52:18
-   |
-LL |     let _ = join.select(lower(posts::title));
-   |                  ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::title`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: `posts::columns::title` is no valid selection for `users::table`
-   = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: 2 redundant requirements hidden
-   = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<_, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
+error[E0277]: the trait bound `SelectStatement<FromClause<_>>: SelectDsl<title>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:44:25
+    |
+ LL |     let _ = join.select(posts::title);
+    |                  ------ ^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<posts::columns::title>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_>: SelectDsl<lower<title>>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:51:25
+    |
+ LL |     let _ = join.select(lower(posts::title));
+    |                  ------ ^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<lower_utils::lower<posts::columns::title>>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
 error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:56:31
+  --> tests/fail/right_side_of_left_join_requires_nullable.rs:54:31
    |
 LL |     let _ = join.select(lower(posts::title.nullable()));
-   |                               ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+   |                         ----- ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+   |                         |
+   |                         required by a bound introduced by this call
    |
    = help: the following other types implement trait `AsExpression<T>`:
              &'__expr MigrationVersion<'a>
@@ -149,12 +103,16 @@ LL | #[declare_sql_function]
    | ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `lower`
 LL | extern "SQL" {
 LL |     fn lower(x: Text) -> Text;
-   |        ----- required by a bound in this function
 
       = note: this error originates in the attribute macro `declare_sql_function` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider removing this method call, as the receiver has type `posts::columns::title` and `posts::columns::title: AsExpression<diesel::sql_types::Text>` trivially holds
+   |
+54 -     let _ = join.select(lower(posts::title.nullable()));
+54 +     let _ = join.select(lower(posts::title));
+   |
 
 error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:56:25
+  --> tests/fail/right_side_of_left_join_requires_nullable.rs:54:25
    |
 LL |     let _ = join.select(lower(posts::title.nullable()));
    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
@@ -171,139 +129,93 @@ LL |     let _ = join.select(lower(posts::title.nullable()));
            and N others
 
    
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:67:18
-   |
-LL |     let _ = join.select(posts::title);
-   |                  ^^^^^^ type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-   |
-note: expected this to be `diesel::query_source::Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:13:1
-   |
-LL | / table! {
-LL | |     posts {
-LL | |         id -> Integer,
-LL | |         title -> Text,
-...  |
-LL | | }
-   | |_^
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 3 redundant requirements hidden
-   = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<Join<_, table, _>, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `users::table`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:67:18
-   |
-LL |     let _ = join.select(posts::title);
-   |                  ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::title`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: `posts::columns::title` is no valid selection for `users::table`
-   = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: 3 redundant requirements hidden
-   = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<Join<_, table, _>, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:75:18
-   |
-LL |     let _ = join.select(lower(posts::title));
-   |                  ^^^^^^ type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-   |
-note: expected this to be `diesel::query_source::Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:13:1
-   |
-LL | / table! {
-LL | |     posts {
-LL | |         id -> Integer,
-LL | |         title -> Text,
-...  |
-LL | | }
-   | |_^
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 4 redundant requirements hidden
-   = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<Join<_, table, _>, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `users::table`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:75:18
-   |
-LL |     let _ = join.select(lower(posts::title));
-   |                  ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::title`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: `posts::columns::title` is no valid selection for `users::table`
-   = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: 4 redundant requirements hidden
-   = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<Join<_, table, _>, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
+error[E0277]: the trait bound `SelectStatement<FromClause<_>>: SelectDsl<title>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:65:25
+    |
+ LL |     let _ = join.select(posts::title);
+    |                  ------ ^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<posts::columns::title>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_>: SelectDsl<lower<title>>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:72:25
+    |
+ LL |     let _ = join.select(lower(posts::title));
+    |                  ------ ^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<lower_utils::lower<posts::columns::title>>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
 error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:79:31
+  --> tests/fail/right_side_of_left_join_requires_nullable.rs:75:31
    |
 LL |     let _ = join.select(lower(posts::title.nullable()));
-   |                               ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+   |                         ----- ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+   |                         |
+   |                         required by a bound introduced by this call
    |
    = help: the following other types implement trait `AsExpression<T>`:
              &'__expr MigrationVersion<'a>
@@ -322,12 +234,16 @@ LL | #[declare_sql_function]
    | ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `lower`
 LL | extern "SQL" {
 LL |     fn lower(x: Text) -> Text;
-   |        ----- required by a bound in this function
 
       = note: this error originates in the attribute macro `declare_sql_function` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider removing this method call, as the receiver has type `posts::columns::title` and `posts::columns::title: AsExpression<diesel::sql_types::Text>` trivially holds
+   |
+75 -     let _ = join.select(lower(posts::title.nullable()));
+75 +     let _ = join.select(lower(posts::title));
+   |
 
 error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:79:25
+  --> tests/fail/right_side_of_left_join_requires_nullable.rs:75:25
    |
 LL |     let _ = join.select(lower(posts::title.nullable()));
    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
@@ -344,139 +260,224 @@ LL |     let _ = join.select(lower(posts::title.nullable()));
            and N others
 
    
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:90:18
+error[E0277]: the trait bound `SelectStatement<FromClause<_>>: SelectDsl<title>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:86:25
+    |
+ LL |     let _ = join.select(posts::title);
+    |                  ------ ^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<posts::columns::title>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_>: SelectDsl<lower<title>>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:93:25
+    |
+ LL |     let _ = join.select(lower(posts::title));
+    |                  ------ ^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<lower_utils::lower<posts::columns::title>>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
+  --> tests/fail/right_side_of_left_join_requires_nullable.rs:96:31
    |
-LL |     let _ = join.select(posts::title);
-   |                  ^^^^^^ type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
+LL |     let _ = join.select(lower(posts::title.nullable()));
+   |                         ----- ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+   |                         |
+   |                         required by a bound introduced by this call
    |
-note: expected this to be `diesel::query_source::Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:13:1
+   = help: the following other types implement trait `AsExpression<T>`:
+             &'__expr MigrationVersion<'a>
+             &'__expr std::string::String
+             &'__expr str
+             Arc<std::string::String>
+             Arc<str>
+             Box<std::string::String>
+             Box<str>
+             MigrationVersion<'a>
+           and N others
+note: required by a bound in `lower`
+  --> tests/fail/right_side_of_left_join_requires_nullable.rs:33:1
    |
-LL | / table! {
-LL | |     posts {
-LL | |         id -> Integer,
-LL | |         title -> Text,
-...  |
-LL | | }
-   | |_^
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 3 redundant requirements hidden
-   = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<_, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
+LL | #[declare_sql_function]
+   | ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `lower`
+LL | extern "SQL" {
+LL |     fn lower(x: Text) -> Text;
 
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `users::table`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:90:18
+      = note: this error originates in the attribute macro `declare_sql_function` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider removing this method call, as the receiver has type `posts::columns::title` and `posts::columns::title: AsExpression<diesel::sql_types::Text>` trivially holds
    |
-LL |     let _ = join.select(posts::title);
-   |                  ^^^^^^ unsatisfied trait bound
+96 -     let _ = join.select(lower(posts::title.nullable()));
+96 +     let _ = join.select(lower(posts::title));
    |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::title`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: `posts::columns::title` is no valid selection for `users::table`
-   = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: 3 redundant requirements hidden
-   = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<_, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:98:18
-   |
-LL |     let _ = join.select(lower(posts::title));
-   |                  ^^^^^^ type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-   |
-note: expected this to be `diesel::query_source::Never`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:13:1
-   |
-LL | / table! {
-LL | |     posts {
-LL | |         id -> Integer,
-LL | |         title -> Text,
-...  |
-LL | | }
-   | |_^
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 4 redundant requirements hidden
-   = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<_, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `users::table`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:98:18
-   |
-LL |     let _ = join.select(lower(posts::title));
-   |                  ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::title`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: `posts::columns::title` is no valid selection for `users::table`
-   = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-  --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-   |
-LL |         title -> Text,
-   |         ^^^^^
-   = note: 4 redundant requirements hidden
-   = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<_, _>>`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:102:31
+  --> tests/fail/right_side_of_left_join_requires_nullable.rs:96:25
+   |
+LL |     let _ = join.select(lower(posts::title.nullable()));
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+   |
+   = help: the following other types implement trait `AsExpression<T>`:
+             &'__expr MigrationVersion<'a>
+             &'__expr std::string::String
+             &'__expr str
+             Arc<std::string::String>
+             Arc<str>
+             Box<std::string::String>
+             Box<str>
+             MigrationVersion<'a>
+           and N others
+
+   
+error[E0277]: the trait bound `SelectStatement<FromClause<_>>: SelectDsl<title>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:105:25
+    |
+LL |     let _ = join.select(posts::title);
+    |                  ------ ^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<posts::columns::title>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<_>: SelectDsl<lower<title>>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:112:25
+    |
+LL |     let _ = join.select(lower(posts::title));
+    |                  ------ ^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<lower_utils::lower<posts::columns::title>>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:115:31
     |
 LL |     let _ = join.select(lower(posts::title.nullable()));
-    |                               ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+    |                         ----- ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+    |                         |
+    |                         required by a bound introduced by this call
     |
     = help: the following other types implement trait `AsExpression<T>`:
               &'__expr MigrationVersion<'a>
@@ -495,12 +496,16 @@ note: required by a bound in `lower`
     | ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `lower`
  LL | extern "SQL" {
  LL |     fn lower(x: Text) -> Text;
-    |        ----- required by a bound in this function
  
         = note: this error originates in the attribute macro `declare_sql_function` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider removing this method call, as the receiver has type `posts::columns::title` and `posts::columns::title: AsExpression<diesel::sql_types::Text>` trivially holds
+    |
+115 -     let _ = join.select(lower(posts::title.nullable()));
+115 +     let _ = join.select(lower(posts::title));
+    |
 
 error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:102:25
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:115:25
     |
 LL |     let _ = join.select(lower(posts::title.nullable()));
     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
@@ -517,292 +522,93 @@ LL |     let _ = join.select(lower(posts::title.nullable()));
             and N others
  
     
-error[E0271]: type mismatch resolving `<SelectStatement<_> as AppearsInFromClause<table>>::Count == Never`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:111:18
+error[E0277]: the trait bound `SelectStatement<FromClause<_>>: SelectDsl<title>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:124:25
     |
 LL |     let _ = join.select(posts::title);
-    |                  ^^^^^^ expected `Never`, found `Once`
+    |                  ------ ^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
     |
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, _, _>>`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
+    = help: the trait `SelectDsl<posts::columns::title>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
     |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: 1 redundant requirement hidden
-    = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<Join<table, _, _>, _>>`
-    = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `pets::table`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:111:18
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
     |
-LL |     let _ = join.select(posts::title);
-    |                  ^^^^^^ unsatisfied trait bound
-    |
-help: the trait `SelectableExpression<pets::table>` is not implemented for `posts::columns::title`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: `posts::columns::title` is no valid selection for `pets::table`
-    = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-              SelectableExpression<Only<posts::table>>
-              SelectableExpression<Tablesample<posts::table, TSM>>
-              SelectableExpression<Join<Left, Right, Inner>>
-              SelectableExpression<Join<Left, Right, LeftOuter>>
-              SelectableExpression<JoinOn<Join, On>>
-              SelectableExpression<SelectStatement<_>>
-              SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-              SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, _, _>>`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: 1 redundant requirement hidden
-    = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<Join<table, _, _>, _>>`
-    = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<SelectStatement<_> as AppearsInFromClause<table>>::Count == Never`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:119:18
-    |
-LL |     let _ = join.select(lower(posts::title));
-    |                  ^^^^^^ expected `Never`, found `Once`
-    |
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, _, _>>`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: 2 redundant requirements hidden
-    = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<Join<table, _, _>, _>>`
-    = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `pets::table`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:119:18
-    |
-LL |     let _ = join.select(lower(posts::title));
-    |                  ^^^^^^ unsatisfied trait bound
-    |
-help: the trait `SelectableExpression<pets::table>` is not implemented for `posts::columns::title`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: `posts::columns::title` is no valid selection for `pets::table`
-    = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-              SelectableExpression<Only<posts::table>>
-              SelectableExpression<Tablesample<posts::table, TSM>>
-              SelectableExpression<Join<Left, Right, Inner>>
-              SelectableExpression<Join<Left, Right, LeftOuter>>
-              SelectableExpression<JoinOn<Join, On>>
-              SelectableExpression<SelectStatement<_>>
-              SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-              SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, _, _>>`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: 2 redundant requirements hidden
-    = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<Join<table, _, _>, _>>`
-    = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:123:31
-    |
-LL |     let _ = join.select(lower(posts::title.nullable()));
-    |                               ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
-    |
-    = help: the following other types implement trait `AsExpression<T>`:
-              &'__expr MigrationVersion<'a>
-              &'__expr std::string::String
-              &'__expr str
-              Arc<std::string::String>
-              Arc<str>
-              Box<std::string::String>
-              Box<str>
-              MigrationVersion<'a>
-            and N others
-note: required by a bound in `lower`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:33:1
-    |
- LL | #[declare_sql_function]
-    | ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `lower`
- LL | extern "SQL" {
- LL |     fn lower(x: Text) -> Text;
-    |        ----- required by a bound in this function
- 
-        = note: this error originates in the attribute macro `declare_sql_function` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:123:25
-    |
-LL |     let _ = join.select(lower(posts::title.nullable()));
-    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
-    |
-    = help: the following other types implement trait `AsExpression<T>`:
-              &'__expr MigrationVersion<'a>
-              &'__expr std::string::String
-              &'__expr str
-              Arc<std::string::String>
-              Arc<str>
-              Box<std::string::String>
-              Box<str>
-              MigrationVersion<'a>
-            and N others
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
     
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:132:18
-    |
-LL |     let _ = join.select(posts::title);
-    |                  ^^^^^^ type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-    |
-note: expected this to be `diesel::query_source::Never`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:13:1
-    |
- LL | / table! {
- LL | |     posts {
- LL | |         id -> Integer,
- LL | |         title -> Text,
-...   |
- LL | | }
-    | |_^
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: 4 redundant requirements hidden
-    = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<_, _>>`
-    = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `users::table`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:132:18
-    |
-LL |     let _ = join.select(posts::title);
-    |                  ^^^^^^ unsatisfied trait bound
-    |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::title`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: `posts::columns::title` is no valid selection for `users::table`
-    = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-              SelectableExpression<Only<posts::table>>
-              SelectableExpression<Tablesample<posts::table, TSM>>
-              SelectableExpression<Join<Left, Right, Inner>>
-              SelectableExpression<Join<Left, Right, LeftOuter>>
-              SelectableExpression<JoinOn<Join, On>>
-              SelectableExpression<SelectStatement<_>>
-              SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-              SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: 4 redundant requirements hidden
-    = note: required for `posts::columns::title` to implement `SelectableExpression<JoinOn<_, _>>`
-    = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<posts::columns::title>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:140:18
+error[E0277]: the trait bound `SelectStatement<_>: SelectDsl<lower<title>>` is not satisfied
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:131:25
     |
 LL |     let _ = join.select(lower(posts::title));
-    |                  ^^^^^^ type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Never`
+    |                  ------ ^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                  |
+    |                  required by a bound introduced by this call
     |
-note: expected this to be `diesel::query_source::Never`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:13:1
+    = help: the trait `SelectDsl<lower_utils::lower<posts::columns::title>>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
     |
- LL | / table! {
- LL | |     posts {
- LL | |         id -> Integer,
- LL | |         title -> Text,
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
 ...   |
- LL | | }
-    | |_^
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
     |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: 5 redundant requirements hidden
-    = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<_, _>>`
-    = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::title` from `users::table`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:140:18
-    |
-LL |     let _ = join.select(lower(posts::title));
-    |                  ^^^^^^ unsatisfied trait bound
-    |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::title`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: `posts::columns::title` is no valid selection for `users::table`
-    = help: `posts::columns::title` implements trait `SelectableExpression<QS>`:
-              SelectableExpression<Only<posts::table>>
-              SelectableExpression<Tablesample<posts::table, TSM>>
-              SelectableExpression<Join<Left, Right, Inner>>
-              SelectableExpression<Join<Left, Right, LeftOuter>>
-              SelectableExpression<JoinOn<Join, On>>
-              SelectableExpression<SelectStatement<_>>
-              SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-              SelectableExpression<posts::table>
-note: required for `posts::columns::title` to implement `SelectableExpression<Join<table, table, _>>`
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:16:9
-    |
- LL |         title -> Text,
-    |         ^^^^^
-    = note: 5 redundant requirements hidden
-    = note: required for `lower_utils::lower<posts::columns::title>` to implement `SelectableExpression<JoinOn<_, _>>`
-    = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `SelectDsl<lower_utils::lower<posts::columns::title>>`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
+    
 error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:144:31
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:134:31
     |
 LL |     let _ = join.select(lower(posts::title.nullable()));
-    |                               ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+    |                         ----- ^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
+    |                         |
+    |                         required by a bound introduced by this call
     |
     = help: the following other types implement trait `AsExpression<T>`:
               &'__expr MigrationVersion<'a>
@@ -821,12 +627,16 @@ note: required by a bound in `lower`
     | ^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `lower`
  LL | extern "SQL" {
  LL |     fn lower(x: Text) -> Text;
-    |        ----- required by a bound in this function
  
         = note: this error originates in the attribute macro `declare_sql_function` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider removing this method call, as the receiver has type `posts::columns::title` and `posts::columns::title: AsExpression<diesel::sql_types::Text>` trivially holds
+    |
+134 -     let _ = join.select(lower(posts::title.nullable()));
+134 +     let _ = join.select(lower(posts::title));
+    |
 
 error[E0277]: the trait bound `NullableExpression<title>: AsExpression<Text>` is not satisfied
-   --> tests/fail/right_side_of_left_join_requires_nullable.rs:144:25
+   --> tests/fail/right_side_of_left_join_requires_nullable.rs:134:25
     |
 LL |     let _ = join.select(lower(posts::title.nullable()));
     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsExpression<diesel::sql_types::Text>` is not implemented for `NullableExpression<title>`
@@ -841,3 +651,5 @@ LL |     let _ = join.select(lower(posts::title.nullable()));
               Box<str>
               MigrationVersion<'a>
             and N others
+ 
+    For more information about this error, try `rustc --explain E0277`.

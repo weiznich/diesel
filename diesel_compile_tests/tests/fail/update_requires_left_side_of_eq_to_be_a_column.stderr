@@ -1,20 +1,51 @@
-error[E0277]: the trait bound `Bound<Text, &str>: Column` is not satisfied
-  --> tests/fail/update_requires_left_side_of_eq_to_be_a_column.rs:16:33
+error[E0277]: the trait bound `Eq<Bound<Text, &str>, name>: AsChangeset` is not satisfied
+  --> tests/fail/update_requires_left_side_of_eq_to_be_a_column.rs:16:37
    |
 LL |     let command = update(users).set(foo.eq(name));
-   |                                 ^^^ the trait `Column` is not implemented for `Bound<Text, &str>`
+   |                                 --- ^^^^^^^^^^^^ the trait `AsChangeset` is not implemented for `Eq<Bound<Text, &str>, name>`
+   |                                 |
+   |                                 required by a bound introduced by this call
    |
-   = help: the following other types implement trait `Column`:
-             columns::id
-             columns::name
-             diesel::expression::assume_not_null::AssumeNotNull<T>
-             pg::metadata_lookup::pg_namespace::columns::nspname
-             pg::metadata_lookup::pg_namespace::columns::oid
-             pg::metadata_lookup::pg_type::columns::oid
-             pg::metadata_lookup::pg_type::columns::typarray
-             pg::metadata_lookup::pg_type::columns::typname
-             pg::metadata_lookup::pg_type::columns::typnamespace
-   = note: required for `Bound<Text, &str>` to implement `AssignmentTarget`
-   = note: required for `Eq<Bound<Text, &str>, name>` to implement `AsChangeset`
+help: the trait `AsChangeset` is conditionally implemented for `diesel::expression::operators::Eq<Left, Right>`
+  --> DIESEL/diesel/diesel/src/query_builder/update_statement/changeset.rs
+   |
+LL | / impl<Left, Right> AsChangeset for Eq<Left, Right>
+LL | | where
+LL | |     Left: AssignmentTarget,
+   | |           ---------------- unsatisfied requirement introduced here: `_: AssignmentTarget`
+LL | |     Right: AppearsOnTable<Left::Table>,
+   | |____________---------------------------^
+   |              |
+   |              unsatisfied requirement introduced here: `_: AppearsOnTable<<_ as AssignmentTarget>::Table>`
+   = note: required for `Grouped<Eq<Bound<Text, &str>, name>>` to implement `AsChangeset`
+note: required by a bound in `UpdateStatement::<T, U>::set`
+  --> DIESEL/diesel/diesel/src/query_builder/update_statement/mod.rs
+   |
+LL | impl<T: QuerySource, U> UpdateStatement<T, U, SetNotCalled> {
+...
+LL |     pub fn set<V>(self, values: V) -> crate::dsl::Set<Self, V>
+...
+LL |         V: changeset::AsChangeset<Target = T>,
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `UpdateStatement::<T, U>::set`
+
+   
+error[E0277]: the trait bound `Eq<Bound<Text, &str>, name>: AsChangeset` is not satisfied
+  --> tests/fail/update_requires_left_side_of_eq_to_be_a_column.rs:16:19
+   |
+LL |     let command = update(users).set(foo.eq(name));
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsChangeset` is not implemented for `Eq<Bound<Text, &str>, name>`
+   |
+help: the trait `AsChangeset` is conditionally implemented for `diesel::expression::operators::Eq<Left, Right>`
+  --> DIESEL/diesel/diesel/src/query_builder/update_statement/changeset.rs
+   |
+LL | / impl<Left, Right> AsChangeset for Eq<Left, Right>
+LL | | where
+LL | |     Left: AssignmentTarget,
+   | |           ---------------- unsatisfied requirement introduced here: `_: AssignmentTarget`
+LL | |     Right: AppearsOnTable<Left::Table>,
+   | |____________---------------------------^
+   |              |
+   |              unsatisfied requirement introduced here: `_: AppearsOnTable<<_ as AssignmentTarget>::Table>`
+   = note: required for `Grouped<Eq<Bound<Text, &str>, name>>` to implement `AsChangeset`
 
    For more information about this error, try `rustc --explain E0277`.

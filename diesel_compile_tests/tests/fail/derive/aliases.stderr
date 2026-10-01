@@ -22,268 +22,294 @@ note: `users::table` is defined in module `crate::users` of the current crate
 note: required by a bound in `Alias::<S>::field`
   --> DIESEL/diesel/diesel/src/query_source/aliasing/alias.rs
    |
+LL | impl<S: AliasSource> Alias<S> {
+LL |     /// Maps a single field of the source table in this alias
 LL |     pub fn field<F>(&self, field: F) -> AliasedField<S, F>
-   |            ----- required by a bound in this associated function
 LL |     where
 LL |         F: QueryRelationField<QueryRelation = S::Target>,
    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Alias::<S>::field`
    = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0271]: type mismatch resolving `<Once as Plus<Once>>::Output == Once`
-  --> tests/fail/derive/aliases.rs:43:10
-   |
-LL |         .inner_join(post_alias)
-   |          ^^^^^^^^^^ expected `Once`, found `MoreThanOnce`
-   |
-   = note: required for `AliasedField<posts2, posts::columns::id>` to implement `AppearsOnTable<Join<_, Alias<posts2>, Inner>>`
-   = note: 2 redundant requirements hidden
-   = note: required for `((id, name), (AliasedField<posts2, id>, _, _), _)` to implement `AppearsOnTable<Join<_, Alias<posts2>, Inner>>`
-   = note: required for `Join<JoinOn<_, _>, Alias<posts2>, Inner>` to implement `QuerySource`
-   = note: 1 redundant requirement hidden
-   = note: required for `JoinOn<Join<_, Alias<posts2>, Inner>, _>` to implement `QuerySource`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `InternalJoinDsl<Alias<posts2>, Inner, Grouped<_>>`
+error[E0277]: the trait bound `SelectStatement<_>: InternalJoinDsl<Alias<posts2>, Inner, _>` is not satisfied
+   --> tests/fail/derive/aliases.rs:43:21
+    |
+ LL |         .inner_join(post_alias)
+    |          ---------- ^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the trait `diesel::query_dsl::InternalJoinDsl<Alias<posts2>, diesel::internal::table_macro::Inner, diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<diesel::internal::table_macro::NullableExpression<AliasedField<posts2, posts::columns::author>>, diesel::internal::table_macro::NullableExpression<users::columns::id>>>>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `diesel::query_dsl::InternalJoinDsl<Rhs, Kind, On>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+ LL | / impl<F, D, W, O, LOf, G, H, LC, Rhs, Kind, On> InternalJoinDsl<Rhs, Kind, On>
+ LL | |     for SelectStatement<FromClause<F>, DefaultSelectClause<FromClause<F>>, D, W, O, LOf, ...
+ LL | | where
+ LL | |     F: QuerySource,
+...   |
+ LL | |         LC,
+ LL | |     >: AsQuery,
+    | |_______________^ `SelectStatement<_, _, D, W, O, LOf, G, H, LC>`
+...
+ LL | / impl<F, S, D, W, O, LOf, G, H, LC, Rhs, Kind, On> InternalJoinDsl<Rhs, Kind, On>
+ LL | |     for SelectStatement<FromClause<F>, SelectClause<S>, D, W, O, LOf, G, H, LC>
+ LL | | where
+ LL | |     F: QuerySource,
+...   |
+LL | |         LC,
+LL | |     >: AsQuery,
+    | |_______________^ `SelectStatement<_, _, D, W, O, LOf, G, H, LC>`
+    = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `JoinWithImplicitOnClause<Alias<posts2>, Inner>`
+note: required by a bound in `inner_join`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn inner_join<Rhs>(self, rhs: Rhs) -> InnerJoin<Self, Rhs>
+LL |     where
+LL |         Self: JoinWithImplicitOnClause<Rhs, joins::Inner>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::inner_join`
+ 
+    
+error[E0277]: the trait bound `Alias<users2>: SelectDsl<users::columns::id>` is not satisfied
+   --> tests/fail/derive/aliases.rs:50:23
+    |
+ LL |     user_alias.select(users::id).load::<i32>(conn).unwrap();
+    |                ------ ^^^^^^^^^ the trait `SelectDsl<users::columns::id>` is not implemented for `Alias<users2>`
+    |                |
+    |                required by a bound introduced by this call
+    |
+help: the trait `SelectDsl<Selection>` is conditionally implemented for `Alias<S>`
+   --> DIESEL/diesel/diesel/src/query_source/aliasing/dsl_impls.rs
+    |
+ LL | / impl<S, Selection> SelectDsl<Selection> for Alias<S>
+ LL | | where
+ LL | |     Selection: Expression,
+ LL | |     Self: AsQuery,
+ LL | |     <Self as AsQuery>::Query: SelectDsl<Selection>,
+    | |_______________________________--------------------^
+    |                                 |
+    |                                 unsatisfied requirement introduced here: `<Alias<_> as AsQuery>::Query: SelectDsl<_>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
 
-   
-error[E0271]: type mismatch resolving `<Join<_, Alias<posts2>, Inner> as AppearsInFromClause<Alias<posts2>>>::Count == Once`
-  --> tests/fail/derive/aliases.rs:43:10
-   |
-LL |         .inner_join(post_alias)
-   |          ^^^^^^^^^^ expected `Once`, found `MoreThanOnce`
-   |
-   = note: required for `AliasedField<posts2, posts::columns::id>` to implement `AppearsOnTable<Join<_, Alias<posts2>, Inner>>`
-   = note: 2 redundant requirements hidden
-   = note: required for `((id, name), (AliasedField<posts2, id>, _, _), _)` to implement `AppearsOnTable<Join<_, Alias<posts2>, Inner>>`
-   = note: required for `Join<JoinOn<_, _>, Alias<posts2>, Inner>` to implement `QuerySource`
-   = note: 1 redundant requirement hidden
-   = note: required for `JoinOn<Join<_, Alias<posts2>, Inner>, _>` to implement `QuerySource`
-   = note: required for `SelectStatement<FromClause<JoinOn<_, _>>>` to implement `InternalJoinDsl<Alias<posts2>, Inner, Grouped<_>>`
-
-   
-error[E0599]: no method named `select` found for struct `SelectStatement<From, Select, Distinct, Where, Order, LimitOffset, GroupBy, Having, Locking>` in the current scope
-  --> tests/fail/derive/aliases.rs:46:10
-   |
-LL |       users::table
-   |       ------------
-   |       |
-   |  _____method `select` is available on `users::table`
-   | |
-LL | |         .inner_join(post_alias)
-   | |          ---------------------- method `select` is available on `diesel::internal::table_macro::SelectStatement<diesel::internal::table_macro::FromClause<diesel::internal::table_macro::JoinOn<diesel::internal::table_macro::Join<users::table, Alias<posts2>, diesel::internal::table_macro::Inner>, diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<diesel::internal::table_macro::NullableExpression<AliasedField<posts2, posts::columns::author>>, diesel::internal::table_macro::NullableExpression<users::columns::id>>>>>>`
-LL | |         .inner_join(post_alias)
-...  |
-LL | |         .select(users::id)
-   | |         -^^^^^^ private field, not a method
-   | |_________|
-   |
-   |
-
-   
-error[E0277]: cannot select `users::columns::id` from `Alias<users2>`
-  --> tests/fail/derive/aliases.rs:52:16
-   |
-LL |     user_alias.select(users::id).load::<i32>(conn).unwrap();
-   |                ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<Alias<users2>>` is not implemented for `users::columns::id`
-  --> tests/fail/derive/aliases.rs:8:9
-   |
- LL |         id -> Integer,
-   |         ^^
-   = note: `users::columns::id` is no valid selection for `Alias<users2>`
-   = help: `users::columns::id` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<users::table>>
-             SelectableExpression<Tablesample<users::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<users::table>
-   = note: required for `SelectStatement<FromClause<Alias<users2>>>` to implement `SelectDsl<users::columns::id>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `users::columns::id` from `Alias<users2>`
-    --> tests/fail/derive/aliases.rs:52:46
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, i32>` is not satisfied
+    --> tests/fail/derive/aliases.rs:50:46
      |
   LL |     user_alias.select(users::id).load::<i32>(conn).unwrap();
      |                                  ----        ^^^^ unsatisfied trait bound
      |                                  |
      |                                  required by a bound introduced by this call
      |
-help: the trait `SelectableExpression<Alias<users2>>` is not implemented for `users::columns::id`
-    --> tests/fail/derive/aliases.rs:8:9
+     = help: the trait `LoadQuery<'_, _, i32>` is not implemented for `SelectStatement<FromClause<Alias<users2>>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
-   LL |         id -> Integer,
-     |         ^^
-     = note: `users::columns::id` is no valid selection for `Alias<users2>`
-     = help: `users::columns::id` implements trait `SelectableExpression<QS>`:
-               SelectableExpression<Only<users::table>>
-               SelectableExpression<Tablesample<users::table, TSM>>
-               SelectableExpression<Join<Left, Right, Inner>>
-               SelectableExpression<Join<Left, Right, LeftOuter>>
-               SelectableExpression<JoinOn<Join, On>>
-               SelectableExpression<SelectStatement<_>>
-               SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-               SelectableExpression<users::table>
-     = note: required for `SelectClause<id>` to implement `SelectClauseExpression<FromClause<Alias<users2>>>`
-     = note: required for `SelectStatement<FromClause<Alias<users2>>, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<Alias<users2>>, _>` to implement `LoadQuery<'_, _, i32>`
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
   
-          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot join `pets::table` to `Alias<users2>` due to missing relation
-  --> tests/fail/derive/aliases.rs:60:10
-   |
-LL |         .inner_join(user_alias)
-   |          ^^^^^^^^^^ the trait `JoinTo<pets::table>` is not implemented for `Alias<users2>`
-   |
-   = note: joining tables directly either requires a `diesel::joinable!` definition or calling `JoinOnDsl::on` to manually specify the `ON` clause of the join`
-help: `Alias<S>` implements trait `JoinTo<T>`
-  --> DIESEL/diesel/diesel/src/query_source/aliasing/joins.rs
-   |
-LL | / impl<S2, S> JoinTo<Alias<S2>> for Alias<S>
-LL | | where
-LL | |     S2: AliasSource,
-LL | |     S: AliasSource + Default,
-LL | |     S::Target: JoinTo<Alias<S2>>,
-LL | |     <S::Target as JoinTo<Alias<S2>>>::OnClause: FieldAliasMapper<S>,
-   | |____________________________________________________________________^ `JoinTo<Alias<S2>>`
+     
+error[E0277]: the trait bound `table: JoinWithImplicitOnClause<Alias<users2>, Inner>` is not satisfied
+   --> tests/fail/derive/aliases.rs:58:21
+    |
+ LL |         .inner_join(user_alias)
+    |          ---------- ^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+help: the trait `diesel::query_dsl::JoinWithImplicitOnClause<Alias<users2>, diesel::internal::table_macro::Inner>` is not implemented for `pets::table`
+   --> tests/fail/derive/aliases.rs:21:1
+    |
+ LL | / table! {
+ LL | |     pets {
+    | |________^
+note: required by a bound in `inner_join`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
 ...
-LL |   impl<S, Rhs, On> JoinTo<OnClauseWrapper<Rhs, On>> for Alias<S> {
-   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `JoinTo<query_source::joins::OnClauseWrapper<Rhs, On>>`
-...
-LL | / impl<S, F, Select, D, W, O, L, Of, G>
-LL | |     JoinTo<SelectStatement<FromClause<F>, Select, D, W, O, L, Of, G>> for Alias<S>
-LL | | where
-LL | |     F: QuerySource,
-LL | |     S: AliasSource + Default,
-LL | |     SelectStatement<FromClause<F>, Select, D, W, O, L, Of, G>: JoinTo<Alias<S>>,
-   | |________________________________________________________________________________^ `JoinTo<SelectStatement<_, Select, D, W, O, L, Of, G>>`
-   = note: required for `pets::table` to implement `JoinWithImplicitOnClause<Alias<users2>, Inner>`
+LL |     fn inner_join<Rhs>(self, rhs: Rhs) -> InnerJoin<Self, Rhs>
+LL |     where
+LL |         Self: JoinWithImplicitOnClause<Rhs, joins::Inner>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::inner_join`
+ 
+        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-   
-error[E0277]: the trait bound `Alias<posts3>: AppearsInFromClause<Alias<posts2>>` is not satisfied
-   --> tests/fail/derive/aliases.rs:72:13
+error[E0277]: the trait bound `Alias<posts2>: InternalJoinDsl<Alias<posts3>, Inner, _>` is not satisfied
+   --> tests/fail/derive/aliases.rs:68:13
     |
  LL |           .inner_join(
     |            ---------- required by a bound introduced by this call
-...
  LL | /             post_alias_2.on(post_alias
  LL | |                 .field(posts::author)
  LL | |                 .eq(post_alias_2.field(posts::author))),
-    | |_______________________________________________________^ the trait `AppearsInFromClause<Alias<posts2>>` is not implemented for `Alias<posts3>`
+    | |_______________________________________________________^ unsatisfied trait bound
     |
-    = note: double check that `Alias<posts2>` and `Alias<posts3>` appear in the same `allow_tables_to_appear_in_same_query!` 
-            call if both are tables
-    = note: double check that any two aliases to the same table in `Alias<posts2>` and `Alias<posts3>` appear in the same `alias!` call
-help: the trait `AppearsInFromClause<QS>` is conditionally implemented for `Alias<S>`
-   --> DIESEL/diesel/diesel/src/query_source/aliasing/alias.rs
+    = help: the trait `diesel::query_dsl::InternalJoinDsl<Alias<posts3>, diesel::internal::table_macro::Inner, diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<AliasedField<posts2, posts::columns::author>, AliasedField<posts3, posts::columns::author>>>>` is not implemented for `Alias<posts2>`
+help: the trait `diesel::query_dsl::InternalJoinDsl<Rhs, Kind, On>` is conditionally implemented for `Alias<S>`
+   --> DIESEL/diesel/diesel/src/query_source/aliasing/joins.rs
     |
-LL | / impl<S, QS> AppearsInFromClause<QS> for Alias<S>
-LL | | where
-LL | |     S: AliasSource,
-LL | |     S::Target: AliasAppearsInFromClause<S, QS>,
-    | |________________-------------------------------^
-    |                  |
-    |                  unsatisfied requirement introduced here: `<posts3 as AliasSource>::Target: diesel::internal::table_macro::AliasAppearsInFromClause<posts3, Alias<posts2>>`
-    = note: required for `Join<Alias<posts2>, Alias<posts3>, Inner>` to implement `AppearsInFromClause<Alias<posts2>>`
-    = note: required for `AliasedField<posts2, posts::columns::id>` to implement `AppearsOnTable<Join<Alias<posts2>, Alias<posts3>, Inner>>`
-    = note: 2 redundant requirements hidden
-    = note: required for `((AliasedField<posts2, id>, _, _), _)` to implement `AppearsOnTable<Join<Alias<posts2>, Alias<posts3>, Inner>>`
-    = note: required for `Join<Alias<posts2>, Alias<posts3>, Inner>` to implement `QuerySource`
-    = note: 1 redundant requirement hidden
-    = note: required for `JoinOn<_, _>` to implement `QuerySource`
-    = note: required for `SelectStatement<FromClause<Alias<posts2>>>` to implement `InternalJoinDsl<Alias<posts3>, Inner, Grouped<_>>`
-    = note: 1 redundant requirement hidden
-    = note: required for `Alias<posts2>` to implement `InternalJoinDsl<Alias<posts3>, Inner, Grouped<_>>`
+ LL | / impl<S, Rhs, Kind, On> InternalJoinDsl<Rhs, Kind, On> for Alias<S>
+ LL | | where
+ LL | |     Self: AsQuery,
+ LL | |     <Self as AsQuery>::Query: InternalJoinDsl<Rhs, Kind, On>,
+    | |_______________________________------------------------------^
+    |                                 |
+    |                                 unsatisfied requirement introduced here: `<Alias<_> as AsQuery>::Query: InternalJoinDsl<_, _, _>`
     = note: required for `Alias<posts2>` to implement `JoinWithImplicitOnClause<OnClauseWrapper<Alias<posts3>, _>, Inner>`
 note: required by a bound in `inner_join`
    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
     |
+ LL | pub trait QueryDsl: Sized {
+...
 LL |     fn inner_join<Rhs>(self, rhs: Rhs) -> InnerJoin<Self, Rhs>
-    |        ---------- required by a bound in this associated function
 LL |     where
 LL |         Self: JoinWithImplicitOnClause<Rhs, joins::Inner>,
     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::inner_join`
  
     
-error[E0277]: the trait bound `Join<Alias<posts2>, Alias<posts3>, Inner>: AppearsInFromClause<Alias<posts3>>` is not satisfied
-   --> tests/fail/derive/aliases.rs:69:10
+error[E0277]: the trait bound `SelectStatement<FromClause<_>>: SelectDsl<_>` is not satisfied
+   --> tests/fail/derive/aliases.rs:73:17
     |
- LL |         .inner_join(
-    |          ^^^^^^^^^^ unsatisfied trait bound
+ LL |         .select((post_alias.field(posts::id), post_alias_2.field(posts::id)))
+    |          ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
     |
-    = help: the trait `AppearsInFromClause<Alias<posts3>>` is not implemented for `Join<Alias<posts2>, Alias<posts3>, Inner>`
-    = note: double check that `Alias<posts3>` and `Join<Alias<posts2>, Alias<posts3>, Inner>` appear in the same `allow_tables_to_appear_in_same_query!` 
-            call if both are tables
-    = note: double check that any two aliases to the same table in `Alias<posts3>` and `Join<Alias<posts2>, Alias<posts3>, Inner>` appear in the same `alias!` call
-help: the trait `AppearsInFromClause<T>` is conditionally implemented for `diesel::internal::table_macro::Join<Left, Right, Kind>`
-   --> DIESEL/diesel/diesel/src/query_source/joins.rs
+    = help: the trait `SelectDsl<(AliasedField<posts2, posts::columns::id>, AliasedField<posts3, posts::columns::id>)>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
     |
-LL | / impl<T, Left, Right, Kind> AppearsInFromClause<T> for Join<Left, Right, Kind>
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
 LL | | where
-LL | |     Left: AppearsInFromClause<T> + QuerySource,
-    | |           ---------------------- unsatisfied requirement introduced here: `Alias<posts2>: AppearsInFromClause<Alias<posts3>>`
-LL | |     Right: AppearsInFromClause<T> + QuerySource,
-LL | |     Left::Count: Plus<Right::Count>,
-    | |____________________________________^
-    = note: required for `AliasedField<posts3, posts::columns::id>` to implement `AppearsOnTable<Join<Alias<posts2>, Alias<posts3>, Inner>>`
-    = note: 2 redundant requirements hidden
-    = note: required for `((AliasedField<posts2, id>, _, _), _)` to implement `AppearsOnTable<Join<Alias<posts2>, Alias<posts3>, Inner>>`
-    = note: required for `Join<Alias<posts2>, Alias<posts3>, Inner>` to implement `QuerySource`
-    = note: 1 redundant requirement hidden
-    = note: required for `JoinOn<_, _>` to implement `QuerySource`
-    = note: required for `SelectStatement<FromClause<Alias<posts2>>>` to implement `InternalJoinDsl<Alias<posts3>, Inner, Grouped<_>>`
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
  
     
-error[E0277]: the trait bound `Join<Alias<posts2>, Alias<posts3>, Inner>: AppearsInFromClause<Alias<posts2>>` is not satisfied
-   --> tests/fail/derive/aliases.rs:69:10
-    |
- LL |         .inner_join(
-    |          ^^^^^^^^^^ unsatisfied trait bound
-    |
-    = help: the trait `AppearsInFromClause<Alias<posts2>>` is not implemented for `Join<Alias<posts2>, Alias<posts3>, Inner>`
-    = note: double check that `Alias<posts2>` and `Join<Alias<posts2>, Alias<posts3>, Inner>` appear in the same `allow_tables_to_appear_in_same_query!` 
-            call if both are tables
-    = note: double check that any two aliases to the same table in `Alias<posts2>` and `Join<Alias<posts2>, Alias<posts3>, Inner>` appear in the same `alias!` call
-help: the trait `AppearsInFromClause<T>` is conditionally implemented for `diesel::internal::table_macro::Join<Left, Right, Kind>`
-   --> DIESEL/diesel/diesel/src/query_source/joins.rs
-    |
-LL | / impl<T, Left, Right, Kind> AppearsInFromClause<T> for Join<Left, Right, Kind>
-LL | | where
-LL | |     Left: AppearsInFromClause<T> + QuerySource,
-LL | |     Right: AppearsInFromClause<T> + QuerySource,
-    | |            ---------------------- unsatisfied requirement introduced here: `Alias<posts3>: AppearsInFromClause<Alias<posts2>>`
-LL | |     Left::Count: Plus<Right::Count>,
-    | |____________________________________^
-    = note: required for `AliasedField<posts2, posts::columns::author>` to implement `AppearsOnTable<Join<Alias<posts2>, Alias<posts3>, Inner>>`
-    = note: 2 redundant requirements hidden
-    = note: required for `Grouped<Eq<AliasedField<posts2, author>, _>>` to implement `AppearsOnTable<Join<Alias<posts2>, Alias<posts3>, Inner>>`
-    = note: required for `JoinOn<_, _>` to implement `QuerySource`
-    = note: required for `SelectStatement<FromClause<Alias<posts2>>>` to implement `InternalJoinDsl<Alias<posts3>, Inner, Grouped<_>>`
- 
-    
-error[E0599]: no method named `select` found for struct `SelectStatement<From, Select, Distinct, Where, Order, LimitOffset, GroupBy, Having, Locking>` in the current scope
-  --> tests/fail/derive/aliases.rs:77:10
-   |
-LL |       let posts = post_alias
-   |                   ----------
-   |                   |
-   |  _________________method `select` is available on `Alias<posts2>`
-   | |
-LL | |         .inner_join(
-...  |
-LL | |         .select((post_alias.field(posts::id), post_alias_2.field(posts::id)))
-   | |         -^^^^^^ private field, not a method
-   | |_________|
-   |
-   |
+error[E0277]: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
+    --> tests/fail/derive/aliases.rs:75:29
+     |
+  LL |         .load::<(i32, i32)>(conn)
+     |          ----               ^^^^ unsatisfied trait bound
+     |          |
+     |          required by a bound introduced by this call
+     |
+     = help: the trait `LoadQuery<'_, _, (i32, i32)>` is not implemented for `SelectStatement<FromClause<JoinOn<_, _>>, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
+     |
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+note: required by a bound in `load`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
+LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
+LL |     where
+LL |         Self: LoadQuery<'query, Conn, U>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`

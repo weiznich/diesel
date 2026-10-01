@@ -1,10 +1,105 @@
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+error[E0277]: the trait bound `SelectStatement<_, _, _, _>: LoadQuery<'_, _, User>` is not satisfied
     --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:31:63
      |
   LL |     let _ = users::table.filter(posts::id.eq(1)).load::<User>(&mut conn);
-     |                                                  ----         ^^^^^^^^^ expected `Once`, found `Never`
+     |                                                  ----         ^^^^^^^^^ unsatisfied trait bound
      |                                                  |
      |                                                  required by a bound introduced by this call
+     |
+     = help: the trait `LoadQuery<'_, _, User>` is not implemented for `SelectStatement<FromClause<table>, _, _, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
+     |
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+note: required by a bound in `load`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
+LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
+LL |     where
+LL |         Self: LoadQuery<'query, Conn, U>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
+  
+     
+error[E0277]: the trait bound `BoxedSelectStatement<'_, _, _, Pg>: FilterDsl<_>` is not satisfied
+   --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:34:52
+    |
+ LL |     let _ = users::table.into_boxed::<Pg>().filter(posts::id.eq(1));
+    |                                             ------ ^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                                             |
+    |                                             required by a bound introduced by this call
+    |
+    = help: the trait `FilterDsl<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<posts::columns::id, diesel::internal::derives::as_expression::Bound<diesel::sql_types::Integer, i32>>>>` is not implemented for `BoxedSelectStatement<'_, (Integer, Text), _, Pg>`
+help: the following other types implement trait `FilterDsl<Predicate>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/boxed.rs
+    |
+LL | / impl<'a, ST, QS, DB, Predicate, GB> FilterDsl<Predicate>
+LL | |     for BoxedSelectStatement<'a, ST, FromClause<QS>, DB, GB>
+LL | | where
+LL | |     QS: QuerySource,
+LL | |     BoxedWhereClause<'a, DB>: WhereAnd<Predicate, Output = BoxedWhereClause<'a, DB>>,
+LL | |     Predicate: AppearsOnTable<QS> + NonAggregate,
+LL | |     Predicate::SqlType: BoolOrNullableBool,
+    | |___________________________________________^ `BoxedSelectStatement<'_, ST, _, DB, GB>`
+...
+LL | / impl<'a, ST, DB, Predicate, GB> FilterDsl<Predicate>
+LL | |     for BoxedSelectStatement<'a, ST, NoFromClause, DB, GB>
+LL | | where
+LL | |     BoxedWhereClause<'a, DB>: WhereAnd<Predicate, Output = BoxedWhereClause<'a, DB>>,
+LL | |     Predicate: AppearsOnTable<NoFromClause> + NonAggregate,
+LL | |     Predicate::SqlType: BoolOrNullableBool,
+    | |___________________________________________^ `BoxedSelectStatement<'_, ST, NoFromClause, DB, GB>`
+note: required by a bound in `diesel::QueryDsl::filter`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn filter<Predicate>(self, predicate: Predicate) -> Filter<Self, Predicate>
+LL |     where
+LL |         Self: methods::FilterDsl<Predicate>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::filter`
+ 
+    
+error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+    --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:37:50
+     |
+  LL |     let _ = users::table.filter(posts::id.eq(1)).into_boxed::<Pg>();
+     |                                                  ^^^^^^^^^^ expected `Once`, found `Never`
      |
 note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
     --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:15:9
@@ -16,73 +111,122 @@ note: required for `posts::columns::id` to implement `AppearsOnTable<users::tabl
      = note: required for `Grouped<Eq<id, Bound<Integer, i32>>>` to implement `AppearsOnTable<users::table>`
      = note: required for `WhereClause<Grouped<Eq<id, Bound<Integer, i32>>>>` to implement `ValidWhereClause<FromClause<table>>`
      = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `LoadQuery<'_, _, User>`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `AsQuery`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `BoxedDsl<'_, Pg>`
+note: required by a bound in `diesel::QueryDsl::into_boxed`
+    --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+     |
+  LL | pub trait QueryDsl: Sized {
+...
+LL |     fn into_boxed<'a, DB>(self) -> IntoBoxed<'a, Self, DB>
+...
+LL |         Self: methods::BoxedDsl<'a, DB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::into_boxed`
+  
+          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `SelectStatement<_, _, _, _>: LoadQuery<'_, _, User>` is not satisfied
+    --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:43:23
+     |
+  LL |         .load::<User>(&mut conn);
+     |          ----         ^^^^^^^^^ unsatisfied trait bound
+     |          |
+     |          required by a bound introduced by this call
+     |
+     = help: the trait `LoadQuery<'_, _, User>` is not implemented for `SelectStatement<FromClause<table>, _, _, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
+     |
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
   
-          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:34:45
-   |
-LL |     let _ = users::table.into_boxed::<Pg>().filter(posts::id.eq(1));
-   |                                             ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:15:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 2 redundant requirements hidden
-   = note: required for `Grouped<Eq<id, Bound<Integer, i32>>>` to implement `AppearsOnTable<users::table>`
-   = note: required for `BoxedSelectStatement<'_, (Integer, Text), _, Pg>` to implement `FilterDsl<Grouped<Eq<id, Bound<Integer, i32>>>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot box `SelectStatement<FromClause<table>, _, _, _>` for backend `Pg`
-   --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:37:50
+     
+error[E0277]: the trait bound `BoxedSelectStatement<'_, _, _, Pg>: FilterDsl<_>` is not satisfied
+   --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:48:17
     |
- LL |     let _ = users::table.filter(posts::id.eq(1)).into_boxed::<Pg>();
-    |                                                  ^^^^^^^^^^ the trait `BoxedDsl<'_, Pg>` is not implemented for `SelectStatement<FromClause<table>, _, _, _>`
+ LL |         .filter(users::name.eq(posts::title));
+    |          ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
     |
-    = note: this either means `SelectStatement<FromClause<table>, _, _, _>` is no valid SQL for `Pg`
-    = note: or this means `SelectStatement<FromClause<table>, _, _, _>` uses clauses not supporting boxing like the `LOCKING` or `GROUP BY` clause
-help: the following other types implement trait `BoxedDsl<'a, DB>`
-   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    = help: the trait `FilterDsl<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<users::columns::name, posts::columns::title>>>` is not implemented for `BoxedSelectStatement<'_, (Integer, Text), _, Pg>`
+help: the following other types implement trait `FilterDsl<Predicate>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/boxed.rs
     |
-LL | / impl<'a, F, S, D, W, O, LOf, G, H, DB> BoxedDsl<'a, DB>
-LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H>
+LL | / impl<'a, ST, QS, DB, Predicate, GB> FilterDsl<Predicate>
+LL | |     for BoxedSelectStatement<'a, ST, FromClause<QS>, DB, GB>
 LL | | where
-LL | |     Self: AsQuery,
-...   |
-LL | |     G: ValidGroupByClause + QueryFragment<DB> + Send + 'a,
-LL | |     H: QueryFragment<DB> + Send + 'a,
-    | |_____________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H>`
+LL | |     QS: QuerySource,
+LL | |     BoxedWhereClause<'a, DB>: WhereAnd<Predicate, Output = BoxedWhereClause<'a, DB>>,
+LL | |     Predicate: AppearsOnTable<QS> + NonAggregate,
+LL | |     Predicate::SqlType: BoolOrNullableBool,
+    | |___________________________________________^ `BoxedSelectStatement<'_, ST, _, DB, GB>`
 ...
-LL | / impl<'a, S, D, W, O, LOf, G, H, DB> BoxedDsl<'a, DB>
-LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H>
+LL | / impl<'a, ST, DB, Predicate, GB> FilterDsl<Predicate>
+LL | |     for BoxedSelectStatement<'a, ST, NoFromClause, DB, GB>
 LL | | where
-LL | |     Self: AsQuery,
-...   |
-LL | |     G: ValidGroupByClause + QueryFragment<DB> + Send + 'a,
-LL | |     H: QueryFragment<DB> + Send + 'a,
-    | |_____________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H>`
+LL | |     BoxedWhereClause<'a, DB>: WhereAnd<Predicate, Output = BoxedWhereClause<'a, DB>>,
+LL | |     Predicate: AppearsOnTable<NoFromClause> + NonAggregate,
+LL | |     Predicate::SqlType: BoolOrNullableBool,
+    | |___________________________________________^ `BoxedSelectStatement<'_, ST, NoFromClause, DB, GB>`
+note: required by a bound in `diesel::QueryDsl::filter`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn filter<Predicate>(self, predicate: Predicate) -> Filter<Self, Predicate>
+LL |     where
+LL |         Self: methods::FilterDsl<Predicate>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::filter`
  
     
 error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-    --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:43:23
+    --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:53:10
      |
-  LL |         .load::<User>(&mut conn);
-     |          ----         ^^^^^^^^^ expected `Once`, found `Never`
-     |          |
-     |          required by a bound introduced by this call
+  LL |         .into_boxed::<Pg>();
+     |          ^^^^^^^^^^ expected `Once`, found `Never`
      |
 note: required for `posts::columns::title` to implement `AppearsOnTable<users::table>`
     --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:16:9
@@ -94,61 +238,16 @@ note: required for `posts::columns::title` to implement `AppearsOnTable<users::t
      = note: required for `Grouped<Eq<name, title>>` to implement `AppearsOnTable<users::table>`
      = note: required for `WhereClause<Grouped<Eq<name, title>>>` to implement `ValidWhereClause<FromClause<table>>`
      = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `LoadQuery<'_, _, User>`
-note: required by a bound in `load`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `AsQuery`
+     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `BoxedDsl<'_, Pg>`
+note: required by a bound in `diesel::QueryDsl::into_boxed`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
-LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
-LL |     where
-LL |         Self: LoadQuery<'query, Conn, U>,
-     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
+  LL | pub trait QueryDsl: Sized {
+...
+LL |     fn into_boxed<'a, DB>(self) -> IntoBoxed<'a, Self, DB>
+...
+LL |         Self: methods::BoxedDsl<'a, DB>,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::into_boxed`
   
           = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:48:10
-   |
-LL |         .filter(users::name.eq(posts::title));
-   |          ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::title` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:16:9
-   |
-LL |         title -> VarChar,
-   |         ^^^^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 2 redundant requirements hidden
-   = note: required for `Grouped<Eq<name, title>>` to implement `AppearsOnTable<users::table>`
-   = note: required for `BoxedSelectStatement<'_, (Integer, Text), _, Pg>` to implement `FilterDsl<Grouped<Eq<name, title>>>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot box `SelectStatement<FromClause<table>, _, _, _>` for backend `Pg`
-   --> tests/fail/filter_cannot_take_comparison_for_columns_from_another_table.rs:53:10
-    |
- LL |         .into_boxed::<Pg>();
-    |          ^^^^^^^^^^ the trait `BoxedDsl<'_, Pg>` is not implemented for `SelectStatement<FromClause<table>, _, _, _>`
-    |
-    = note: this either means `SelectStatement<FromClause<table>, _, _, _>` is no valid SQL for `Pg`
-    = note: or this means `SelectStatement<FromClause<table>, _, _, _>` uses clauses not supporting boxing like the `LOCKING` or `GROUP BY` clause
-help: the following other types implement trait `BoxedDsl<'a, DB>`
-   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
-    |
-LL | / impl<'a, F, S, D, W, O, LOf, G, H, DB> BoxedDsl<'a, DB>
-LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H>
-LL | | where
-LL | |     Self: AsQuery,
-...   |
-LL | |     G: ValidGroupByClause + QueryFragment<DB> + Send + 'a,
-LL | |     H: QueryFragment<DB> + Send + 'a,
-    | |_____________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H>`
-...
-LL | / impl<'a, S, D, W, O, LOf, G, H, DB> BoxedDsl<'a, DB>
-LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H>
-LL | | where
-LL | |     Self: AsQuery,
-...   |
-LL | |     G: ValidGroupByClause + QueryFragment<DB> + Send + 'a,
-LL | |     H: QueryFragment<DB> + Send + 'a,
-    | |_____________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H>`

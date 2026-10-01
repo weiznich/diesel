@@ -39,6 +39,12 @@ LL | | );
     = note: 4 redundant requirements hidden
     = note: required for `AggregateExpression<count<_, id>, _, _, _, _>` to implement `QueryFragment<Mysql>`
     = note: required for `AggregateExpression<count<_, id>, _, _, _, _>` to implement `diesel::BoxableExpression<users::table, Mysql>`
+note: required because it appears within the type `AggregateExpression<count<_, id>, _, _, _, _>`
+   --> DIESEL/diesel/diesel/src/expression/functions/aggregate_expressions.rs
+    |
+ LL | pub struct AggregateExpression<
+    |            ^^^^^^^^^^^^^^^^^^^
+    = note: required for `Box<AggregateExpression<count<_, id>, _, _, _, _>>` to implement `CoerceUnsized<Box<_>>`
     = note: required for the cast from `Box<AggregateExpression<count<_, id>, _, _, _, _>>` to `Box<_>`
  
         = note: this error originates in the macro `simple_frame_expr_with_bound` (in Nightly builds, run with -Z macro-backtrace for more info)

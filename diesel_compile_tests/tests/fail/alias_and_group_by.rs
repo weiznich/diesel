@@ -32,7 +32,7 @@ fn main() {
     user_alias
         .group_by(user_alias.field(users::name))
         .select(user_alias.field(users::id))
-        //~^ ERROR: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
+        //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<_>` is not satisfied
         .execute(conn)
         .unwrap();
 }

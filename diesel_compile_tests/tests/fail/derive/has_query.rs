@@ -16,6 +16,7 @@ table! {
 }
 
 #[derive(HasQuery)]
+//~^ ERROR: type annotations needed
 struct User1 {
     //~^ ERROR: cannot find module or crate `user1s` in this scope
     id: i32,
@@ -23,7 +24,6 @@ struct User1 {
 }
 
 #[derive(HasQuery)]
-//~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
 #[diesel(table_name = posts)]
 struct UserMixedUp {
     id: i32,
@@ -50,7 +50,6 @@ struct TypeMismatch {
 #[derive(HasQuery)]
 //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
 //~| ERROR: the trait bound `users::table: TableNotEqual<posts::table>` is not satisfied
-//~| ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
 #[diesel(table_name = users)]
 struct RequiresValidSelect {
     #[diesel(select_expression = posts::id)]
@@ -60,7 +59,6 @@ struct RequiresValidSelect {
 #[derive(HasQuery)]
 //~^ ERROR: the trait bound `SelectStatement<_, _, _, _>: SelectDsl<_>` is not satisfied
 //~| ERROR: the trait bound `users::table: TableNotEqual<posts::table>` is not satisfied
-//~| ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
 #[diesel(base_query = users::table.filter(users::id.eq(42_i32)))]
 struct BaseQueryStillRequiresValidSelect {
     #[diesel(select_expression = posts::id)]

@@ -21,11 +21,11 @@ fn main() {
     use diesel::dsl::max;
 
     let source = users.select((id, count_star()));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
 
     let source = users.select(nullable_int_col + max(nullable_int_col));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
 
     let source = users.select(f(nullable_int_col, max(nullable_int_col)));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
 }

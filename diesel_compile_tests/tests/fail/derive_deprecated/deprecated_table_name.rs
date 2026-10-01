@@ -2,6 +2,7 @@
 extern crate diesel;
 
 #[derive(AsChangeset)]
+//~^ ERROR: type annotations needed
 #[table_name = "users"]
 struct UserForm1 {
     id: i32,

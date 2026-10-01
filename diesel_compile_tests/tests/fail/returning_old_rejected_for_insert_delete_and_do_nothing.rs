@@ -26,7 +26,7 @@ fn main() {
         .returning(old(name))
         //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
         .get_result::<String>(&mut connection)
-        //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
+        //~^ ERROR: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, String>` is not satisfied
         .unwrap();
 
     // DELETE: `old(col)` is pointless because all columns already refer to the
@@ -35,7 +35,7 @@ fn main() {
         .returning(old(name))
         //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<DeleteStmt, table>`
         .get_result::<String>(&mut connection)
-        //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<DeleteStmt, table>`
+        //~^ ERROR: the trait bound `DeleteStatement<table, _, _>: LoadQuery<'_, _, String>` is not satisfied
         .unwrap();
 
     // INSERT ... ON CONFLICT DO NOTHING: conflicting rows are never returned,
@@ -47,6 +47,6 @@ fn main() {
         .returning(old(name))
         //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
         .get_result::<String>(&mut connection)
-        //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `ReturningQuerySource<_, table>`
+        //~^ ERROR: the trait bound `InsertStatement<table, _, Insert, _>: LoadQuery<'_, _, String>` is not satisfied
         .unwrap();
 }

@@ -1,19 +1,38 @@
-error[E0271]: type mismatch resolving `<SqliteConnection as Connection>::Backend == Pg`
+error[E0277]: the trait bound `BoxedCloneSelectStatement<'_, _, _, Pg>: LoadQuery<'_, _, _>` is not satisfied
     --> tests/fail/boxed_clone_queries_must_be_used_with_proper_connection.rs:16:25
      |
   LL |         .load::<(i32,)>(&mut connection);
-     |          ----           ^^^^^^^^^^^^^^^ expected `Pg`, found `Sqlite`
+     |          ----           ^^^^^^^^^^^^^^^ unsatisfied trait bound
      |          |
      |          required by a bound introduced by this call
      |
+     = help: the trait `QueryFragment<Sqlite>` is not implemented for `BoxedCloneSelectStatement<'_, (Integer,), _, Pg>`
+help: `BoxedCloneSelectStatement<'_, ST, QS, DB, GB>` implements trait `QueryFragment<DB, SP>`
+    --> DIESEL/diesel/diesel/src/query_builder/select_statement/boxed_clone.rs
+     |
+ LL | / impl<ST, QS, DB, GB> QueryFragment<DB> for BoxedCloneSelectStatement<'_, ST, QS, DB, GB>
+ LL | | where
+ LL | |     DB: Backend,
+ LL | |     Self: QueryFragment<DB, DB::SelectStatementSyntax>,
+     | |_______________________________________________________^ `QueryFragment<DB>`
+...
+ LL | / impl<'a, ST, QS, DB, GB>
+ LL | |     QueryFragment<DB, sql_dialect::select_statement_syntax::AnsiSqlSelectStatement>
+ LL | |     for BoxedCloneSelectStatement<'a, ST, QS, DB, GB>
+ LL | | where
+...    |
+ LL | |     QS: QueryFragment<DB>,
+ LL | |     BoxedCloneLimitOffsetClause<'a, DB>: QueryFragment<DB>,
+     | |___________________________________________________________^ `QueryFragment<DB, AnsiSqlSelectStatement>`
      = note: required for `BoxedCloneSelectStatement<'_, (Integer,), _, Pg>` to implement `LoadQuery<'_, diesel::SqliteConnection, (i32,)>`
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
   
-     For more information about this error, try `rustc --explain E0271`.
+     For more information about this error, try `rustc --explain E0277`.

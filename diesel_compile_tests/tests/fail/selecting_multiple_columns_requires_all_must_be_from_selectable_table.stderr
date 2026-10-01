@@ -1,115 +1,82 @@
-error[E0277]: cannot select `posts::columns::id` from `users::table`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:23:30
-   |
-LL |     let stuff = users::table.select((posts::id, posts::user_id));
-   |                              ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::id`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:14:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: `posts::columns::id` is no valid selection for `users::table`
-   = help: `posts::columns::id` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-   = note: required for `(posts::columns::id, posts::columns::user_id)` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<(posts::columns::id, posts::columns::user_id)>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::user_id` from `users::table`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:23:30
-   |
-LL |     let stuff = users::table.select((posts::id, posts::user_id));
-   |                              ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::user_id`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:16:9
-   |
-LL |         user_id -> Integer,
-   |         ^^^^^^^
-   = note: `posts::columns::user_id` is no valid selection for `users::table`
-   = help: `posts::columns::user_id` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-   = note: required for `(posts::columns::id, posts::columns::user_id)` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<(posts::columns::id, posts::columns::user_id)>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:23:30
-   |
-LL |     let stuff = users::table.select((posts::id, posts::user_id));
-   |                              ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:14:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `(posts::columns::id, posts::columns::user_id)` to implement `AppearsOnTable<users::table>`
-   = note: required for `(posts::columns::id, posts::columns::user_id)` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<(posts::columns::id, posts::columns::user_id)>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: cannot select `posts::columns::id` from `users::table`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:27:30
-   |
-LL |     let stuff = users::table.select((posts::id, users::name));
-   |                              ^^^^^^ unsatisfied trait bound
-   |
-help: the trait `SelectableExpression<users::table>` is not implemented for `posts::columns::id`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:14:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: `posts::columns::id` is no valid selection for `users::table`
-   = help: `posts::columns::id` implements trait `SelectableExpression<QS>`:
-             SelectableExpression<Only<posts::table>>
-             SelectableExpression<Tablesample<posts::table, TSM>>
-             SelectableExpression<Join<Left, Right, Inner>>
-             SelectableExpression<Join<Left, Right, LeftOuter>>
-             SelectableExpression<JoinOn<Join, On>>
-             SelectableExpression<SelectStatement<_>>
-             SelectableExpression<ReturningQuerySource<__StmtKind, table>>
-             SelectableExpression<posts::table>
-   = note: required for `(posts::columns::id, users::columns::name)` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<(posts::columns::id, users::columns::name)>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:27:30
-   |
-LL |     let stuff = users::table.select((posts::id, users::name));
-   |                              ^^^^^^ expected `Once`, found `Never`
-   |
-note: required for `posts::columns::id` to implement `AppearsOnTable<users::table>`
-  --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:14:9
-   |
-LL |         id -> Integer,
-   |         ^^
-   = note: associated types for the current `impl` cannot be restricted in `where` clauses
-   = note: 1 redundant requirement hidden
-   = note: required for `(posts::columns::id, users::columns::name)` to implement `AppearsOnTable<users::table>`
-   = note: required for `(posts::columns::id, users::columns::name)` to implement `SelectableExpression<users::table>`
-   = note: required for `SelectStatement<FromClause<table>>` to implement `SelectDsl<(posts::columns::id, users::columns::name)>`
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
+   --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:23:37
+    |
+ LL |     let stuff = users::table.select((posts::id, posts::user_id));
+    |                              ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                              |
+    |                              required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<(posts::columns::id, posts::columns::user_id)>` is not implemented for `SelectStatement<FromClause<table>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+    = note: required for `users::table` to implement `SelectDsl<(posts::columns::id, posts::columns::user_id)>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    
+error[E0277]: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
+   --> tests/fail/selecting_multiple_columns_requires_all_must_be_from_selectable_table.rs:25:37
+    |
+ LL |     let stuff = users::table.select((posts::id, users::name));
+    |                              ------ ^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                              |
+    |                              required by a bound introduced by this call
+    |
+    = help: the trait `SelectDsl<(posts::columns::id, users::columns::name)>` is not implemented for `SelectStatement<FromClause<table>>`
+help: the following other types implement trait `SelectDsl<Selection>`
+   --> DIESEL/diesel/diesel/src/query_builder/select_statement/dsl_impls.rs
+    |
+LL | / impl<F, S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<FromClause<F>, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+...   |
+LL | |     <Selection as ValidGrouping<G::Expressions>>::IsAggregate:
+LL | |         MixedAggregates<<O as ValidGrouping<G::Expressions>>::IsAggregate>,
+    | |___________________________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+...
+LL | / impl<S, D, W, O, LOf, G, H, LC, Selection> SelectDsl<Selection>
+LL | |     for SelectStatement<NoFromClause, S, D, W, O, LOf, G, H, LC>
+LL | | where
+LL | |     G: ValidGroupByClause,
+LL | |     Selection: SelectableExpression<NoFromClause> + ValidGrouping<G::Expressions>,
+LL | |     SelectStatement<NoFromClause, SelectClause<Selection>, D, W, O, LOf, G, H, LC>: Selec...
+LL | |     D: ValidDistinctForGroupBy<Selection, G::Expressions>,
+    | |__________________________________________________________^ `SelectStatement<_, S, D, W, O, LOf, G, H, LC>`
+    = note: required for `users::table` to implement `SelectDsl<(posts::columns::id, users::columns::name)>`
+note: required by a bound in `diesel::QueryDsl::select`
+   --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
+    |
+ LL | pub trait QueryDsl: Sized {
+...
+LL |     fn select<Selection>(self, selection: Selection) -> Select<Self, Selection>
+...
+LL |         Self: methods::SelectDsl<Selection>,
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QueryDsl::select`
+ 
+    For more information about this error, try `rustc --explain E0277`.

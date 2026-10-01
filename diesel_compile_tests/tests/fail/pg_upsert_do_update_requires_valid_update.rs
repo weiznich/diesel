@@ -66,7 +66,7 @@ fn main() {
         .on_conflict(id)
         .do_update()
         .set(name.eq(excluded(posts::title)));
-    //~^ ERROR: type mismatch resolving `<title as Column>::Table == table`
+    //~^ ERROR: the trait bound `Excluded<title>: AppearsOnTable<table>` is not satisfied
 
     // Update column with excluded value of wrong type
     insert_into(users)

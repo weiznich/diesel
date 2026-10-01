@@ -17,12 +17,14 @@ LL | | }
 note: required by a bound in `diesel::QuerySource::DefaultSelection`
   --> DIESEL/diesel/diesel/src/query_source/mod.rs
    |
+LL | pub trait QuerySource {
+...
 LL |     type DefaultSelection: SelectableExpression<Self>;
    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `QuerySource::DefaultSelection`
 
       = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0277]: the trait bound `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _): Expression` is not satisfied
+error[E0271]: type mismatch resolving `<table as AsQuery>::SqlType == _`
   --> tests/fail/check_message_for_to_many_columns.rs:3:1
    |
  LL | / table! {
@@ -31,20 +33,12 @@ error[E0277]: the trait bound `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, 
  LL | |         column_2 -> Integer,
 ...  |
 LL | | }
-   | |_^ the trait `Expression` is not implemented for `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)`
+   | | ^
+   | | |
+   | |_types differ
+   |   type mismatch resolving `<table as AsQuery>::SqlType == _`
    |
-   = help: the following other types implement trait `Expression`:
-             &T
-             AliasedField<S, C>
-             Arc<T>
-             Box<T>
-             CaseWhen<_, E>
-             CaseWhen<CaseWhenConditionsLeaf<W, T>, _>
-             CaseWhen<CaseWhenConditionsLeaf<W, T>, _>
-             Collate<T, C>
-           and N others
-
-      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _): ValidGrouping<()>` is not satisfied
    --> tests/fail/check_message_for_to_many_columns.rs:3:1
@@ -71,6 +65,8 @@ error[E0277]: the trait bound `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, 
 note: required by a bound in `diesel::Table::AllColumns`
    --> DIESEL/diesel/diesel/src/query_source/mod.rs
     |
+ LL | pub trait Table: QuerySource + AsQuery + Sized {
+...
 LL |     type AllColumns: SelectableExpression<Self> + ValidGrouping<()>;
     |                                                   ^^^^^^^^^^^^^^^^^ required by this bound in `Table::AllColumns`
  
@@ -95,10 +91,36 @@ error[E0277]: cannot select `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
 note: required by a bound in `diesel::Table::AllColumns`
    --> DIESEL/diesel/diesel/src/query_source/mod.rs
     |
+ LL | pub trait Table: QuerySource + AsQuery + Sized {
+...
 LL |     type AllColumns: SelectableExpression<Self> + ValidGrouping<()>;
     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Table::AllColumns`
  
         = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _): Expression` is not satisfied
+  --> tests/fail/check_message_for_to_many_columns.rs:3:1
+   |
+ LL | / table! {
+ LL | |     test_table(column_1) {
+ LL | |         column_1 -> Integer,
+ LL | |         column_2 -> Integer,
+...  |
+LL | | }
+   | |_^ the trait `Expression` is not implemented for `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)`
+   |
+   = help: the following other types implement trait `Expression`:
+             &T
+             AliasedField<S, C>
+             Arc<T>
+             Box<T>
+             CaseWhen<_, E>
+             CaseWhen<CaseWhenConditionsLeaf<W, T>, _>
+             CaseWhen<CaseWhenConditionsLeaf<W, T>, _>
+             Collate<T, C>
+           and N others
+
+      = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0080]: evaluation panicked: `test_table` contains 17 columns, which is more than the supported maximum number of columns
               Try enabling a crate level feature to support more columns

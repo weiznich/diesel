@@ -53,21 +53,21 @@ fn main() {
 
     // cannot box a query with default select clause + a group by clause
     users::table.group_by(users::name).into_boxed_clone();
-    //~^ ERROR: cannot box `SelectStatement<_, _, _, _, _, _, _>` for backend `_`
+    //~^ ERROR: the trait bound `(id, name): ValidGrouping<name>` is not satisfied
 
     users::table
         .group_by(users::name)
         .select(users::id)
-        //~^ ERROR: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
+        //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: SelectDsl<id>` is not satisfied
         .into_boxed_clone();
-    //~^ ERROR: cannot box `SelectStatement<_, _, _, _, _, _, _>` for backend `_`
+    //~^ ERROR: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
 
     users::table
         .group_by(users::name)
         .select(users::name)
         .into_boxed_clone()
         .select(users::id)
-        //~^ ERROR: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
+        //~^ ERROR: the trait bound `BoxedCloneSelectStatement<'_, Text, _, _, name>: SelectDsl<id>` is not satisfied
         .load::<i32>(&mut conn);
 
     users::table
@@ -75,8 +75,7 @@ fn main() {
         .select(users::name)
         .into_boxed_clone()
         .inner_join(posts::table)
-        //~^ ERROR: mismatched types
-        //~| ERROR: the trait bound `BoxedCloneSelectStatement<'_, Text, _, _, name>: QueryRelation` is not satisfied
+        //~^ ERROR: the trait bound `BoxedCloneSelectStatement<'_, Text, _, _, name>: JoinWithImplicitOnClause<_, Inner>` is not satisfied
         .load::<String>(&mut conn);
 
     let mut a = users::table.into_boxed_clone();
@@ -90,8 +89,6 @@ fn main() {
         .into_boxed_clone()
         .group_by(users::id)
         //~^ ERROR: the trait bound `BoxedCloneSelectStatement<'_, _, _, _>: GroupByDsl<_>` is not satisfied
-        //~| ERROR: the trait bound `SelectStatement<FromClause<_>>: GroupByDsl<_>` is not satisfied
-        //~| ERROR: the trait bound `BoxedCloneSelectStatement<'_, _, _, _>: QueryRelation` is not satisfied
         .select(users::name)
         .load::<String>(&mut conn);
 }

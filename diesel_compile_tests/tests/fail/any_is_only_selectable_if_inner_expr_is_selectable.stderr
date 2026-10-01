@@ -6,33 +6,60 @@ LL |         .filter(name.eq(any(more_stuff::names)))
    |
    = note: `#[warn(deprecated)]` on by default
 
-error[E0271]: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+error[E0277]: the trait bound `SelectStatement<_, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
     --> tests/fail/any_is_only_selectable_if_inner_expr_is_selectable.rs:34:15
      |
   LL |         .load(&mut conn);
-     |          ---- ^^^^^^^^^ expected `Once`, found `Never`
+     |          ---- ^^^^^^^^^ the trait `LoadQuery<'_, _, _>` is not implemented for `SelectStatement<FromClause<table>, _, _, _>`
      |          |
      |          required by a bound introduced by this call
      |
-note: required for `more_stuff::columns::names` to implement `AppearsOnTable<stuff::table>`
-    --> tests/fail/any_is_only_selectable_if_inner_expr_is_selectable.rs:15:9
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
-  LL |         names -> Array<VarChar>,
-     |         ^^^^^
-     = note: associated types for the current `impl` cannot be restricted in `where` clauses
-     = note: 3 redundant requirements hidden
-     = note: required for `Grouped<Eq<name, Any<names>>>` to implement `AppearsOnTable<stuff::table>`
-     = note: required for `WhereClause<Grouped<Eq<name, Any<names>>>>` to implement `ValidWhereClause<FromClause<table>>`
-     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `Query`
-     = note: required for `SelectStatement<FromClause<table>, _, _, _>` to implement `LoadQuery<'_, _, _>`
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
   
-          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-For more information about this error, try `rustc --explain E0271`.
+     For more information about this error, try `rustc --explain E0277`.

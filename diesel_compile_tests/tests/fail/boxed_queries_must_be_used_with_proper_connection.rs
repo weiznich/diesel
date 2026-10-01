@@ -14,5 +14,5 @@ fn main() {
     users::table
         .into_boxed::<Pg>()
         .load::<(i32,)>(&mut connection);
-    //~^ ERROR: type mismatch resolving `<SqliteConnection as Connection>::Backend == Pg`
+    //~^ ERROR: the trait bound `BoxedSelectStatement<'_, _, _, Pg>: LoadQuery<'_, _, _>` is not satisfied
 }

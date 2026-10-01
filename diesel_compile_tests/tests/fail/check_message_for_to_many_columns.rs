@@ -26,5 +26,6 @@ table! {
 //~| ERROR: the trait bound `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _): ValidGrouping<()>` is not satisfied
 //~| ERROR: cannot select `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)` from `table`
 //~| ERROR: evaluation panicked: `test_table` contains 17 columns, which is more than the supported maximum number of columns
+//~| ERROR: type mismatch resolving `<table as AsQuery>::SqlType == _`
 
 fn main() {}

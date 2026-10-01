@@ -23,5 +23,5 @@ fn main() {
     users::table
         .into_boxed::<Pg>()
         .filter(posts::title.eq("Hello"));
-    //~^ ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+    //~^ ERROR: the trait bound `BoxedSelectStatement<'_, _, _, Pg>: FilterDsl<_>` is not satisfied
 }

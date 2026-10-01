@@ -25,8 +25,9 @@ help: the trait `SelectableExpression<diesel::internal::table_macro::returning::
 note: required by a bound in `UpdateStatement::<T, U, V>::returning`
    --> DIESEL/diesel/diesel/src/query_builder/update_statement/mod.rs
     |
+LL | impl<T: QuerySource, U, V> UpdateStatement<T, U, V, NoReturningClause> {
+...
 LL |     pub fn returning<E>(self, returns: E) -> UpdateStatement<T, U, V, ReturningClause<E>>
-    |            --------- required by a bound in this associated function
 ...
 LL |         UpdateStatement<T, U, V, ReturningClause<E>>: Query,
     |                                                       ^^^^^ required by this bound in `UpdateStatement::<T, U, V>::returning`
@@ -61,39 +62,12 @@ help: the trait `SelectableExpression<diesel::internal::table_macro::returning::
 note: required by a bound in `InsertStatement::<T, U, Op>::returning`
    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/mod.rs
     |
+LL | impl<T: QuerySource, U, Op> InsertStatement<T, U, Op> {
+...
 LL |     pub fn returning<E>(self, returns: E) -> InsertStatement<T, U, Op, ReturningClause<E>>
-    |            --------- required by a bound in this associated function
 LL |     where
 LL |         InsertStatement<T, U, Op, ReturningClause<E>>: Query,
     |                                                        ^^^^^ required by this bound in `InsertStatement::<T, U, Op>::returning`
  
         = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0271]: type mismatch resolving `<ReturningQuerySource<_, table> as AppearsInFromClause<table>>::Count == Once`
-   --> tests/fail/custom_returning_requires_selectable_expression.rs:40:20
-    |
- LL |         .returning((name, bad::age));
-    |          --------- ^^^^^^^^^^^^^^^^ expected `Once`, found `Never`
-    |          |
-    |          required by a bound introduced by this call
-    |
-note: required for `bad::columns::age` to implement `AppearsOnTable<ReturningQuerySource<_, table>>`
-   --> tests/fail/custom_returning_requires_selectable_expression.rs:15:7
-    |
- LL |       age -> Integer,
-    |       ^^^
-    = note: associated types for the current `impl` cannot be restricted in `where` clauses
-    = note: 1 redundant requirement hidden
-    = note: required for `(users::columns::name, bad::columns::age)` to implement `AppearsOnTable<ReturningQuerySource<_, table>>`
-    = note: required for `(users::columns::name, bad::columns::age)` to implement `SelectableExpression<ReturningQuerySource<_, table>>`
-    = note: required for `InsertStatement<table, _, Insert, _>` to implement `Query`
-note: required by a bound in `InsertStatement::<T, U, Op>::returning`
-   --> DIESEL/diesel/diesel/src/query_builder/insert_statement/mod.rs
-    |
-LL |     pub fn returning<E>(self, returns: E) -> InsertStatement<T, U, Op, ReturningClause<E>>
-    |            --------- required by a bound in this associated function
-LL |     where
-LL |         InsertStatement<T, U, Op, ReturningClause<E>>: Query,
-    |                                                        ^^^^^ required by this bound in `InsertStatement::<T, U, Op>::returning`
- 
-        = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
+For more information about this error, try `rustc --explain E0277`.

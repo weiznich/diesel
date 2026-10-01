@@ -25,4 +25,5 @@ fn main() {
     //~^ ERROR: type mismatch resolving `<Grouped<_> as AsChangeset>::Target == table`
     let command = update(users).set(name.eq(posts::title));
     //~^ ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+    //~| ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
 }

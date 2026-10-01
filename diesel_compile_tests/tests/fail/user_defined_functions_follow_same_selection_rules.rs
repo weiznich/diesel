@@ -43,5 +43,5 @@ fn main() {
     let _ = users::table
         .filter(name.eq(bar(title)))
         .load::<User>(&mut conn);
-    //~^ ERROR: type mismatch resolving `<table as AppearsInFromClause<table>>::Count == Once`
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _>: LoadQuery<'_, _, User>` is not satisfied
 }

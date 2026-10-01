@@ -2,7 +2,9 @@ error[E0277]: `diesel::query_builder::locking_clause::ForUpdate` is no valid SQL
     --> tests/fail/select_for_update_no_wait_cannot_be_used_on_sqlite.rs:17:15
      |
   LL |         .load(&mut conn)
-     |               ^^^^^^^^^ unsatisfied trait bound
+     |          ---- ^^^^^^^^^ unsatisfied trait bound
+     |          |
+     |          required by a bound introduced by this call
      |
      = help: the trait `QueryFragment<Sqlite>` is not implemented for `diesel::query_builder::locking_clause::ForUpdate`
      = note: this usually means that the `Sqlite` database system does not support 
@@ -19,8 +21,9 @@ help: the trait `QueryFragment<Pg>` is implemented for `diesel::query_builder::l
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`

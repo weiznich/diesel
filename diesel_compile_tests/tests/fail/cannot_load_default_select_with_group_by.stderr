@@ -1,39 +1,58 @@
-error[E0271]: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
+error[E0277]: the trait bound `SelectStatement<_, _, _, _, _, _, _>: LoadQuery<'_, _, _>` is not satisfied
     --> tests/fail/cannot_load_default_select_with_group_by.rs:16:32
      |
   LL |         .load::<(i32, String)>(&mut conn);
-     |          ----                  ^^^^^^^^^ type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
+     |          ----                  ^^^^^^^^^ unsatisfied trait bound
      |          |
      |          required by a bound introduced by this call
      |
-note: expected this to be `diesel::expression::is_contained_in_group_by::Yes`
-    --> tests/fail/cannot_load_default_select_with_group_by.rs:5:1
+     = help: the trait `LoadQuery<'_, _, (i32, std::string::String)>` is not implemented for `SelectStatement<_, _, _, _, _, _, _>`
+help: the following other types implement trait `LoadQuery<'query, Conn, U, B>`
+    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/insert_with_default_for_sqlite.rs
      |
-   LL | / table! {
-   LL | |     users {
-   LL | |         id -> Integer,
-   LL | |         name -> Text,
-   LL | |     }
-  LL | | }
-     | |_^
-note: required for `columns::id` to implement `ValidGrouping<columns::name>`
-    --> tests/fail/cannot_load_default_select_with_group_by.rs:7:9
-     |
-   LL |         id -> Integer,
-     |         ^^
-     = note: associated types for the current `impl` cannot be restricted in `where` clauses
-     = note: 1 redundant requirement hidden
-     = note: required for `(columns::id, columns::name)` to implement `ValidGrouping<columns::name>`
-     = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `Query`
-     = note: required for `SelectStatement<_, _, _, _, _, _, _>` to implement `LoadQuery<'_, _, (i32, std::string::String)>`
+ LL | / impl<'query, V, T, QId, Op, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<T, BatchInsert<Vec<ValuesClause<V, T>>, T, QId, STATIC_QUERY_ID>...
+ LL | | where
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
+...
+ LL | / impl<'query, V, T, QId, Op, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op>`
+...
+ LL | / impl<'query, V, T, QId, Op, Ret, O, U, B, Target, ConflictOpt, const STATIC_QUERY_ID: bool>
+ LL | |     LoadQuery<'query, SqliteConnection, U, B>
+ LL | |     for InsertStatement<
+ LL | |         T,
+...    |
+ LL | |     O: Default,
+ LL | |     (O, Self): LoadQuery<'query, SqliteConnection, U, B>,
+     | |_________________________________________________________^ `InsertStatement<T, _, Op, _>`
 note: required by a bound in `load`
     --> DIESEL/diesel/diesel/src/query_dsl/mod.rs
      |
+LL | pub trait RunQueryDsl<Conn>: Sized {
+...
 LL |     fn load<'query, U>(self, conn: &mut Conn) -> QueryResult<Vec<U>>
-     |        ---- required by a bound in this associated function
 LL |     where
 LL |         Self: LoadQuery<'query, Conn, U>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::load`
   
-          = note: this error originates in the macro `table` (in Nightly builds, run with -Z macro-backtrace for more info)
-For more information about this error, try `rustc --explain E0271`.
+     For more information about this error, try `rustc --explain E0277`.

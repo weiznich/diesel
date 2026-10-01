@@ -1,8 +1,11 @@
 error: no `#[diesel(sql_type = ...)]` attribute provided
  --> tests/fail/derive/enum_.rs:6:1
   |
-LL | enum Test {
-  | ^^^^
+LL | / enum Test {
+LL | |
+LL | |     A,
+LL | | }
+  | |_^
 
 error: got invalid case identifier: `Foo`
        only: `lowercase`, `UPPERCASE`, `PascalCase`, `camelCase`, `snake_case`, `SCREAMING_SNAKE_CASE`, `kebab-case` and `SCREAMING-KEBAB-CASE` are supported

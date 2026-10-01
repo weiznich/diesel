@@ -11,7 +11,7 @@ LL |     posts::user_id.eq::<_>()
    |                         ^
 
 error: literals must have type suffix for auto_type, e.g. `2_i64`
-  --> tests/fail/auto_type.rs:72:34
+  --> tests/fail/auto_type.rs:74:34
    |
 LL |             .filter(posts::id.gt(2)),
    |                                  ^
@@ -49,10 +49,20 @@ LL |     posts::user_id.eq::<_>()
    |                         ^ not allowed in type signatures
 
 error[E0121]: the placeholder `_` is not allowed within types on item signatures for associated types
-  --> tests/fail/auto_type.rs:72:34
+  --> tests/fail/auto_type.rs:74:34
    |
 LL |             .filter(posts::id.gt(2)),
    |                                  ^ not allowed in type signatures
+
+error[E0284]: type annotations needed
+  --> tests/fail/auto_type.rs:65:21
+   |
+LL | #[derive(Queryable, Selectable)]
+   |                     ^^^^^^^^^^ cannot infer type for tuple `(users::columns::id, users::columns::name, diesel::internal::derives::multiconnection::Exists<diesel::internal::table_macro::SelectStatement<diesel::internal::table_macro::FromClause<posts::table>, diesel::query_builder::select_clause::DefaultSelectClause<diesel::internal::table_macro::FromClause<posts::table>>, diesel::query_builder::distinct_clause::NoDistinctClause, diesel::query_builder::where_clause::WhereClause<diesel::expression::grouped::Grouped<diesel::expression::operators::And<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<posts::columns::user_id, users::columns::id>>, diesel::expression::grouped::Grouped<diesel::expression::operators::Gt<posts::columns::id, _>>>>>>>)`
+   |
+   = note: cannot satisfy `<User as Selectable<__DB>>::SelectExpression == (id, name, _)`
+
+      = note: this error originates in the derive macro `Selectable` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0061]: this method takes 1 argument but 0 arguments were supplied
   --> tests/fail/auto_type.rs:59:20
@@ -69,3 +79,12 @@ help: provide the argument
    |
 LL |     posts::user_id.eq::<_>(/* other */)
    |                            +++++++++++
+
+error[E0284]: type annotations needed: cannot satisfy `<User as Selectable<__DB>>::SelectExpression == (id, name, _)`
+  --> tests/fail/auto_type.rs:65:21
+   |
+LL | #[derive(Queryable, Selectable)]
+   |                     ^^^^^^^^^^ cannot satisfy `<User as Selectable<__DB>>::SelectExpression == (id, name, _)`
+   |
+
+      = note: this error originates in the derive macro `Selectable` (in Nightly builds, run with -Z macro-backtrace for more info)

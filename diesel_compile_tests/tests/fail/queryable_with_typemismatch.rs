@@ -19,5 +19,5 @@ fn main() {
     let mut conn = PgConnection::establish("...").unwrap();
 
     users::table.load::<User>(&mut conn).unwrap();
-    //~^ ERROR: the trait bound `(Integer, Text): CompatibleType<User, _>` is not satisfied
+    //~^ ERROR: the trait bound `users::table: LoadQuery<'_, _, User>` is not satisfied
 }

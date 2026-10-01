@@ -13,7 +13,7 @@ fn main() {
     use diesel::dsl::sum;
 
     let _ = users::table.filter(users::name);
-    //~^ ERROR: `diesel::sql_types::Text` is neither `diesel::sql_types::Bool` nor `diesel::sql_types::Nullable<Bool>`
+    //~^ ERROR: the trait bound `SelectStatement<_>: FilterDsl<name>` is not satisfied
     let _ = users::table.filter(sum(users::id).eq(1));
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: FilterDsl<_>` is not satisfied
 }

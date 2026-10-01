@@ -81,8 +81,7 @@ fn main() {
         .select((id, hair_color))
         .insert_into(posts)
         .into_columns((comments::post_id, comments::body));
-    //~^ ERROR: type mismatch resolving `<post_id as ColumnList>::Table == table`
-    //~| ERROR: type mismatch resolving `<body as ColumnList>::Table == table`
+    //~^ ERROR: type mismatch resolving `<(post_id, body) as ColumnList>::Table == table`
 
     // Multiple columns, one wrong type
     users

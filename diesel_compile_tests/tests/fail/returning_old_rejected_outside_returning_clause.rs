@@ -19,20 +19,16 @@ fn main() {
     // Using it in a regular SELECT is rejected at compile time.
     users
         .select(old(name))
-        //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `users::table`
+        //~^ ERROR: the trait bound `SelectStatement<_>: SelectDsl<Old<name>>` is not satisfied
         .load::<String>(&mut connection)
-        //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `users::table`
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, String>` is not satisfied
         .unwrap();
 
     // `old(col).nullable()` is also rejected outside RETURNING.
     users
         .select(old(name).nullable())
-        //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `users::table`
-        //~| ERROR: type mismatch resolving `<table as AppearsInFromClause<OldIdent>>::Count == Once`
-        //~| ERROR: type mismatch resolving `<table as AppearsInFromClause<_>>::Count == Once`
+        //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<_>` is not satisfied
         .load::<Option<String>>(&mut connection)
-        //~^ ERROR: cannot select `diesel::pg::returning::old_impl::Old<columns::name>` from `users::table`
-        //~| ERROR: type mismatch resolving `<table as AppearsInFromClause<OldIdent>>::Count == Once`
-        //~| ERROR: type mismatch resolving `<table as AppearsInFromClause<_>>::Count == Once`
+        //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, Option<String>>` is not satisfied
         .unwrap();
 }

@@ -18,5 +18,5 @@ table! {
 
 fn main() {
     let select_id = users::table.select(posts::id);
-    //~^ ERROR: cannot select `posts::columns::id` from `users::table`
+    //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: SelectDsl<id>` is not satisfied
 }

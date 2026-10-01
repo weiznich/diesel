@@ -70,9 +70,9 @@ fn main() {
     users::table
         .group_by(users::id)
         .select(some_ungrouped_expression(true))
-        //~^ ERROR: the trait bound `dyn BoxableExpression<table, Pg, SqlType = _>: ValidGrouping<id>` is not satisfied
+        //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: Table` is not satisfied
         .load::<i32>(&mut conn);
-    //~^ ERROR: the trait bound `dyn BoxableExpression<table, Pg, SqlType = _>: ValidGrouping<id>` is not satisfied
+    //~^ ERROR: the trait bound `SelectStatement<_, _, _, _, _, _, _>: LoadQuery<'_, _, i32>` is not satisfied
 
     // it's fine to pass this to some query without group by clause
     // rustc should infer the correct bounds here
@@ -92,6 +92,7 @@ fn main() {
         .group_by(users::name)
         .select(maybe_grouped(true))
         //~^ ERROR: type mismatch resolving `<name as IsContainedInGroupBy<id>>::Output == Yes`
+        //~| ERROR: the trait bound `id: BoxableExpression<table, Pg, name, _>` is not satisfied
         .load::<i32>(&mut conn);
 
     // aggregated expressions work to
@@ -108,12 +109,12 @@ fn main() {
     // but we cannot mix a aggregated expression with an non aggregate one
     users::table
         .select((
-            //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+            //~^ ERROR: the trait bound `SelectStatement<FromClause<table>>: Table` is not satisfied
             something_that_is_aggregate(),
             some_ungrouped_expression(false),
         ))
         .load::<(Option<i32>, i32)>(&mut conn);
-    //~^ ERROR: mixing aggregate and not aggregate expressions is not allowed in SQL
+    //~^ ERROR: the trait bound `SelectStatement<_, _>: LoadQuery<'_, _, _>` is not satisfied
 
     // using two potential aggregated expressions works
     users::table
