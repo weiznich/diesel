@@ -111,7 +111,6 @@ fn derive_into_single_table(
 
                 field_ty_bounds.push(generate_field_bound(
                     field,
-                    table_name,
                     &field.ty,
                     treat_none_as_default_value,
                     None,
@@ -120,7 +119,6 @@ fn derive_into_single_table(
 
                 borrowed_field_ty_bounds.push(generate_field_bound(
                     field,
-                    table_name,
                     &field.ty,
                     treat_none_as_default_value,
                     Some(parse_quote!('insert)),
@@ -143,7 +141,6 @@ fn derive_into_single_table(
 
                 field_ty_bounds.push(generate_field_bound(
                     field,
-                    table_name,
                     ty,
                     treat_none_as_default_value,
                     None,
@@ -210,6 +207,8 @@ fn derive_into_single_table(
     };
 
     Ok(quote! {
+        use #table_name as table_schema;
+
         #insert_owned
 
         #insert_borrowed
@@ -363,7 +362,6 @@ fn field_expr(
 /// Generate explicit trait bound with field span to improve error messages
 pub(crate) fn generate_field_bound(
     field: &Field,
-    table_name: &Path,
     ty: &Type,
     treat_none_as_default_value: bool,
     borrowed: Option<Lifetime>,
@@ -398,7 +396,7 @@ pub(crate) fn generate_field_bound(
     };
     let bound = quote_spanned! {span=>
         #bound_ty: diesel::expression::AsExpression<
-            <#table_name::#column_name as diesel::Expression>::SqlType
+            <table_schema::#column_name as diesel::Expression>::SqlType
         >
     };
     Ok((type_for_guard, bound))

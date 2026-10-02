@@ -17,8 +17,8 @@ use diesel_attribute_parser::parsers::{
 use diesel_attribute_parser::{StructAttr, parse_attributes};
 
 pub struct Model {
-    name: Path,
-    table_names: Vec<Path>,
+    pub name: Path,
+    pub table_names: Vec<Path>,
     pub primary_key_names: Vec<Ident>,
     treat_none_as_default_value: Option<LitBool>,
     treat_none_as_null: Option<LitBool>,
