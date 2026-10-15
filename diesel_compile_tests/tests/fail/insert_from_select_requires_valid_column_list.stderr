@@ -77,7 +77,7 @@ error[E0277]: the trait bound `(post_id, title): ColumnList` is not satisfied
     |
     = help: the trait `diesel::query_builder::insert_statement::column_list::ColumnList` is not implemented for `(comments::columns::post_id, posts::columns::title)`
     = help: the following other types implement trait `diesel::query_builder::insert_statement::column_list::ColumnList`:
-              (T₁, T₂, …, Tₙ) for tuples of arity 1 up to and including 16
+              `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
             and N others
 note: required by a bound in `InsertStatement::<T, diesel::query_builder::insert_statement::insert_from_select::InsertFromSelect<U, C>, Op, Ret>::into_columns`
    --> DIESEL/diesel/diesel/src/query_builder/insert_statement/mod.rs

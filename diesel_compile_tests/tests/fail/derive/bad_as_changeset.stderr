@@ -115,25 +115,6 @@ LL |     #[derive(AsExpression, FromSqlRow)]
 
       = note: this error originates in the derive macro `AsChangeset` which comes from the expansion of the derive macro `AsExpression` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0277]: the trait bound `i32: AsExpression<Nullable<Text>>` is not satisfied
-  --> tests/fail/derive/bad_as_changeset.rs:12:10
-   |
-LL | #[derive(AsChangeset)]
-   |          ^^^^^^^^^^^ unsatisfied trait bound
-   |
-   = help: the trait `AsExpression<diesel::sql_types::Nullable<diesel::sql_types::Text>>` is not implemented for `i32`
-help: the following other types implement trait `AsExpression<T>`
-  --> DIESEL/diesel/diesel/src/type_impls/primitives.rs
-   |
-LL |     #[derive(AsExpression, FromSqlRow)]
-   |              ^^^^^^^^^^^^
-   |              |
-   |              `&i32` implements `AsExpression<diesel::sql_types::Integer>`
-   |              `i32` implements `AsExpression<diesel::sql_types::Integer>`
-   |              `i32` implements `AsExpression<Nullable<Integer>>`
-
-      = note: this error originates in the derive macro `AsChangeset` which comes from the expansion of the derive macro `AsExpression` (in Nightly builds, run with -Z macro-backtrace for more info)
-
 error: the type `<(diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<columns::name, <i32 as AsExpression<diesel::sql_types::Text>>::Expression>>, Option<diesel::expression::grouped::Grouped<diesel::expression::operators::Eq<columns::hair_color, <i32 as AsExpression<diesel::sql_types::Nullable<diesel::sql_types::Text>>>::Expression>>>) as diesel::AsChangeset>::Changeset` is not well-formed
   --> tests/fail/derive/bad_as_changeset.rs:12:10
    |

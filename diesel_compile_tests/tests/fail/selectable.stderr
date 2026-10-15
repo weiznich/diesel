@@ -1,6 +1,9 @@
 error[E0425]: cannot find type `titel` in module `posts`
   --> tests/fail/selectable.rs:53:5
    |
+LL | #[derive(Selectable)]
+   |          ---------- in this derive macro
+...
 LL |     titel: String,
    |     ^^^^^ not found in `posts`
    |
@@ -19,6 +22,9 @@ help: a struct with a similar name exists
 error[E0425]: cannot find value `titel` in module `posts`
   --> tests/fail/selectable.rs:53:5
    |
+LL | #[derive(Selectable)]
+   |          ---------- in this derive macro
+...
 LL |     titel: String,
    |     ^^^^^ not found in `posts`
    |

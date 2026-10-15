@@ -9,7 +9,7 @@ LL |     select(array((1, 3f64)))
    = help: the trait `IntoArrayExpression<diesel::sql_types::Integer>` is not implemented for `({integer}, f64)`
    = note: `the trait bound `({integer}, f64): IntoArrayExpression<diesel::sql_types::Integer>` is not satisfied. (`AsExpressionList` is a deprecated trait alias for `IntoArrayExpression`)
    = help: the following other types implement trait `IntoArrayExpression<ST>`:
-             (T₁, T₂, …, Tₙ) for tuples of arity 1 up to and including 16
+             `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
            and N others
 note: required by a bound in `diesel::dsl::array`
   --> DIESEL/diesel/diesel/src/pg/expression/array.rs
@@ -29,7 +29,7 @@ LL |     select(array((1, 3f64)))
    |
    = note: `the trait bound `({integer}, f64): IntoArrayExpression<diesel::sql_types::Double>` is not satisfied. (`AsExpressionList` is a deprecated trait alias for `IntoArrayExpression`)
    = help: the following other types implement trait `IntoArrayExpression<ST>`:
-             (T₁, T₂, …, Tₙ) for tuples of arity 1 up to and including 16
+             `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
            and N others
 note: required by a bound in `diesel::dsl::array`
   --> DIESEL/diesel/diesel/src/pg/expression/array.rs
@@ -48,7 +48,7 @@ LL |     select(array((1, 3f64)))
    = help: the trait `IntoArrayExpression<diesel::sql_types::Integer>` is not implemented for `({integer}, f64)`
    = note: `the trait bound `({integer}, f64): IntoArrayExpression<diesel::sql_types::Integer>` is not satisfied. (`AsExpressionList` is a deprecated trait alias for `IntoArrayExpression`)
    = help: the following other types implement trait `IntoArrayExpression<ST>`:
-             (T₁, T₂, …, Tₙ) for tuples of arity 1 up to and including 16
+             `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
            and N others
 
 error[E0277]: cannot convert `({integer}, f64)` into an expression of type `Array<diesel::sql_types::Double>`
@@ -59,6 +59,6 @@ LL |     select(array((1, 3f64)))
    |
    = note: `the trait bound `({integer}, f64): IntoArrayExpression<diesel::sql_types::Double>` is not satisfied. (`AsExpressionList` is a deprecated trait alias for `IntoArrayExpression`)
    = help: the following other types implement trait `IntoArrayExpression<ST>`:
-             (T₁, T₂, …, Tₙ) for tuples of arity 1 up to and including 16
+             `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
            and N others
 For more information about this error, try `rustc --explain E0277`.

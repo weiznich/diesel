@@ -12,7 +12,7 @@ LL | | }
    = help: the trait `SelectableExpression<table>` is not implemented for `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)`
    = note: `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)` is no valid selection for `table`
    = help: the following other types implement trait `SelectableExpression<QS>`:
-             (T₁, T₂, …, Tₙ) for tuples of arity 1 up to and including 16
+             `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
            and N others
 note: required by a bound in `diesel::QuerySource::DefaultSelection`
   --> DIESEL/diesel/diesel/src/query_source/mod.rs
@@ -86,7 +86,7 @@ error[E0277]: cannot select `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
     = help: the trait `SelectableExpression<table>` is not implemented for `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)`
     = note: `(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)` is no valid selection for `table`
     = help: the following other types implement trait `SelectableExpression<QS>`:
-              (T₁, T₂, …, Tₙ) for tuples of arity 1 up to and including 16
+              `(T₁, T₂, …, Tₙ)` for tuples of arity 1 up to and including 16 
             and N others
 note: required by a bound in `diesel::Table::AllColumns`
    --> DIESEL/diesel/diesel/src/query_source/mod.rs

@@ -288,25 +288,25 @@ LL |         Self: methods::ExecuteDsl<Conn>,
      |               ^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `RunQueryDsl::execute`
   
      
-error[E0277]: the trait bound `ConflictTarget<(name, _)>: OnConflictTarget<table>` is not satisfied
+error[E0277]: the trait bound `DuplicatedKeys: Column` is not satisfied
    --> tests/fail/mysql_on_conflict_tests.rs:86:22
     |
  LL |         .on_conflict((name, dsl::DuplicatedKeys))
-    |          ----------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          ----------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Column` is not implemented for `DuplicatedKeys`
     |          |
     |          required by a bound introduced by this call
     |
-    = help: the trait `OnConflictTarget<users::table>` is not implemented for `ConflictTarget<(name, DuplicatedKeys)>`
-    = help: the following other types implement trait `OnConflictTarget<Table>`:
-              `diesel::query_builder::ConflictTarget<(T,)>` implements `OnConflictTarget<<T as Column>::Table>`
-              `diesel::query_builder::ConflictTarget<(_T, T)>` implements `OnConflictTarget<<_T as Column>::Table>`
-              `diesel::query_builder::ConflictTarget<(_T, T, T1)>` implements `OnConflictTarget<<_T as Column>::Table>`
-              `diesel::query_builder::ConflictTarget<(_T, T, T1, T2)>` implements `OnConflictTarget<<_T as Column>::Table>`
-              `diesel::query_builder::ConflictTarget<(_T, T, T1, T2, T3)>` implements `OnConflictTarget<<_T as Column>::Table>`
-              `diesel::query_builder::ConflictTarget<(_T, T, T1, T2, T3, T4)>` implements `OnConflictTarget<<_T as Column>::Table>`
-              `diesel::query_builder::ConflictTarget<(_T, T, T1, T2, T3, T4, T5)>` implements `OnConflictTarget<<_T as Column>::Table>`
-              `ConflictTarget<(_T, T, T1, T2, T3, T4, T5, T6)>` implements `OnConflictTarget<<_T as Column>::Table>`
-            and N others
+    = help: the following other types implement trait `Column`:
+              columns::id
+              columns::name
+              diesel::expression::assume_not_null::AssumeNotNull<T>
+              pg::metadata_lookup::pg_namespace::columns::nspname
+              pg::metadata_lookup::pg_namespace::columns::oid
+              pg::metadata_lookup::pg_type::columns::oid
+              pg::metadata_lookup::pg_type::columns::typarray
+              pg::metadata_lookup::pg_type::columns::typname
+              pg::metadata_lookup::pg_type::columns::typnamespace
+    = note: required for `ConflictTarget<(name, DuplicatedKeys)>` to implement `OnConflictTarget<users::table>`
 note: required by a bound in `diesel::upsert::on_conflict_extension::<impl InsertStatement<T, U, Op, Ret>>::on_conflict`
    --> DIESEL/diesel/diesel/src/upsert/on_conflict_extension.rs
     |
